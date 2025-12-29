@@ -444,6 +444,124 @@ body {
     to { transform: scale(1); }
 }
 
+/* Localização */
+.localizacao {
+    background: var(--bg-light);
+}
+
+.localizacao-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.localizacao-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.endereco-card {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+}
+
+.endereco-card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+}
+
+.endereco-card p {
+    margin: 0.3rem 0;
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+.endereco-card .referencia {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--bg-light);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.distancias {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+}
+
+.distancias h3 {
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-dark);
+}
+
+.distancia-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--bg-light);
+}
+
+.distancia-item:last-child {
+    border-bottom: none;
+}
+
+.distancia-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.distancia-texto {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.distancia-texto strong {
+    color: var(--text-dark);
+    font-size: 1rem;
+}
+
+.distancia-texto span {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.btn-mapa {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--gradient);
+    color: var(--white);
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+    justify-content: center;
+}
+
+.btn-mapa:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.localizacao-mapa {
+    background: var(--white);
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    height: 600px;
+}
+
 /* Formulário de Inscrição */
 .inscricao {
     background: var(--bg-light);
@@ -667,6 +785,14 @@ body {
 
     .galeria-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .localizacao-content {
+        grid-template-columns: 1fr;
+    }
+
+    .localizacao-mapa {
+        height: 400px;
     }
 
     .form-row {
