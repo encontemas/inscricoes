@@ -692,9 +692,8 @@ body {
 /* Contato Section */
 .contatos-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
-    max-width: 800px;
     margin: 3rem auto 0;
 }
 
@@ -719,8 +718,15 @@ body {
 
 .contato-card h3 {
     font-size: 1.3rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     color: var(--text-dark);
+}
+
+.contato-encargo {
+    color: var(--primary-color);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
 }
 
 .btn-whatsapp {
