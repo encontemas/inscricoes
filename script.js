@@ -7,6 +7,48 @@ function scrollToInscricao() {
     });
 }
 
+// Funções para galeria de imagens e vídeos
+function abrirImagem(src) {
+    const modal = document.getElementById('modalGaleria');
+    const modalImg = document.getElementById('modalImagem');
+    const modalVideo = document.getElementById('modalVideo');
+
+    modalImg.src = src;
+    modalImg.style.display = 'block';
+    modalVideo.style.display = 'none';
+    modalVideo.innerHTML = '';
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function abrirVideo(videoId) {
+    const modal = document.getElementById('modalGaleria');
+    const modalImg = document.getElementById('modalImagem');
+    const modalVideo = document.getElementById('modalVideo');
+
+    modalImg.style.display = 'none';
+    modalVideo.style.display = 'block';
+    modalVideo.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" allowfullscreen allow="autoplay"></iframe>`;
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function fecharModal() {
+    const modal = document.getElementById('modalGaleria');
+    const modalVideo = document.getElementById('modalVideo');
+
+    modal.classList.remove('active');
+    modalVideo.innerHTML = '';
+    document.body.style.overflow = 'auto';
+}
+
+// Fechar modal com tecla ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        fecharModal();
+    }
+});
+
 // Máscara para telefone
 function mascaraTelefone(event) {
     let input = event.target;
