@@ -242,20 +242,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(data.message || data.error || 'Erro ao processar inscrição');
                 }
 
-                // Exibir modal de sucesso com PIX
-                if (data.pix) {
-                    pixCopiaCola = data.pix.qr_code_texto;
-                    document.getElementById('pixValor').textContent = data.pix.valor;
-                    document.getElementById('qrCodeImagem').src = data.pix.qr_code_imagem;
-                    document.getElementById('pixCodigo').textContent = data.pix.qr_code_texto;
-                    abrirModalSucesso();
+                // Salvar dados no localStorage para a página de pagamento
+                localStorage.setItem('inscricao_nome', data.inscricao.nome);
+                localStorage.setItem('inscricao_email', data.inscricao.email);
+                localStorage.setItem('inscricao_parcelas', data.inscricao.numero_parcelas);
+                localStorage.setItem('inscricao_valor_parcela', data.inscricao.valor_parcela);
+                localStorage.setItem('inscricao_valor_total', data.inscricao.valor_total);
+                localStorage.setItem('inscricao_telefone', formData.telefone);
+                localStorage.setItem('inscricao_cpf', formData.cpf || '');
 
-                    // Limpar formulário
-                    document.getElementById('formInscricao').reset();
-                    document.getElementById('parcela_info').style.display = 'none';
-                } else {
-                    alert('Inscrição realizada com sucesso! Você receberá as informações de pagamento por e-mail.');
-                }
+                // Redirecionar para página de pagamento
+                window.location.href = `/pagamento.html?nome=${encodeURIComponent(data.inscricao.nome)}&email=${encodeURIComponent(data.inscricao.email)}&parcelas=${data.inscricao.numero_parcelas}&valor_parcela=${encodeURIComponent(data.inscricao.valor_parcela)}&valor_total=${encodeURIComponent(data.inscricao.valor_total)}`;
 
             } catch (error) {
                 console.error('Erro:', error);
