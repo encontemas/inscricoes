@@ -507,15 +507,31 @@
                     return;
                 }
 
-                // TODO: Chamar API para buscar dados do inscrito
-                // Por enquanto, dados mockados
+                // Buscar dados reais da API
+                const response = await fetch('/api/inscrito', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cpf: cpf })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erro ao carregar dados');
+                }
+
+                // Armazenar dados do inscrito
                 inscritoData = {
-                    nome: 'João Silva',
-                    email: 'joao@email.com',
-                    cpf: cpf,
-                    numero_parcelas: 6,
-                    valor_parcela: 75.00,
-                    valor_total: 450.00
+                    nome: data.nome_completo,
+                    email: data.email,
+                    telefone: data.telefone,
+                    cpf: data.cpf,
+                    numero_parcelas: data.numero_parcelas,
+                    valor_parcela: parseFloat(data.valor_parcela),
+                    valor_total: parseFloat(data.valor_total),
+                    dia_vencimento: data.dia_vencimento || '15'
                 };
 
                 // Atualizar interface
@@ -524,6 +540,7 @@
             } catch (error) {
                 console.error('Erro ao carregar dados:', error);
                 alert('Erro ao carregar seus dados. Tente novamente.');
+                window.location.href = '/login-inscrito.html';
             }
         }
 
@@ -538,21 +555,39 @@
         // Carregar parcelas
         async function carregarParcelas() {
             try {
-                // TODO: Chamar API para buscar parcelas
-                // Por enquanto, gerar parcelas mockadas
+                // Buscar dados reais da planilha
+                const response = await fetch('/api/inscrito', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cpf: inscritoData.cpf })
+                });
+
+                const data = await response.json();
+
                 parcelas = [];
-                const dataBase = new Date();
-                dataBase.setDate(15); // Dia 15 de cada mês
+                const diaVencimento = parseInt(inscritoData.dia_vencimento);
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
 
                 for (let i = 1; i <= inscritoData.numero_parcelas; i++) {
-                    const vencimento = new Date(dataBase);
+                    // Calcular data de vencimento
+                    const vencimento = new Date();
                     vencimento.setMonth(vencimento.getMonth() + (i - 1));
+                    vencimento.setDate(diaVencimento);
+                    vencimento.setHours(0, 0, 0, 0);
 
-                    const hoje = new Date();
+                    // Verificar status do pagamento na planilha
+                    const parcelaKey = `parcela_${String(i).padStart(2, '0')}_paga`;
+                    const dataPagamentoKey = `data_pagamento_${String(i).padStart(2, '0')}`;
+
+                    const isPaga = data[parcelaKey] === true || data[parcelaKey] === 'TRUE' || data[parcelaKey] === 1;
+                    const dataPagamento = data[dataPagamentoKey];
+
                     let status = 'pending';
-
-                    if (i === 1 && Math.random() > 0.5) {
-                        status = 'paid'; // Primeira parcela pode estar paga
+                    if (isPaga) {
+                        status = 'paid';
                     } else if (vencimento < hoje) {
                         status = 'overdue';
                     }
@@ -562,8 +597,8 @@
                         valor: parseFloat(inscritoData.valor_parcela),
                         vencimento: vencimento.toISOString().split('T')[0],
                         status: status,
-                        pix_id: status === 'paid' ? `PIX_${i}` : null,
-                        data_pagamento: status === 'paid' ? vencimento.toISOString().split('T')[0] : null
+                        pix_id: isPaga ? `PIX_${i}` : null,
+                        data_pagamento: dataPagamento || null
                     });
                 }
 
