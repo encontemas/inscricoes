@@ -82,7 +82,7 @@ Peça para o Gustavo fazer:
 4. Procurar por "Chave Pública" ou "Connect Challenge"
 5. Cadastrar esta URL:
    ```
-   https://inscricoes-sigma.vercel.app/api/public-key
+   https://inscricoes-sigma.vercel.app/api/pk-7f3e9d2a1b
    ```
 6. Salvar
 
@@ -144,7 +144,7 @@ lib/
   ├── crypto-utils.js      # Funções de criptografia RSA
   └── pagbank-auth.js      # Gerenciador de autenticação
 api/
-  ├── public-key.js        # Endpoint que serve a chave pública
+  ├── pk-7f3e9d2a1b.js     # Endpoint que serve a chave pública (URL aleatória)
   └── criar-pix.js         # Atualizado para usar Connect Challenge
 scripts/
   └── setup-keys.js        # Script para gerar chaves
