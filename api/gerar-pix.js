@@ -24,7 +24,7 @@ export default async function handler(req, res) {
             });
         }
 
-        console.log('💰 Gerando PIX da primeira parcela para:', email);
+        console.log('🧪 [SANDBOX] Gerando PIX da primeira parcela para:', email);
 
         const PAGBANK_TOKEN = process.env.PAGBANK_TOKEN;
 
@@ -70,9 +70,9 @@ export default async function handler(req, res) {
             ]
         };
 
-        console.log('📤 Enviando requisição para PagBank...');
+        console.log('📤 Enviando requisição para PagBank Sandbox...');
 
-        const response = await fetch('https://api.pagseguro.com/orders', {
+        const response = await fetch('https://sandbox.api.pagseguro.com/orders', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${PAGBANK_TOKEN}`,

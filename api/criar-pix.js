@@ -28,10 +28,10 @@ export default async function handler(req, res) {
             });
         }
 
-        // Endpoint PRODUÇÃO
-        const PAGBANK_API = 'https://api.pagseguro.com/orders';
+        // Endpoint SANDBOX (ambiente de testes)
+        const PAGBANK_API = 'https://sandbox.api.pagseguro.com/orders';
 
-        console.log('💰 Criando cobrança PIX de R$ 1,00...');
+        console.log('🧪 [SANDBOX] Criando cobrança PIX de R$ 1,00...');
 
         // Limpar telefone (apenas números)
         const telefoneLimpo = telefone.replace(/\D/g, '');
