@@ -18,9 +18,12 @@ async function salvarInscricao(dadosInscricao) {
 
         // Preparar dados conforme estrutura da planilha
         const agora = new Date().toISOString();
+        
+        // CORREÇÃO: Gerar ID via código para preencher a Coluna A
+        const idGerado = `INS-${agora}-${Math.floor(Math.random() * 1000)}`;
 
         const valores = [
-            '', // id_inscricao (auto-incremento, deixar vazio)
+            idGerado, // id_inscricao preenchido pelo sistema
             agora, // data_inscricao
             agora, // data_atualizacao
             dadosInscricao.nome_completo,
@@ -54,10 +57,12 @@ async function salvarInscricao(dadosInscricao) {
             0.00 // percentual_pago
         ];
 
+        // Mantenha o INSERT_ROWS que adicionamos antes, é importante
         const response = await sheets.spreadsheets.values.append({
             spreadsheetId,
-            range: 'Inscrições!A:AX',
+            range: 'Inscrições!A:A', 
             valueInputOption: 'USER_ENTERED',
+            insertDataOption: 'INSERT_ROWS', 
             requestBody: {
                 values: [valores]
             }
