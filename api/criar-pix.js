@@ -1,0 +1,117 @@
+// API Serverless para criar cobrança PIX no PagBank
+export default async function handler(req, res) {
+    // Apenas aceita POST
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Método não permitido' });
+    }
+
+    try {
+        const { nome, email, telefone, cpf } = req.body;
+
+        // Validação básica
+        if (!nome || !email || !telefone || !cpf) {
+            return res.status(400).json({
+                error: 'Dados incompletos. Forneça: nome, email, telefone e CPF'
+            });
+        }
+
+        // Token do PagBank (SANDBOX para teste)
+        const PAGBANK_TOKEN = process.env.PAGBANK_TOKEN || '38d30b40-ed80-4a1d-a74a-2d6ff6efb9c080b1cca24b8892bd1d01ab733037fd9005e1-3fb2-4ff3-b160-9ce3d23902df';
+
+        // Endpoint Sandbox (teste)
+        const PAGBANK_API = 'https://sandbox.api.pagseguro.com/orders';
+
+        // Limpar telefone (apenas números)
+        const telefoneLimpo = telefone.replace(/\D/g, '');
+        const ddd = telefoneLimpo.substring(0, 2);
+        const numero = telefoneLimpo.substring(2);
+
+        // Limpar CPF (apenas números)
+        const cpfLimpo = cpf.replace(/\D/g, '');
+
+        // Gerar ID único para a transação
+        const referenceId = `teste_${Date.now()}`;
+
+        // Criar payload para PagBank
+        const payload = {
+            reference_id: referenceId,
+            customer: {
+                name: nome,
+                email: email,
+                tax_id: cpfLimpo,
+                phones: [{
+                    country: "55",
+                    area: ddd,
+                    number: numero,
+                    type: "MOBILE"
+                }]
+            },
+            items: [{
+                reference_id: "teste_inscricao",
+                name: "Teste Inscrição Encontemas",
+                quantity: 1,
+                unit_amount: 100  // R$ 1,00 em centavos
+            }],
+            qr_codes: [{
+                amount: {
+                    value: 100  // R$ 1,00 em centavos
+                },
+                expiration_date: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutos
+            }],
+            notification_urls: [
+                `${req.headers.origin || 'https://inscricoes.vercel.app'}/api/webhook-pagbank`
+            ]
+        };
+
+        console.log('📤 Enviando para PagBank:', JSON.stringify(payload, null, 2));
+
+        // Chamar API do PagBank
+        const response = await fetch(PAGBANK_API, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${PAGBANK_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        console.log('📥 Resposta PagBank:', JSON.stringify(data, null, 2));
+
+        if (!response.ok) {
+            console.error('❌ Erro PagBank:', data);
+            return res.status(response.status).json({
+                error: 'Erro ao criar cobrança PIX',
+                details: data
+            });
+        }
+
+        // Extrair dados do PIX
+        const pixData = {
+            id: data.id,
+            reference_id: referenceId,
+            status: data.status,
+            qr_code_texto: data.qr_codes?.[0]?.text || null,
+            qr_code_imagem: data.qr_codes?.[0]?.links?.[0]?.href || null,
+            valor: 'R$ 1,00',
+            expiracao: data.qr_codes?.[0]?.expiration_date || null
+        };
+
+        console.log('✅ PIX criado:', pixData);
+
+        // Retornar dados do PIX
+        return res.status(200).json({
+            success: true,
+            message: 'Cobrança PIX criada com sucesso!',
+            pix: pixData
+        });
+
+    } catch (error) {
+        console.error('❌ Erro no servidor:', error);
+        return res.status(500).json({
+            error: 'Erro interno do servidor',
+            message: error.message
+        });
+    }
+}
