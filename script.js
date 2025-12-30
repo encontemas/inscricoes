@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } finally {
                 // Restaurar botão
                 btnSubmit.disabled = false;
-                btnText.textContent = 'Finalizar Inscrição e Gerar PIX';
+                btnText.textContent = 'Finalizar Inscrição';
                 btnSpinner.style.display = 'none';
             }
         });

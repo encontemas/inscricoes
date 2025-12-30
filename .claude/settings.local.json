@@ -12,7 +12,8 @@
       "Bash(vercel login)",
       "Bash(npm install:*)",
       "Bash(vercel --prod:*)",
-      "Bash(node scripts/setup-keys-standalone.js:*)"
+      "Bash(node scripts/setup-keys-standalone.js:*)",
+      "Bash(curl:*)"
     ]
   }
 }

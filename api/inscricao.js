@@ -7,6 +7,23 @@ export default async function handler(req, res) {
     }
 
     try {
+        // Verificar variáveis de ambiente
+        if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+            console.error('❌ GOOGLE_SERVICE_ACCOUNT_JSON não configurada');
+            return res.status(500).json({
+                error: 'Configuração incompleta',
+                message: 'Credenciais do Google Sheets não configuradas no servidor'
+            });
+        }
+
+        if (!process.env.GOOGLE_SHEETS_SPREADSHEET_ID) {
+            console.error('❌ GOOGLE_SHEETS_SPREADSHEET_ID não configurada');
+            return res.status(500).json({
+                error: 'Configuração incompleta',
+                message: 'ID da planilha não configurado no servidor'
+            });
+        }
+
         const dados = req.body;
 
         // Validações obrigatórias
