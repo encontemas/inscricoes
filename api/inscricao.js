@@ -1,5 +1,81 @@
 // API para processar inscrição na planilha
-import { salvarInscricao } from '../lib/google-sheets.js';
+import { google } from 'googleapis';
+
+/**
+ * Salva inscrição na planilha Google Sheets
+ */
+async function salvarInscricao(dadosInscricao) {
+    try {
+        // Autenticar com Google Sheets
+        const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+        const auth = new google.auth.GoogleAuth({
+            credentials,
+            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        });
+
+        const sheets = google.sheets({ version: 'v4', auth });
+        const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
+
+        // Preparar dados conforme estrutura da planilha
+        const agora = new Date().toISOString();
+
+        const valores = [
+            '', // id_inscricao (auto-incremento, deixar vazio)
+            agora, // data_inscricao
+            agora, // data_atualizacao
+            dadosInscricao.nome_completo,
+            dadosInscricao.cpf || '',
+            dadosInscricao.maior_idade ? 1 : 0,
+            dadosInscricao.email,
+            dadosInscricao.telefone,
+            dadosInscricao.cidade_pais,
+            dadosInscricao.grupo_escolha || '',
+            dadosInscricao.csa || '',
+            dadosInscricao.possui_deficiencia ? 1 : 0,
+            dadosInscricao.descricao_necessidades || '',
+            dadosInscricao.interesse_hospedagem ? 1 : 0,
+            dadosInscricao.aceite_termo_lgpd ? 1 : 0,
+            dadosInscricao.aceite_termo_desistencia ? 1 : 0,
+            dadosInscricao.observacoes || '',
+            450.00, // valor_total (fixo)
+            dadosInscricao.numero_parcelas,
+            (450.00 / dadosInscricao.numero_parcelas).toFixed(2), // valor_parcela
+            dadosInscricao.dia_vencimento || 10,
+            'PIX', // forma_pagamento
+            0, // inscricao_confirmada (será 1 após primeiro pagamento)
+            '', // data_confirmacao (vazio inicialmente)
+            // Flags de parcelas (24 a 45) - todas iniciam como 0
+            0, '', 0, '', 0, '', 0, '', 0, '', 0, '', // parcelas 01-06
+            0, '', 0, '', 0, '', 0, '', 0, '', // parcelas 07-11
+            // Campos calculados (47 a 50)
+            0, // total_parcelas_pagas
+            0.00, // valor_total_pago
+            450.00, // saldo_devedor
+            0.00 // percentual_pago
+        ];
+
+        const response = await sheets.spreadsheets.values.append({
+            spreadsheetId,
+            range: 'Inscrições!A:AX',
+            valueInputOption: 'USER_ENTERED',
+            requestBody: {
+                values: [valores]
+            }
+        });
+
+        console.log('✅ Inscrição salva na planilha:', response.data);
+
+        return {
+            success: true,
+            updatedRange: response.data.updates.updatedRange,
+            updatedRows: response.data.updates.updatedRows
+        };
+
+    } catch (error) {
+        console.error('❌ Erro ao salvar na planilha:', error);
+        throw new Error(`Erro ao salvar inscrição: ${error.message}`);
+    }
+}
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
