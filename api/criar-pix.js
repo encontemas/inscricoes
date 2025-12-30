@@ -89,9 +89,30 @@ export default async function handler(req, res) {
             body: JSON.stringify(payload)
         });
 
-        const data = await response.json();
+        console.log('📥 Status da resposta:', response.status, response.statusText);
 
-        console.log('📥 Resposta PagBank:', JSON.stringify(data, null, 2));
+        // Capturar corpo da resposta (pode ser JSON ou texto)
+        const responseText = await response.text();
+        console.log('📥 Corpo da resposta:', responseText);
+
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('❌ Erro ao parsear JSON:', parseError);
+            console.error('❌ Resposta recebida (texto):', responseText);
+
+            return res.status(500).json({
+                error: 'Erro ao processar resposta do PagBank',
+                details: {
+                    status: response.status,
+                    statusText: response.statusText,
+                    body: responseText
+                }
+            });
+        }
+
+        console.log('📥 Resposta PagBank (JSON):', JSON.stringify(data, null, 2));
 
         if (!response.ok) {
             console.error('❌ Erro PagBank:', data);
