@@ -1,4 +1,6 @@
 // Webhook para receber notificações de pagamento do PagBank
+import { google } from 'googleapis';
+
 export default async function handler(req, res) {
     // Apenas aceita POST
     if (req.method !== 'POST') {
@@ -9,15 +11,6 @@ export default async function handler(req, res) {
         const notification = req.body;
 
         console.log('🔔 Notificação PagBank recebida:', JSON.stringify(notification, null, 2));
-
-        // PagBank envia notificações com este formato:
-        // {
-        //   "id": "ORDE_XXX",
-        //   "reference_id": "ex-00001",
-        //   "created_at": "2021-08-29T20:15:59-03:00",
-        //   "charges": [...],
-        //   ...
-        // }
 
         // Extrair informações importantes
         const orderId = notification.id;
@@ -36,14 +29,15 @@ export default async function handler(req, res) {
                 paidAt: paidCharge.paid_at
             });
 
-            // TODO: Aqui você deve:
-            // 1. Atualizar status no Google Sheets
-            // 2. Enviar e-mail de confirmação
-            // 3. Liberar acesso ao evento
-            // 4. Marcar parcela como paga
-
-            // Por enquanto, apenas logamos
-            console.log('📊 Ação necessária: Atualizar registro de pagamento');
+            // Registrar pagamento no Google Sheets
+            await registrarPagamento({
+                orderId,
+                referenceId,
+                chargeId: paidCharge.id,
+                amount: paidCharge.amount?.value,
+                paidAt: paidCharge.paid_at,
+                customerEmail: notification.customer?.email
+            });
         }
 
         // Verificar se foi cancelado ou expirou
@@ -55,7 +49,6 @@ export default async function handler(req, res) {
         }
 
         // Sempre retornar 200 OK para o PagBank
-        // Se não retornar 200, ele continuará reenviando a notificação
         return res.status(200).json({
             received: true,
             orderId,
@@ -71,5 +64,139 @@ export default async function handler(req, res) {
             received: true,
             error: error.message
         });
+    }
+}
+
+// Função para registrar pagamento no Google Sheets
+async function registrarPagamento(dadosPagamento) {
+    try {
+        const auth = new google.auth.GoogleAuth({
+            credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON),
+            scopes: ['https://www.googleapis.com/auth/spreadsheets']
+        });
+
+        const sheets = google.sheets({ version: 'v4', auth });
+        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+
+        // Verificar se aba Pagamentos existe, senão criar
+        const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
+        let pagamentosExists = spreadsheet.data.sheets.some(
+            sheet => sheet.properties.title === 'Pagamentos'
+        );
+
+        if (!pagamentosExists) {
+            console.log('📝 Criando aba Pagamentos...');
+
+            // Criar aba
+            await sheets.spreadsheets.batchUpdate({
+                spreadsheetId,
+                resource: {
+                    requests: [{
+                        addSheet: {
+                            properties: {
+                                title: 'Pagamentos',
+                                gridProperties: {
+                                    frozenRowCount: 1
+                                }
+                            }
+                        }
+                    }]
+                }
+            });
+
+            // Adicionar cabeçalhos
+            await sheets.spreadsheets.values.update({
+                spreadsheetId,
+                range: 'Pagamentos!A1:H1',
+                valueInputOption: 'RAW',
+                resource: {
+                    values: [[
+                        'Data/Hora',
+                        'Reference ID',
+                        'Order ID',
+                        'Charge ID',
+                        'Email',
+                        'Valor (centavos)',
+                        'Valor (R$)',
+                        'Status'
+                    ]]
+                }
+            });
+
+            // Formatar cabeçalho
+            await sheets.spreadsheets.batchUpdate({
+                spreadsheetId,
+                resource: {
+                    requests: [{
+                        repeatCell: {
+                            range: {
+                                sheetId: spreadsheet.data.sheets.find(s => s.properties.title === 'Pagamentos').properties.sheetId,
+                                startRowIndex: 0,
+                                endRowIndex: 1
+                            },
+                            cell: {
+                                userEnteredFormat: {
+                                    backgroundColor: { red: 0.4, green: 0.4, blue: 0.8 },
+                                    textFormat: {
+                                        foregroundColor: { red: 1, green: 1, blue: 1 },
+                                        bold: true
+                                    }
+                                }
+                            },
+                            fields: 'userEnteredFormat(backgroundColor,textFormat)'
+                        }
+                    }]
+                }
+            });
+        }
+
+        // Registrar pagamento
+        const valorReais = ((dadosPagamento.amount || 0) / 100).toFixed(2);
+        const dataPagamento = dadosPagamento.paidAt || new Date().toISOString();
+
+        await sheets.spreadsheets.values.append({
+            spreadsheetId,
+            range: 'Pagamentos!A:H',
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[
+                    new Date(dataPagamento).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+                    dadosPagamento.referenceId,
+                    dadosPagamento.orderId,
+                    dadosPagamento.chargeId,
+                    dadosPagamento.customerEmail || '',
+                    dadosPagamento.amount,
+                    `R$ ${valorReais}`,
+                    'PAID'
+                ]]
+            }
+        });
+
+        console.log('✅ Pagamento registrado na planilha Pagamentos!');
+
+        // Enviar email de confirmação ao inscrito
+        try {
+            const { enviarConfirmacaoPagamento } = await import('./enviar-email.js');
+
+            // Extrair info da referência (inscricao_timestamp_email)
+            const refParts = dadosPagamento.referenceId.split('_');
+
+            await enviarConfirmacaoPagamento({
+                email: dadosPagamento.customerEmail,
+                nome: 'Inscrito', // TODO: Buscar nome da planilha
+                valor: `R$ ${valorReais}`,
+                numeroParcela: 1, // TODO: Identificar número da parcela
+                totalParcelas: 1 // TODO: Buscar total de parcelas
+            });
+
+            console.log('✅ Email de confirmação enviado!');
+        } catch (emailError) {
+            console.error('⚠️ Erro ao enviar email (não crítico):', emailError);
+            // Não falhar o processo se o email falhar
+        }
+
+    } catch (error) {
+        console.error('❌ Erro ao registrar pagamento:', error);
+        throw error;
     }
 }

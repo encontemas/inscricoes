@@ -1,3 +1,44 @@
+// Função para acesso rápido à área do inscrito
+function acessarAreaInscrito() {
+    const cpfInput = document.getElementById('cpf-quick');
+    const cpf = cpfInput.value.replace(/\D/g, '');
+
+    if (cpf.length !== 11) {
+        alert('Por favor, digite um CPF válido');
+        cpfInput.focus();
+        return;
+    }
+
+    // Salvar CPF e redirecionar
+    localStorage.setItem('temp_cpf', cpf);
+    window.location.href = '/login-inscrito.html?cpf=' + cpf;
+}
+
+// Máscara de CPF para o campo rápido
+document.addEventListener('DOMContentLoaded', () => {
+    const cpfQuick = document.getElementById('cpf-quick');
+
+    if (cpfQuick) {
+        // Máscara de CPF
+        cpfQuick.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            }
+            e.target.value = value;
+        });
+
+        // Enter para acessar
+        cpfQuick.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                acessarAreaInscrito();
+            }
+        });
+    }
+});
+
 // Função para scroll suave até a seção de inscrição
 function scrollToInscricao() {
     const inscricaoSection = document.getElementById('inscricao');

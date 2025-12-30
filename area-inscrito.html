@@ -638,34 +638,65 @@
             content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Gerando PIX...</p></div>';
 
             try {
-                // TODO: Chamar API para gerar PIX
-                // Simulação de resposta
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                console.log('📤 Gerando PIX para parcela', numeroParcela);
 
-                const pixData = {
-                    qr_code_imagem: 'https://via.placeholder.com/300x300?text=QR+Code+PIX',
-                    qr_code_texto: '00020126580014br.gov.bcb.pix...',
-                    valor: inscritoData.valor_parcela
-                };
+                // Chamar API real para gerar PIX
+                const response = await fetch('/api/gerar-pix', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: inscritoData.email,
+                        nome_completo: inscritoData.nome,
+                        telefone: inscritoData.telefone || '',
+                        cpf: inscritoData.cpf || '',
+                        numero_parcelas: inscritoData.numero_parcelas
+                    })
+                });
+
+                const result = await response.json();
+                console.log('📥 Resposta da API:', result);
+
+                if (!response.ok) {
+                    throw new Error(result.message || result.error || 'Erro ao gerar PIX');
+                }
+
+                const pixData = result.pix;
 
                 content.innerHTML = `
                     <h3>Parcela ${numeroParcela}/${inscritoData.numero_parcelas}</h3>
                     <div class="qr-code-container">
-                        <p><strong>Valor: R$ ${pixData.valor.toFixed(2).replace('.', ',')}</strong></p>
-                        <img src="${pixData.qr_code_imagem}" alt="QR Code PIX">
+                        <p><strong>Valor: ${pixData.valor}</strong></p>
+                        ${pixData.qr_code_imagem
+                            ? `<img src="${pixData.qr_code_imagem}" alt="QR Code PIX">`
+                            : '<p style="color: #999;">QR Code não disponível</p>'
+                        }
                         <p>Escaneie o QR Code ou copie o código PIX:</p>
-                        <div class="pix-code">${pixData.qr_code_texto}</div>
+                        <div class="pix-code">${pixData.qr_code_texto || 'Código não disponível'}</div>
                         <button class="btn btn-primary" onclick="copiarPix('${pixData.qr_code_texto}')">
                             📋 Copiar Código PIX
                         </button>
                     </div>
                     <p style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
+                        <strong>ID do PIX:</strong> ${pixData.id}<br>
+                        <strong>Expira em:</strong> ${new Date(pixData.expiracao).toLocaleString('pt-BR')}
+                    </p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
                         <strong>Importante:</strong> Após o pagamento, pode levar alguns minutos para o sistema confirmar.
                     </p>
                 `;
             } catch (error) {
-                console.error('Erro ao gerar PIX:', error);
-                content.innerHTML = '<p style="color: red;">Erro ao gerar PIX. Tente novamente.</p>';
+                console.error('❌ Erro ao gerar PIX:', error);
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <p style="color: red; font-weight: bold;">❌ Erro ao gerar PIX</p>
+                        <p style="color: #666; margin-top: 1rem;">${error.message}</p>
+                        <button class="btn btn-secondary" onclick="fecharModalPix()" style="margin-top: 1rem;">
+                            Fechar
+                        </button>
+                    </div>
+                `;
             }
         }
 

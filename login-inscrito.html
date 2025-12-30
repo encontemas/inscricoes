@@ -238,19 +238,24 @@
             loading.classList.add('active');
 
             try {
-                // TODO: Chamar API para verificar se CPF existe
-                // Por enquanto, simular verificação
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                // Chamar API para verificar se CPF existe
+                const response = await fetch('/api/inscrito', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cpf: cpf })
+                });
 
-                // Simular verificação
-                const inscritoExiste = true; // Em produção, virá da API
+                const data = await response.json();
 
-                if (!inscritoExiste) {
-                    throw new Error('CPF não encontrado. Verifique se você já realizou sua inscrição.');
+                if (!response.ok) {
+                    throw new Error(data.error || data.message || 'CPF não encontrado. Verifique se você já realizou sua inscrição.');
                 }
 
                 // Salvar CPF no localStorage
                 localStorage.setItem('inscrito_cpf', cpf);
+                localStorage.setItem('inscrito_data', JSON.stringify(data));
 
                 // Redirecionar para área do inscrito
                 window.location.href = '/area-inscrito.html';
