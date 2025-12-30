@@ -1,4 +1,5 @@
 // API Serverless para criar cobrança PIX no PagBank com Connect Challenge
+// Versão inline - sem imports de módulos customizados
 import crypto from 'crypto';
 
 // Função inline para descriptografar challenge
