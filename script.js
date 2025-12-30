@@ -1,5 +1,5 @@
 // Função para acesso rápido à área do inscrito
-function acessarAreaInscrito() {
+async function acessarAreaInscrito() {
     const cpfInput = document.getElementById('cpf-quick');
     const cpf = cpfInput.value.replace(/\D/g, '');
 
@@ -9,9 +9,42 @@ function acessarAreaInscrito() {
         return;
     }
 
-    // Salvar CPF e redirecionar
-    localStorage.setItem('temp_cpf', cpf);
-    window.location.href = '/login-inscrito.html?cpf=' + cpf;
+    // Desabilitar botão e mostrar loading
+    const btn = cpfInput.nextElementSibling;
+    const textoOriginal = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '...';
+
+    try {
+        // Verificar se CPF existe via API
+        const response = await fetch('/api/inscrito', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ cpf: cpf })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || data.message || 'CPF não encontrado. Verifique se você já realizou sua inscrição.');
+        }
+
+        // Salvar CPF e dados no localStorage
+        localStorage.setItem('inscrito_cpf', cpf);
+        localStorage.setItem('inscrito_data', JSON.stringify(data));
+
+        // Redirecionar DIRETO para área do inscrito
+        window.location.href = '/area-inscrito.html';
+
+    } catch (error) {
+        console.error('Erro:', error);
+        alert(error.message);
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+        cpfInput.focus();
+    }
 }
 
 // Máscara de CPF para o campo rápido
