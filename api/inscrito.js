@@ -107,20 +107,14 @@ export default async function handler(req, res) {
 
         console.log('✅ Inscrito encontrado:', inscrito.nome_completo);
 
+        // Retornar todos os dados do inscrito diretamente
         return res.status(200).json({
-            success: true,
-            inscrito: {
-                id_inscricao: inscrito.id_inscricao,
-                nome: inscrito.nome_completo,
-                email: inscrito.email,
-                telefone: inscrito.telefone,
-                cpf: inscrito.cpf,
-                numero_parcelas: numeroParcelas,
-                valor_parcela: parseFloat(valorParcela),
-                valor_total: valorTotal,
-                data_inscricao: inscrito.data_hora
-            },
-            parcelas: parcelas
+            ...inscrito,
+            nome_completo: inscrito.nome_completo,
+            numero_parcelas: numeroParcelas,
+            valor_parcela: parseFloat(valorParcela),
+            valor_total: valorTotal,
+            dia_vencimento: inscrito.dia_vencimento || '15'
         });
 
     } catch (error) {
