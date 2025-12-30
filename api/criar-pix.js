@@ -1,5 +1,63 @@
 // API Serverless para criar cobrança PIX no PagBank com Connect Challenge
-import { getAuthHeaders } from '../lib/pagbank-auth.js';
+import crypto from 'crypto';
+
+// Função inline para descriptografar challenge
+function decryptChallenge(encryptedChallengeBase64, privateKeyPem) {
+    try {
+        const encryptedBuffer = Buffer.from(encryptedChallengeBase64, 'base64');
+        const decrypted = crypto.privateDecrypt(
+            {
+                key: privateKeyPem,
+                padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+                oaepHash: 'sha256'
+            },
+            encryptedBuffer
+        );
+        return decrypted.toString('utf8');
+    } catch (error) {
+        console.error('❌ Erro ao descriptografar challenge:', error);
+        throw new Error('Falha ao descriptografar challenge: ' + error.message);
+    }
+}
+
+// Função inline para obter autenticação
+async function getAuthHeaders(privateKey) {
+    try {
+        // 1. Obter token e challenge criptografado
+        const response = await fetch('https://api.pagseguro.com/oauth2/token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                grant_type: 'challenge',
+                scope: 'certificate.create'
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('❌ Erro ao obter token PagBank:', errorData);
+            throw new Error(`Erro ao obter token: ${JSON.stringify(errorData)}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Token obtido do PagBank');
+
+        // 2. Descriptografar o challenge
+        const decryptedChallenge = decryptChallenge(data.challenge, privateKey);
+        console.log('✅ Challenge descriptografado com sucesso');
+
+        return {
+            'Authorization': `Bearer ${data.access_token}`,
+            'X-PagBank-Challenge': decryptedChallenge,
+            'Content-Type': 'application/json'
+        };
+    } catch (error) {
+        console.error('❌ Erro na autenticação PagBank:', error);
+        throw error;
+    }
+}
 
 export default async function handler(req, res) {
     // Apenas aceita POST
