@@ -22,13 +22,14 @@ function decryptChallenge(encryptedChallengeBase64, privateKeyPem) {
 }
 
 // Função inline para obter autenticação
-async function getAuthHeaders(privateKey) {
+async function getAuthHeaders(privateKey, authToken) {
     try {
         // 1. Obter token e challenge criptografado
         const response = await fetch('https://api.pagseguro.com/oauth2/token', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': `Bearer ${authToken}`
             },
             body: new URLSearchParams({
                 grant_type: 'challenge',
@@ -94,6 +95,7 @@ export default async function handler(req, res) {
 
         // Validar variáveis de ambiente
         const PAGBANK_PRIVATE_KEY = process.env.PAGBANK_PRIVATE_KEY;
+        const PAGBANK_TOKEN = process.env.PAGBANK_TOKEN;
 
         if (!PAGBANK_PRIVATE_KEY) {
             console.error('❌ PAGBANK_PRIVATE_KEY não configurada nas variáveis de ambiente');
@@ -103,13 +105,21 @@ export default async function handler(req, res) {
             });
         }
 
+        if (!PAGBANK_TOKEN) {
+            console.error('❌ PAGBANK_TOKEN não configurado nas variáveis de ambiente');
+            return res.status(500).json({
+                error: 'Erro de configuração',
+                message: 'Token de autenticação do PagBank não está configurado.'
+            });
+        }
+
         // Endpoint PRODUÇÃO
         const PAGBANK_API = 'https://api.pagseguro.com/orders';
 
         console.log('🔐 Obtendo autenticação Connect Challenge...');
 
         // Obter autenticação com Connect Challenge
-        const authHeaders = await getAuthHeaders(PAGBANK_PRIVATE_KEY);
+        const authHeaders = await getAuthHeaders(PAGBANK_PRIVATE_KEY, PAGBANK_TOKEN);
 
         console.log('✅ Autenticação obtida com sucesso');
 
