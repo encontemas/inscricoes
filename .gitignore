@@ -58,6 +58,10 @@ keys/
 private-key*
 public-key*
 
+# Google Service Account Credentials
+inscricao-*.json
+*service-account*.json
+
 # Testing
 htmlcov/
 .tox/

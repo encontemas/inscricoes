@@ -8,5 +8,8 @@
   },
   "keywords": ["pagbank", "pix", "inscricoes"],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "googleapis": "^131.0.0"
+  }
 }
