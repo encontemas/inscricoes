@@ -90,16 +90,45 @@ Clique em "Gerar PIX de R$ 1,00" e aguarde!
 
 ## 📱 Como Pagar o PIX de Teste:
 
-**⚠️ IMPORTANTE:** Como está no ambiente Sandbox, você **NÃO consegue pagar** com app bancário real.
+### ⚠️ IMPORTANTE: Limitações do Sandbox
 
-Para simular pagamento no Sandbox:
-1. Use os cartões de teste fornecidos pelo PagBank
-2. Ou use a API de simulação de pagamento
+**O QR Code gerado no ambiente Sandbox é SEMPRE INVÁLIDO para apps bancários.**
 
-**Para teste real (R$ 1,00 de verdade):**
-1. Troque o token para **produção**
-2. Troque endpoint para produção
-3. Faça novo deploy
+Isso é esperado e normal! O ambiente Sandbox do PagBank não permite pagamentos reais via PIX. O QR Code serve apenas para:
+- ✅ Testar a integração da API
+- ✅ Ver se o QR Code é gerado
+- ✅ Ver se o webhook está funcionando
+- ❌ **NÃO permite** pagamento real via app bancário
+
+### 🔄 Próximos Passos para Ambiente REAL:
+
+**ANTES de mudar para produção, você precisa:**
+
+1. **Cadastrar Chave PIX Aleatória no PagBank**
+   - Acesse sua conta PagBank
+   - Vá em: Pix → Minhas Chaves → Criar Nova Chave
+   - Escolha: **Chave Aleatória**
+   - **AGUARDE 30-60 minutos** após cadastrar
+   - Sem chave PIX = QR Code inválido mesmo em produção!
+
+2. **Obter Token de PRODUÇÃO**
+   - Acesse: https://minhaconta.pagseguro.uol.com.br/
+   - Gere novo token de produção (diferente do sandbox)
+
+3. **Atualizar Variáveis de Ambiente**
+   ```
+   PAGBANK_TOKEN=seu_token_producao_aqui
+   ```
+
+4. **Mudar Endpoint na API** (api/criar-pix.js)
+   ```javascript
+   // Trocar de:
+   const PAGBANK_API = 'https://sandbox.api.pagseguro.com/orders';
+   // Para:
+   const PAGBANK_API = 'https://api.pagseguro.com/orders';
+   ```
+
+5. **Fazer Deploy e Testar com R$ 1,00 REAL**
 
 ---
 
@@ -115,6 +144,25 @@ Para simular pagamento no Sandbox:
 ### Logs da API (Vercel Dashboard):
 - Acesse: Functions → Logs
 - Veja requisições em tempo real
+
+### 🔔 Webhook de Confirmação:
+
+**Criado:** `/api/webhook-pagbank.js`
+
+Este endpoint recebe notificações automáticas do PagBank quando:
+- ✅ Pagamento é confirmado
+- ❌ Pagamento é cancelado
+- ⏰ QR Code expira
+
+**Como verificar:**
+1. Após pagamento, PagBank envia notificação para o webhook
+2. Verifique logs no Vercel: Functions → webhook-pagbank → Logs
+3. Você verá: `🔔 Notificação PagBank recebida` e `✅ Pagamento confirmado!`
+
+**TODO (próxima etapa):**
+- [ ] Integrar webhook com Google Sheets
+- [ ] Enviar e-mail de confirmação
+- [ ] Atualizar status da parcela
 
 ---
 

@@ -81,21 +81,40 @@ export default async function handler(req, res) {
 
         if (!response.ok) {
             console.error('❌ Erro PagBank:', data);
+
+            // Mensagens de erro específicas
+            let errorMessage = 'Erro ao criar cobrança PIX';
+
+            if (data.error_messages) {
+                const errors = data.error_messages;
+                if (errors.some(e => e.description?.includes('PIX') || e.description?.includes('key'))) {
+                    errorMessage = 'Erro: Verifique se há uma chave PIX cadastrada na conta PagBank';
+                }
+            }
+
             return res.status(response.status).json({
-                error: 'Erro ao criar cobrança PIX',
+                error: errorMessage,
                 details: data
             });
         }
 
         // Extrair dados do PIX
+        const qrCode = data.qr_codes?.[0];
+
+        // Buscar links do QR Code (imagem PNG e texto)
+        const qrCodeImageLink = qrCode?.links?.find(link => link.rel === 'QRCODE.PNG');
+        const qrCodeBase64Link = qrCode?.links?.find(link => link.rel === 'QRCODE.BASE64');
+
         const pixData = {
             id: data.id,
             reference_id: referenceId,
             status: data.status,
-            qr_code_texto: data.qr_codes?.[0]?.text || null,
-            qr_code_imagem: data.qr_codes?.[0]?.links?.[0]?.href || null,
+            qr_code_texto: qrCode?.text || null, // PIX copia-e-cola direto
+            qr_code_imagem: qrCodeImageLink?.href || null, // Link da imagem PNG
+            qr_code_base64: qrCodeBase64Link?.href || null, // Link do código base64
             valor: 'R$ 1,00',
-            expiracao: data.qr_codes?.[0]?.expiration_date || null
+            expiracao: qrCode?.expiration_date || null,
+            created_at: data.created_at
         };
 
         console.log('✅ PIX criado:', pixData);
