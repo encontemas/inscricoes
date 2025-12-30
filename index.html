@@ -313,61 +313,264 @@
             <p class="section-description">Preencha o formulário abaixo para garantir sua vaga</p>
 
             <form id="formInscricao" class="form-inscricao">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="nome">Nome Completo *</label>
-                        <input type="text" id="nome" name="nome" required>
+                <!-- Dados Pessoais -->
+                <div class="form-section">
+                    <h3 class="form-section-title">Dados Pessoais</h3>
+
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="nome_completo" class="required">Nome Completo</label>
+                            <input type="text" id="nome_completo" name="nome_completo" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="telefone">Telefone/WhatsApp *</label>
-                        <input type="tel" id="telefone" name="telefone" placeholder="(11) 99999-9999" required>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email" class="required">E-mail</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="telefone" class="required">Telefone/WhatsApp</label>
+                            <input type="tel" id="telefone" name="telefone" placeholder="(11) 99999-9999" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cpf">CPF (opcional)</label>
+                            <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00">
+                        </div>
+                        <div class="form-group">
+                            <label for="cidade_pais" class="required">Cidade/País</label>
+                            <input type="text" id="cidade_pais" name="cidade_pais" placeholder="Ex: São Paulo - SP" required>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="email">E-mail *</label>
-                        <input type="email" id="email" name="email" required>
+                <!-- Informações NA -->
+                <div class="form-section">
+                    <h3 class="form-section-title">Informações de Narcóticos Anônimos</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="grupo_escolha">Grupo de Escolha (opcional)</label>
+                            <input type="text" id="grupo_escolha" name="grupo_escolha" placeholder="Nome do grupo">
+                        </div>
+                        <div class="form-group">
+                            <label for="csa">CSA (opcional)</label>
+                            <input type="text" id="csa" name="csa" placeholder="Ex: CSA São Paulo">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="cidade">Cidade/Estado *</label>
-                        <input type="text" id="cidade" name="cidade" placeholder="Ex: São Paulo - SP" required>
+                </div>
+
+                <!-- Necessidades Especiais -->
+                <div class="form-section">
+                    <h3 class="form-section-title">Acessibilidade e Necessidades</h3>
+
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="possui_deficiencia" name="possui_deficiencia">
+                            <span>Possuo alguma deficiência ou necessidade especial</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group full-width" id="descricao_necessidades_container" style="display: none;">
+                        <label for="descricao_necessidades">Descreva suas necessidades</label>
+                        <textarea id="descricao_necessidades" name="descricao_necessidades" placeholder="Descreva aqui qualquer necessidade especial, restrição alimentar ou acomodação que você precise"></textarea>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="interesse_hospedagem" name="interesse_hospedagem">
+                            <span>Tenho interesse em informações sobre hospedagem</span>
+                        </label>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="grupo">Grupo de Origem (opcional)</label>
-                    <input type="text" id="grupo" name="grupo" placeholder="Nome do seu grupo de NA">
+                <!-- Pagamento -->
+                <div class="form-section">
+                    <h3 class="form-section-title">Forma de Pagamento</h3>
+
+                    <div class="info-box">
+                        <strong>Valor do Evento:</strong> R$ 450,00<br>
+                        Você pode parcelar em até 11x sem juros via PIX
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="numero_parcelas" class="required">Número de Parcelas</label>
+                            <select id="numero_parcelas" name="numero_parcelas" required>
+                                <option value="">Selecione...</option>
+                                <option value="1">À vista (1x)</option>
+                                <option value="2">2x sem juros</option>
+                                <option value="3">3x sem juros</option>
+                                <option value="4">4x sem juros</option>
+                                <option value="5">5x sem juros</option>
+                                <option value="6">6x sem juros</option>
+                                <option value="7">7x sem juros</option>
+                                <option value="8">8x sem juros</option>
+                                <option value="9">9x sem juros</option>
+                                <option value="10">10x sem juros</option>
+                                <option value="11">11x sem juros</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dia_vencimento">Dia de Vencimento Preferencial (opcional)</label>
+                            <select id="dia_vencimento" name="dia_vencimento">
+                                <option value="">Selecione...</option>
+                                <option value="5">Dia 5</option>
+                                <option value="10">Dia 10</option>
+                                <option value="15">Dia 15</option>
+                                <option value="20">Dia 20</option>
+                                <option value="25">Dia 25</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="parcela-info" id="parcela_info" style="display: none;">
+                        <div>Valor de cada parcela:</div>
+                        <div class="parcela-valor" id="valor_parcela">R$ 0,00</div>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="necessidades">Necessidades Especiais ou Restrições Alimentares</label>
-                    <textarea id="necessidades" name="necessidades" rows="3" placeholder="Descreva aqui se você tem alguma necessidade especial ou restrição alimentar"></textarea>
+                <!-- Observações -->
+                <div class="form-section">
+                    <h3 class="form-section-title">Observações</h3>
+
+                    <div class="form-group full-width">
+                        <label for="observacoes">Observações Adicionais (opcional)</label>
+                        <textarea id="observacoes" name="observacoes" placeholder="Alguma informação adicional que você gostaria de compartilhar"></textarea>
+                    </div>
                 </div>
 
-                <div class="form-group checkbox-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="termos" name="termos" required>
-                        <span>Li e aceito as condições do evento e política de privacidade *</span>
-                    </label>
+                <!-- Termos -->
+                <div class="form-section">
+                    <h3 class="form-section-title">Termos e Condições</h3>
+
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="maior_idade" name="maior_idade" required>
+                            <span class="required">Confirmo que sou maior de 18 anos</span>
+                        </label>
+
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="aceite_termo_lgpd" name="aceite_termo_lgpd" required>
+                            <span class="required">Li e aceito o
+                                <button type="button" class="link-button" onclick="abrirModalLGPD()">
+                                    Termo de Consentimento LGPD
+                                </button>
+                            </span>
+                        </label>
+
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="aceite_termo_desistencia" name="aceite_termo_desistencia" required>
+                            <span class="required">Estou ciente de que em caso de desistência não há devolução de valores pagos</span>
+                        </label>
+                    </div>
                 </div>
 
-                <button type="submit" class="btn-submit">
-                    Enviar Inscrição
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                    </svg>
+                <button type="submit" class="btn-submit" id="btnSubmit">
+                    <span id="btnText">Finalizar Inscrição e Gerar PIX</span>
+                    <span id="btnSpinner" style="display: none;" class="spinner"></span>
                 </button>
             </form>
-
-            <div id="mensagemSucesso" class="mensagem-sucesso" style="display: none;">
-                <div class="sucesso-icon">✓</div>
-                <h3>Inscrição Realizada com Sucesso!</h3>
-                <p>Em breve você receberá mais informações no e-mail cadastrado.</p>
-            </div>
         </div>
     </section>
+
+    <!-- Modal LGPD -->
+    <div id="modalLGPD" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="fecharModalLGPD()">&times;</button>
+            <h2>Termo de Consentimento LGPD</h2>
+
+            <p>Ao preencher este formulário de inscrição para o <strong>3º Encontemas da Diversidade</strong>, você consente que seus dados pessoais sejam coletados e utilizados exclusivamente para as finalidades descritas abaixo, em conformidade com a <strong>Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018)</strong>.</p>
+
+            <h3>1. Dados Coletados</h3>
+            <p>Os seguintes dados pessoais serão coletados:</p>
+            <ul>
+                <li><strong>Dados obrigatórios:</strong> Nome completo, e-mail, telefone/WhatsApp, cidade/país, confirmação de maioridade</li>
+                <li><strong>Dados opcionais:</strong> CPF, grupo de escolha, CSA, informações sobre deficiência ou necessidades especiais, interesse em hospedagem, preferências de pagamento, observações adicionais</li>
+            </ul>
+
+            <h3>2. Finalidade do Tratamento</h3>
+            <p>Seus dados pessoais serão utilizados exclusivamente para:</p>
+            <ul>
+                <li>Processar sua inscrição no evento</li>
+                <li>Emitir comprovantes e cobranças de pagamento</li>
+                <li>Enviar informações sobre o evento (programação, localização, atualizações)</li>
+                <li>Atender necessidades especiais informadas</li>
+                <li>Fornecer informações sobre hospedagem (se solicitado)</li>
+                <li>Contato em caso de emergências ou alterações no evento</li>
+            </ul>
+
+            <h3>3. Compartilhamento de Dados</h3>
+            <p>Seus dados pessoais <strong>não serão vendidos, alugados ou compartilhados</strong> com terceiros para fins comerciais ou publicitários.</p>
+            <p>Os dados poderão ser compartilhados apenas com:</p>
+            <ul>
+                <li><strong>Processadores de pagamento:</strong> Para viabilizar as transações financeiras (PagBank)</li>
+                <li><strong>Organizadores do evento:</strong> Apenas os membros da equipe responsável pela organização do Encontemas terão acesso aos dados necessários para o cumprimento de suas funções</li>
+            </ul>
+
+            <h3>4. Armazenamento e Segurança</h3>
+            <p>Os dados coletados serão armazenados de forma segura em plataformas protegidas (Google Sheets) com acesso restrito aos organizadores do evento.</p>
+            <p>Implementamos medidas técnicas e organizacionais apropriadas para proteger seus dados contra acesso não autorizado, alteração, divulgação ou destruição.</p>
+
+            <h3>5. Prazo de Retenção</h3>
+            <p>Seus dados pessoais serão mantidos pelo período necessário para:</p>
+            <ul>
+                <li>Realização do evento e cumprimento de obrigações relacionadas</li>
+                <li>Atendimento de obrigações legais, fiscais e regulatórias</li>
+                <li>Resolução de eventuais disputas ou questões jurídicas</li>
+            </ul>
+            <p>Após esse período, os dados serão anonimizados ou excluídos, salvo se houver base legal que justifique sua retenção.</p>
+
+            <h3>6. Seus Direitos</h3>
+            <p>Em conformidade com a LGPD, você tem o direito de:</p>
+            <ul>
+                <li><strong>Acesso:</strong> Solicitar confirmação sobre a existência de tratamento e acesso aos seus dados</li>
+                <li><strong>Correção:</strong> Solicitar a correção de dados incompletos, inexatos ou desatualizados</li>
+                <li><strong>Eliminação:</strong> Solicitar a eliminação de dados tratados com seu consentimento (ressalvadas hipóteses legais de retenção)</li>
+                <li><strong>Portabilidade:</strong> Solicitar a portabilidade dos dados a outro fornecedor</li>
+                <li><strong>Revogação do consentimento:</strong> Revogar seu consentimento a qualquer momento (podendo impossibilitar sua participação no evento)</li>
+            </ul>
+
+            <h3>7. Como Exercer Seus Direitos</h3>
+            <p>Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dados pessoais, entre em contato com os organizadores do evento:</p>
+            <ul>
+                <li><strong>Felipe (Coordenador de Inscrições):</strong> (21) 96859-0400</li>
+                <li><strong>Agatha M. (Coordenadora do Evento):</strong> (13) 99642-1985</li>
+                <li><strong>Gustavo N. (Tesoureiro):</strong> (11) 95970-0094</li>
+            </ul>
+
+            <h3>8. Consentimento</h3>
+            <p>Ao marcar a caixa "Li e aceito o Termo de Consentimento LGPD" e enviar este formulário, você declara ter lido, compreendido e concordado com os termos deste documento, consentindo expressamente com o tratamento de seus dados pessoais conforme descrito.</p>
+
+            <p><strong>Data de vigência:</strong> Este termo está em vigor a partir de 27 de janeiro de 2025.</p>
+        </div>
+    </div>
+
+    <!-- Modal Sucesso -->
+    <div id="modalSucesso" class="modal">
+        <div class="modal-content success-modal">
+            <button class="modal-close" onclick="fecharModalSucesso()">&times;</button>
+            <div class="success-icon">✓</div>
+            <h2>Inscrição Realizada com Sucesso!</h2>
+            <p>Sua inscrição foi registrada. Agora complete o pagamento da primeira parcela:</p>
+
+            <div class="qr-code-container" id="pixContainer">
+                <h3>PIX - Primeira Parcela</h3>
+                <div id="pixValor" style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color); margin: 1rem 0;"></div>
+                <img id="qrCodeImagem" src="" alt="QR Code PIX">
+                <p>Escaneie o QR Code acima ou copie o código PIX:</p>
+                <div class="pix-code" id="pixCodigo"></div>
+                <button class="copy-button" onclick="copiarPixCopia()">Copiar Código PIX</button>
+            </div>
+
+            <div class="info-box" style="margin-top: 2rem;">
+                <strong>Importante:</strong> Você receberá um e-mail com a confirmação da inscrição e as instruções para as próximas parcelas.
+            </div>
+        </div>
+    </div>
 
     <!-- Contato Section -->
     <section id="contato" class="section contato">

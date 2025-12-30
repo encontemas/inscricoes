@@ -49,81 +49,223 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Máscara para telefone
-function mascaraTelefone(event) {
-    let input = event.target;
-    let valor = input.value.replace(/\D/g, '');
+// Variável global para armazenar o código PIX
+let pixCopiaCola = '';
 
-    if (valor.length <= 11) {
-        valor = valor.replace(/^(\d{2})(\d)/g, '($1) $2');
-        valor = valor.replace(/(\d)(\d{4})$/, '$1-$2');
+// Funções de modal para LGPD e Sucesso
+function abrirModalLGPD() {
+    const modal = document.getElementById('modalLGPD');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
     }
+}
 
-    input.value = valor;
+function fecharModalLGPD() {
+    const modal = document.getElementById('modalLGPD');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function abrirModalSucesso() {
+    const modal = document.getElementById('modalSucesso');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function fecharModalSucesso() {
+    const modal = document.getElementById('modalSucesso');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Copiar código PIX
+function copiarPixCopia() {
+    navigator.clipboard.writeText(pixCopiaCola).then(() => {
+        const btn = event.target;
+        const textoOriginal = btn.textContent;
+        btn.textContent = 'Copiado!';
+        btn.style.background = 'var(--secondary-color)';
+        setTimeout(() => {
+            btn.textContent = textoOriginal;
+            btn.style.background = '';
+        }, 2000);
+    }).catch(err => {
+        alert('Erro ao copiar código PIX. Por favor, copie manualmente.');
+        console.error('Erro ao copiar:', err);
+    });
 }
 
 // Adicionar evento de máscara no campo telefone
 document.addEventListener('DOMContentLoaded', function() {
-    const telefoneInput = document.getElementById('telefone');
-    if (telefoneInput) {
-        telefoneInput.addEventListener('input', mascaraTelefone);
+    // Calcular valor da parcela
+    const numeroParcelas = document.getElementById('numero_parcelas');
+    if (numeroParcelas) {
+        numeroParcelas.addEventListener('change', function() {
+            const parcelas = parseInt(this.value);
+            if (parcelas) {
+                const valorTotal = 450.00;
+                const valorParcela = (valorTotal / parcelas).toFixed(2);
+                document.getElementById('valor_parcela').textContent = `R$ ${valorParcela}`;
+                document.getElementById('parcela_info').style.display = 'block';
+            } else {
+                document.getElementById('parcela_info').style.display = 'none';
+            }
+        });
     }
 
-    // Manipulação do formulário de inscrição
+    // Mostrar/ocultar campo de descrição de necessidades
+    const possuiDeficiencia = document.getElementById('possui_deficiencia');
+    if (possuiDeficiencia) {
+        possuiDeficiencia.addEventListener('change', function() {
+            const container = document.getElementById('descricao_necessidades_container');
+            container.style.display = this.checked ? 'block' : 'none';
+            if (!this.checked) {
+                document.getElementById('descricao_necessidades').value = '';
+            }
+        });
+    }
+
+    // Máscaras de formatação
+    const telefoneInput = document.getElementById('telefone');
+    if (telefoneInput) {
+        telefoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+                value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+            }
+            e.target.value = value;
+        });
+    }
+
+    const cpfInput = document.getElementById('cpf');
+    if (cpfInput) {
+        cpfInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            }
+            e.target.value = value;
+        });
+    }
+
+    // Fechar modais ao clicar fora
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                if (this.id === 'modalLGPD') {
+                    fecharModalLGPD();
+                } else if (this.id === 'modalSucesso') {
+                    fecharModalSucesso();
+                }
+            }
+        });
+    });
+
+    // Enviar formulário
     const form = document.getElementById('formInscricao');
     if (form) {
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            // Validações básicas
+            const maiorIdade = document.getElementById('maior_idade').checked;
+            const aceiteLGPD = document.getElementById('aceite_termo_lgpd').checked;
+            const aceiteDesistencia = document.getElementById('aceite_termo_desistencia').checked;
+
+            if (!maiorIdade) {
+                alert('É necessário ser maior de 18 anos para participar do evento.');
+                return;
+            }
+
+            if (!aceiteLGPD) {
+                alert('É necessário aceitar o Termo de Consentimento LGPD.');
+                return;
+            }
+
+            if (!aceiteDesistencia) {
+                alert('É necessário estar ciente das condições de desistência.');
+                return;
+            }
 
             // Coletar dados do formulário
             const formData = {
-                nome: document.getElementById('nome').value,
-                telefone: document.getElementById('telefone').value,
+                nome_completo: document.getElementById('nome_completo').value,
                 email: document.getElementById('email').value,
-                cidade: document.getElementById('cidade').value,
-                grupo: document.getElementById('grupo').value,
-                necessidades: document.getElementById('necessidades').value,
-                termos: document.getElementById('termos').checked,
-                dataInscricao: new Date().toISOString()
+                telefone: document.getElementById('telefone').value,
+                cpf: document.getElementById('cpf').value || null,
+                cidade_pais: document.getElementById('cidade_pais').value,
+                grupo_escolha: document.getElementById('grupo_escolha').value || null,
+                csa: document.getElementById('csa').value || null,
+                possui_deficiencia: document.getElementById('possui_deficiencia').checked,
+                descricao_necessidades: document.getElementById('descricao_necessidades').value || null,
+                interesse_hospedagem: document.getElementById('interesse_hospedagem').checked,
+                numero_parcelas: parseInt(document.getElementById('numero_parcelas').value),
+                dia_vencimento: document.getElementById('dia_vencimento').value || null,
+                observacoes: document.getElementById('observacoes').value || null,
+                maior_idade: true,
+                aceite_termo_lgpd: true,
+                aceite_termo_desistencia: true
             };
 
-            // Simulação de envio (MOCKUP)
-            console.log('📋 Dados da inscrição:', formData);
+            // Mostrar loading
+            const btnSubmit = document.getElementById('btnSubmit');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
 
-            // Salvar no localStorage para demonstração
-            let inscricoes = JSON.parse(localStorage.getItem('inscricoes') || '[]');
-            inscricoes.push(formData);
-            localStorage.setItem('inscricoes', JSON.stringify(inscricoes));
-
-            // Animação de carregamento
-            const btnSubmit = form.querySelector('.btn-submit');
-            const textoOriginal = btnSubmit.innerHTML;
-            btnSubmit.innerHTML = '<div class="spinner"></div> Enviando...';
             btnSubmit.disabled = true;
+            btnText.textContent = 'Processando...';
+            btnSpinner.style.display = 'inline-block';
 
-            // Simular delay de envio
-            setTimeout(() => {
-                // Esconder formulário
-                form.style.display = 'none';
-
-                // Mostrar mensagem de sucesso
-                const mensagemSucesso = document.getElementById('mensagemSucesso');
-                mensagemSucesso.style.display = 'block';
-
-                // Scroll suave para a mensagem de sucesso
-                mensagemSucesso.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
+            try {
+                // Enviar para API
+                const response = await fetch('/api/inscricao', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
                 });
 
-                // Log para demonstração
-                console.log('✅ Inscrição enviada com sucesso!');
-                console.log('📊 Total de inscrições no localStorage:', inscricoes.length);
+                const data = await response.json();
 
-                // Resetar botão
-                btnSubmit.innerHTML = textoOriginal;
+                if (!response.ok) {
+                    throw new Error(data.message || data.error || 'Erro ao processar inscrição');
+                }
+
+                // Exibir modal de sucesso com PIX
+                if (data.pix) {
+                    pixCopiaCola = data.pix.qr_code_texto;
+                    document.getElementById('pixValor').textContent = data.pix.valor;
+                    document.getElementById('qrCodeImagem').src = data.pix.qr_code_imagem;
+                    document.getElementById('pixCodigo').textContent = data.pix.qr_code_texto;
+                    abrirModalSucesso();
+
+                    // Limpar formulário
+                    document.getElementById('formInscricao').reset();
+                    document.getElementById('parcela_info').style.display = 'none';
+                } else {
+                    alert('Inscrição realizada com sucesso! Você receberá as informações de pagamento por e-mail.');
+                }
+
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao processar inscrição: ' + error.message);
+            } finally {
+                // Restaurar botão
                 btnSubmit.disabled = false;
-            }, 2000);
+                btnText.textContent = 'Finalizar Inscrição e Gerar PIX';
+                btnSpinner.style.display = 'none';
+            }
         });
     }
 
