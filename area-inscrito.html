@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área do Inscrito - Encontemas Diversidade</title>
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-details h2 {
+            color: var(--gray-800);
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-details p {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+
+        .btn-logout {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .summary-card h3 {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .summary-card .value {
+            color: var(--gray-800);
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .summary-card.total { border-left: 4px solid var(--primary-color); }
+        .summary-card.paid { border-left: 4px solid var(--success-color); }
+        .summary-card.pending { border-left: 4px solid var(--warning-color); }
+        .summary-card.overdue { border-left: 4px solid var(--danger-color); }
+
+        /* Filters */
+        .filters {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--gray-300);
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: var(--gray-600);
+        }
+
+        .filter-tab:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .filter-tab.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Parcelas List */
+        .parcelas-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .parcelas-container h2 {
+            color: var(--gray-800);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .parcela-item {
+            background: var(--gray-100);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-left: 5px solid var(--gray-300);
+            transition: all 0.3s;
+        }
+
+        .parcela-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .parcela-item.paid {
+            border-left-color: var(--success-color);
+            background: #f0fdf4;
+        }
+
+        .parcela-item.pending {
+            border-left-color: var(--warning-color);
+            background: #fffbeb;
+        }
+
+        .parcela-item.overdue {
+            border-left-color: var(--danger-color);
+            background: #fef2f2;
+        }
+
+        .parcela-info {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .parcela-info h3 {
+            color: var(--gray-800);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .parcela-info p {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+
+        .parcela-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .parcela-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-disabled {
+            background: var(--gray-300);
+            color: var(--gray-600);
+            cursor: not-allowed;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-paid {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-overdue {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            background: var(--gray-200);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            float: right;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .qr-code-container {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .qr-code-container img {
+            max-width: 300px;
+            width: 100%;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+        }
+
+        .pix-code {
+            background: var(--gray-100);
+            padding: 1rem;
+            border-radius: 8px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.85rem;
+            margin: 1rem 0;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid var(--gray-200);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray-600);
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .parcela-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .parcela-actions {
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div class="user-details">
+                    <h2 id="userName">Carregando...</h2>
+                    <p id="userCPF">CPF: ***.***.***-**</p>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="logout()">Sair</button>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="summary-card total">
+                <h3>Total de Parcelas</h3>
+                <div class="value" id="totalParcelas">-</div>
+            </div>
+            <div class="summary-card paid">
+                <h3>Pagas</h3>
+                <div class="value" id="parcelasPagas">-</div>
+            </div>
+            <div class="summary-card pending">
+                <h3>Pendentes</h3>
+                <div class="value" id="parcelasPendentes">-</div>
+            </div>
+            <div class="summary-card overdue">
+                <h3>Vencidas</h3>
+                <div class="value" id="parcelasVencidas">-</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">Todas</button>
+                <button class="filter-tab" data-filter="pending">Pendentes</button>
+                <button class="filter-tab" data-filter="paid">Pagas</button>
+                <button class="filter-tab" data-filter="overdue">Vencidas</button>
+            </div>
+        </div>
+
+        <!-- Parcelas List -->
+        <div class="parcelas-container">
+            <h2>Minhas Parcelas</h2>
+            <div id="parcelasLista" class="loading">
+                <div class="spinner"></div>
+                <p>Carregando parcelas...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal PIX -->
+    <div class="modal" id="modalPix">
+        <div class="modal-content">
+            <button class="modal-close" onclick="fecharModalPix()">&times;</button>
+            <h2>Pagar Parcela via PIX</h2>
+            <div id="pixContent">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Gerando PIX...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados do inscrito (virão da API)
+        let inscritoData = null;
+        let parcelas = [];
+        let currentFilter = 'all';
+
+        // Ao carregar a página
+        window.addEventListener('DOMContentLoaded', async () => {
+            await carregarDadosInscrito();
+        });
+
+        // Carregar dados do inscrito
+        async function carregarDadosInscrito() {
+            try {
+                const cpf = localStorage.getItem('inscrito_cpf');
+
+                if (!cpf) {
+                    window.location.href = '/login-inscrito.html';
+                    return;
+                }
+
+                // TODO: Chamar API para buscar dados do inscrito
+                // Por enquanto, dados mockados
+                inscritoData = {
+                    nome: 'João Silva',
+                    email: 'joao@email.com',
+                    cpf: cpf,
+                    numero_parcelas: 6,
+                    valor_parcela: 75.00,
+                    valor_total: 450.00
+                };
+
+                // Atualizar interface
+                atualizarHeader();
+                await carregarParcelas();
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                alert('Erro ao carregar seus dados. Tente novamente.');
+            }
+        }
+
+        // Atualizar header com dados do usuário
+        function atualizarHeader() {
+            const iniciais = inscritoData.nome.split(' ').map(n => n[0]).join('').substring(0, 2);
+            document.getElementById('userAvatar').textContent = iniciais;
+            document.getElementById('userName').textContent = inscritoData.nome;
+            document.getElementById('userCPF').textContent = `CPF: ${formatarCPF(inscritoData.cpf)}`;
+        }
+
+        // Carregar parcelas
+        async function carregarParcelas() {
+            try {
+                // TODO: Chamar API para buscar parcelas
+                // Por enquanto, gerar parcelas mockadas
+                parcelas = [];
+                const dataBase = new Date();
+                dataBase.setDate(15); // Dia 15 de cada mês
+
+                for (let i = 1; i <= inscritoData.numero_parcelas; i++) {
+                    const vencimento = new Date(dataBase);
+                    vencimento.setMonth(vencimento.getMonth() + (i - 1));
+
+                    const hoje = new Date();
+                    let status = 'pending';
+
+                    if (i === 1 && Math.random() > 0.5) {
+                        status = 'paid'; // Primeira parcela pode estar paga
+                    } else if (vencimento < hoje) {
+                        status = 'overdue';
+                    }
+
+                    parcelas.push({
+                        numero: i,
+                        valor: parseFloat(inscritoData.valor_parcela),
+                        vencimento: vencimento.toISOString().split('T')[0],
+                        status: status,
+                        pix_id: status === 'paid' ? `PIX_${i}` : null,
+                        data_pagamento: status === 'paid' ? vencimento.toISOString().split('T')[0] : null
+                    });
+                }
+
+                renderizarParcelas();
+                atualizarResumo();
+            } catch (error) {
+                console.error('Erro ao carregar parcelas:', error);
+                mostrarErro('Erro ao carregar parcelas');
+            }
+        }
+
+        // Renderizar lista de parcelas
+        function renderizarParcelas() {
+            const container = document.getElementById('parcelasLista');
+
+            let parcelasFiltradas = parcelas;
+            if (currentFilter !== 'all') {
+                parcelasFiltradas = parcelas.filter(p => p.status === currentFilter);
+            }
+
+            if (parcelasFiltradas.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>Nenhuma parcela encontrada com o filtro selecionado.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = parcelasFiltradas.map(parcela => `
+                <div class="parcela-item ${parcela.status}">
+                    <div class="parcela-info">
+                        <h3>Parcela ${parcela.numero}/${inscritoData.numero_parcelas}</h3>
+                        <p>Vencimento: ${formatarData(parcela.vencimento)}</p>
+                        ${parcela.status === 'paid' ? `<p>✓ Pago em ${formatarData(parcela.data_pagamento)}</p>` : ''}
+                        <span class="status-badge status-${parcela.status}">
+                            ${getStatusLabel(parcela.status)}
+                        </span>
+                    </div>
+                    <div class="parcela-value">
+                        R$ ${parcela.valor.toFixed(2).replace('.', ',')}
+                    </div>
+                    <div class="parcela-actions">
+                        ${parcela.status === 'paid'
+                            ? '<button class="btn btn-success btn-disabled" disabled>✓ Pago</button>'
+                            : `<button class="btn btn-primary" onclick="gerarPix(${parcela.numero})">Gerar PIX</button>`
+                        }
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Atualizar resumo
+        function atualizarResumo() {
+            const total = parcelas.length;
+            const pagas = parcelas.filter(p => p.status === 'paid').length;
+            const pendentes = parcelas.filter(p => p.status === 'pending').length;
+            const vencidas = parcelas.filter(p => p.status === 'overdue').length;
+
+            document.getElementById('totalParcelas').textContent = total;
+            document.getElementById('parcelasPagas').textContent = pagas;
+            document.getElementById('parcelasPendentes').textContent = pendentes;
+            document.getElementById('parcelasVencidas').textContent = vencidas;
+        }
+
+        // Gerar PIX para parcela
+        async function gerarPix(numeroParcela) {
+            const modal = document.getElementById('modalPix');
+            const content = document.getElementById('pixContent');
+
+            modal.classList.add('active');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Gerando PIX...</p></div>';
+
+            try {
+                // TODO: Chamar API para gerar PIX
+                // Simulação de resposta
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                const pixData = {
+                    qr_code_imagem: 'https://via.placeholder.com/300x300?text=QR+Code+PIX',
+                    qr_code_texto: '00020126580014br.gov.bcb.pix...',
+                    valor: inscritoData.valor_parcela
+                };
+
+                content.innerHTML = `
+                    <h3>Parcela ${numeroParcela}/${inscritoData.numero_parcelas}</h3>
+                    <div class="qr-code-container">
+                        <p><strong>Valor: R$ ${pixData.valor.toFixed(2).replace('.', ',')}</strong></p>
+                        <img src="${pixData.qr_code_imagem}" alt="QR Code PIX">
+                        <p>Escaneie o QR Code ou copie o código PIX:</p>
+                        <div class="pix-code">${pixData.qr_code_texto}</div>
+                        <button class="btn btn-primary" onclick="copiarPix('${pixData.qr_code_texto}')">
+                            📋 Copiar Código PIX
+                        </button>
+                    </div>
+                    <p style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
+                        <strong>Importante:</strong> Após o pagamento, pode levar alguns minutos para o sistema confirmar.
+                    </p>
+                `;
+            } catch (error) {
+                console.error('Erro ao gerar PIX:', error);
+                content.innerHTML = '<p style="color: red;">Erro ao gerar PIX. Tente novamente.</p>';
+            }
+        }
+
+        // Fechar modal PIX
+        function fecharModalPix() {
+            document.getElementById('modalPix').classList.remove('active');
+        }
+
+        // Copiar código PIX
+        function copiarPix(codigo) {
+            navigator.clipboard.writeText(codigo).then(() => {
+                alert('✅ Código PIX copiado!');
+            });
+        }
+
+        // Filtros
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentFilter = tab.dataset.filter;
+                renderizarParcelas();
+            });
+        });
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('inscrito_cpf');
+            window.location.href = '/login-inscrito.html';
+        }
+
+        // Utilitários
+        function formatarData(dataISO) {
+            const data = new Date(dataISO + 'T00:00:00');
+            return data.toLocaleDateString('pt-BR');
+        }
+
+        function formatarCPF(cpf) {
+            return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+
+        function getStatusLabel(status) {
+            const labels = {
+                'paid': 'Pago',
+                'pending': 'Pendente',
+                'overdue': 'Vencido'
+            };
+            return labels[status] || status;
+        }
+
+        function mostrarErro(mensagem) {
+            document.getElementById('parcelasLista').innerHTML = `
+                <div class="empty-state">
+                    <p style="color: red;">${mensagem}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

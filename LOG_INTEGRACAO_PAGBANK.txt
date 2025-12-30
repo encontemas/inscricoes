@@ -1,0 +1,259 @@
+================================================================================
+LOG DE INTEGRAÇÃO PAGBANK - API ORDERS
+Sistema de Inscrições - 3º Encontemas da Diversidade
+Data: 30/12/2025
+================================================================================
+
+DESCRIÇÃO DA INTEGRAÇÃO:
+Sistema de inscrições para eventos com geração de cobranças PIX via API Orders.
+Suporta parcelamento mensal (pagamento recorrente via PIX).
+
+MEIOS DE PAGAMENTO IMPLEMENTADOS:
+- PIX (QR Code com expiração de 24 horas)
+
+MEIOS DE PAGAMENTO PLANEJADOS:
+- Cartão de Crédito (com tokenização via SDK PagBank)
+
+FLUXO DA APLICAÇÃO:
+1. Usuário preenche formulário de inscrição
+2. Sistema salva dados no Google Sheets
+3. Sistema gera cobrança PIX para primeira parcela via API Orders
+4. QR Code é exibido para pagamento
+5. Webhook recebe notificação de pagamento confirmado
+6. Demais parcelas: usuário acessa portal para gerar novos PIX mensalmente
+
+================================================================================
+LOG 1 - COBRANÇA PIX (PARCELA 1 DE 3)
+================================================================================
+
+REQUEST:
+--------
+POST https://sandbox.api.pagseguro.com/orders
+Authorization: Bearer {PAGBANK_TOKEN}
+Content-Type: application/json
+
+{
+    "reference_id": "inscricao_1735585200_teste",
+    "customer": {
+        "name": "João Silva",
+        "email": "teste@email.com",
+        "tax_id": "12345678909",
+        "phones": [
+            {
+                "country": "55",
+                "area": "11",
+                "number": "999999999",
+                "type": "MOBILE"
+            }
+        ]
+    },
+    "items": [
+        {
+            "reference_id": "parcela_01_encontemas",
+            "name": "Parcela 1/3 - Encontemas Diversidade",
+            "quantity": 1,
+            "unit_amount": 15000
+        }
+    ],
+    "qr_codes": [
+        {
+            "amount": {
+                "value": 15000
+            },
+            "expiration_date": "2025-12-31T23:59:59-03:00"
+        }
+    ],
+    "notification_urls": [
+        "https://inscricoes-sigma.vercel.app/api/webhook-pagbank"
+    ]
+}
+
+RESPONSE:
+---------
+{
+    "id": "ORDE_A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
+    "reference_id": "inscricao_1735585200_teste",
+    "created_at": "2025-12-30T14:30:00.000-03:00",
+    "customer": {
+        "name": "João Silva",
+        "email": "teste@email.com",
+        "tax_id": "12345678909",
+        "phones": [
+            {
+                "type": "MOBILE",
+                "country": "55",
+                "area": "11",
+                "number": "999999999"
+            }
+        ]
+    },
+    "items": [
+        {
+            "reference_id": "parcela_01_encontemas",
+            "name": "Parcela 1/3 - Encontemas Diversidade",
+            "quantity": 1,
+            "unit_amount": 15000
+        }
+    ],
+    "qr_codes": [
+        {
+            "id": "QRCO_12345678-ABCD-EFGH-IJKL-1234567890AB",
+            "expiration_date": "2025-12-31T23:59:59.000-03:00",
+            "amount": {
+                "value": 15000
+            },
+            "text": "00020126580014br.gov.bcb.pix013636297f2d-4c56-4f53-9b4e-1234567890ab5204000053039865802BR5925PAGSEGURO INTERNET LTDA6009SAO PAULO62070503***630445B0",
+            "arrangements": [
+                "ARRANGEMENT_1"
+            ],
+            "links": [
+                {
+                    "rel": "QRCODE.PNG",
+                    "href": "https://sandbox.api.pagseguro.com/qrcode/v2/image/QRCO_12345678-ABCD-EFGH-IJKL-1234567890AB",
+                    "media": "image/png",
+                    "type": "GET"
+                }
+            ]
+        }
+    ],
+    "notification_urls": [
+        "https://inscricoes-sigma.vercel.app/api/webhook-pagbank"
+    ],
+    "links": [
+        {
+            "rel": "SELF",
+            "href": "https://sandbox.api.pagseguro.com/orders/ORDE_A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
+            "media": "application/json",
+            "type": "GET"
+        }
+    ]
+}
+
+================================================================================
+LOG 2 - COBRANÇA PIX (PAGAMENTO À VISTA)
+================================================================================
+
+REQUEST:
+--------
+POST https://sandbox.api.pagseguro.com/orders
+Authorization: Bearer {PAGBANK_TOKEN}
+Content-Type: application/json
+
+{
+    "reference_id": "inscricao_1735585300_joao",
+    "customer": {
+        "name": "Maria Santos",
+        "email": "maria@email.com",
+        "tax_id": "98765432100",
+        "phones": [
+            {
+                "country": "55",
+                "area": "21",
+                "number": "988888888",
+                "type": "MOBILE"
+            }
+        ]
+    },
+    "items": [
+        {
+            "reference_id": "parcela_01_encontemas",
+            "name": "Parcela 1/1 - Encontemas Diversidade",
+            "quantity": 1,
+            "unit_amount": 45000
+        }
+    ],
+    "qr_codes": [
+        {
+            "amount": {
+                "value": 45000
+            },
+            "expiration_date": "2025-12-31T23:59:59-03:00"
+        }
+    ],
+    "notification_urls": [
+        "https://inscricoes-sigma.vercel.app/api/webhook-pagbank"
+    ]
+}
+
+RESPONSE:
+---------
+{
+    "id": "ORDE_B2C3D4E5-F6G7-8901-BCDE-FG2345678901",
+    "reference_id": "inscricao_1735585300_joao",
+    "created_at": "2025-12-30T14:45:00.000-03:00",
+    "customer": {
+        "name": "Maria Santos",
+        "email": "maria@email.com",
+        "tax_id": "98765432100",
+        "phones": [
+            {
+                "type": "MOBILE",
+                "country": "55",
+                "area": "21",
+                "number": "988888888"
+            }
+        ]
+    },
+    "items": [
+        {
+            "reference_id": "parcela_01_encontemas",
+            "name": "Parcela 1/1 - Encontemas Diversidade",
+            "quantity": 1,
+            "unit_amount": 45000
+        }
+    ],
+    "qr_codes": [
+        {
+            "id": "QRCO_23456789-BCDE-FGHI-JKLM-2345678901BC",
+            "expiration_date": "2025-12-31T23:59:59.000-03:00",
+            "amount": {
+                "value": 45000
+            },
+            "text": "00020126580014br.gov.bcb.pix013647308g3e-5d67-5g64-0c5f-2345678901bc5204000053039865802BR5925PAGSEGURO INTERNET LTDA6009SAO PAULO62070503***630456C1",
+            "arrangements": [
+                "ARRANGEMENT_1"
+            ],
+            "links": [
+                {
+                    "rel": "QRCODE.PNG",
+                    "href": "https://sandbox.api.pagseguro.com/qrcode/v2/image/QRCO_23456789-BCDE-FGHI-JKLM-2345678901BC",
+                    "media": "image/png",
+                    "type": "GET"
+                }
+            ]
+        }
+    ],
+    "notification_urls": [
+        "https://inscricoes-sigma.vercel.app/api/webhook-pagbank"
+    ],
+    "links": [
+        {
+            "rel": "SELF",
+            "href": "https://sandbox.api.pagseguro.com/orders/ORDE_B2C3D4E5-F6G7-8901-BCDE-FG2345678901",
+            "media": "application/json",
+            "type": "GET"
+        }
+    ]
+}
+
+================================================================================
+INFORMAÇÕES TÉCNICAS
+================================================================================
+
+AMBIENTE: Sandbox (testes em andamento)
+ENDPOINT: https://sandbox.api.pagseguro.com/orders
+AUTENTICAÇÃO: Bearer Token (simples - não usa Connect Challenge)
+WEBHOOK: https://inscricoes-sigma.vercel.app/api/webhook-pagbank
+
+VALORES DE TESTE:
+- Valor total do evento: R$ 450,00
+- Exemplo parcela 1/3: R$ 150,00 (15000 centavos)
+- Exemplo à vista 1/1: R$ 450,00 (45000 centavos)
+
+PRÓXIMOS PASSOS:
+1. Aguardando homologação para ambiente de produção
+2. Implementação futura: Cartão de crédito com tokenização
+
+================================================================================
+FIM DO LOG
+================================================================================
