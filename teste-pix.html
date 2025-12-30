@@ -266,12 +266,14 @@
                 });
 
                 const result = await response.json();
-                console.log('📥 Resposta:', result);
+                console.log('📥 Resposta completa:', result);
+                console.log('📥 Status HTTP:', response.status);
 
                 loading.classList.remove('active');
 
                 if (!response.ok) {
-                    throw new Error(result.error || 'Erro ao gerar PIX');
+                    const errorDetails = result.details ? `\n\nDetalhes do PagBank:\n${JSON.stringify(result.details, null, 2)}` : '';
+                    throw new Error(`${result.error || 'Erro ao gerar PIX'}${errorDetails}`);
                 }
 
                 // Exibir resultado
@@ -287,12 +289,21 @@
                 pixResult.classList.add('active');
 
             } catch (error) {
-                console.error('❌ Erro:', error);
+                console.error('❌ Erro completo:', error);
                 loading.classList.remove('active');
                 form.style.display = 'block';
                 btnGerar.disabled = false;
 
-                errorDiv.textContent = `Erro: ${error.message}`;
+                // Mostrar erro detalhado
+                let errorMessage = `❌ Erro: ${error.message}\n\n`;
+
+                // Se tiver detalhes da resposta, mostrar
+                if (error.response) {
+                    errorMessage += `Código HTTP: ${error.response.status}\n`;
+                    errorMessage += `Detalhes: ${JSON.stringify(error.response.data, null, 2)}`;
+                }
+
+                errorDiv.innerHTML = `<pre style="white-space: pre-wrap; font-size: 0.85rem;">${errorMessage}</pre>`;
                 errorDiv.classList.add('active');
             }
         });
