@@ -1,81 +1,5 @@
-// API Serverless para criar cobrança PIX no PagBank com Connect Challenge
-// Versão inline - sem imports de módulos customizados
-import crypto from 'crypto';
-
-// Função inline para descriptografar challenge
-function decryptChallenge(encryptedChallengeBase64, privateKeyPem) {
-    try {
-        const encryptedBuffer = Buffer.from(encryptedChallengeBase64, 'base64');
-        const decrypted = crypto.privateDecrypt(
-            {
-                key: privateKeyPem,
-                padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-                oaepHash: 'sha256'
-            },
-            encryptedBuffer
-        );
-        return decrypted.toString('utf8');
-    } catch (error) {
-        console.error('❌ Erro ao descriptografar challenge:', error);
-        throw new Error('Falha ao descriptografar challenge: ' + error.message);
-    }
-}
-
-// Função inline para obter autenticação
-async function getAuthHeaders(privateKey, authToken) {
-    try {
-        // 1. Obter token e challenge criptografado
-        const response = await fetch('https://api.pagseguro.com/oauth2/token', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: new URLSearchParams({
-                grant_type: 'challenge',
-                scope: 'certificate.create'
-            })
-        });
-
-        console.log('📥 Status token response:', response.status, response.statusText);
-
-        const responseText = await response.text();
-        console.log('📥 Token response body:', responseText);
-
-        if (!response.ok) {
-            let errorData;
-            try {
-                errorData = JSON.parse(responseText);
-            } catch {
-                errorData = { message: responseText || 'Resposta vazia do PagBank' };
-            }
-            console.error('❌ Erro ao obter token PagBank:', errorData);
-            throw new Error(`Erro ao obter token (${response.status}): ${JSON.stringify(errorData)}`);
-        }
-
-        let data;
-        try {
-            data = JSON.parse(responseText);
-        } catch (parseError) {
-            console.error('❌ Erro ao parsear resposta do token:', parseError);
-            throw new Error(`Token response vazio ou inválido: ${responseText}`);
-        }
-        console.log('✅ Token obtido do PagBank');
-
-        // 2. Descriptografar o challenge
-        const decryptedChallenge = decryptChallenge(data.challenge, privateKey);
-        console.log('✅ Challenge descriptografado com sucesso');
-
-        return {
-            'Authorization': `Bearer ${data.access_token}`,
-            'X-PagBank-Challenge': decryptedChallenge,
-            'Content-Type': 'application/json'
-        };
-    } catch (error) {
-        console.error('❌ Erro na autenticação PagBank:', error);
-        throw error;
-    }
-}
+// API Serverless para criar cobrança PIX no PagBank
+// A API Orders usa autenticação simples com Bearer token (NÃO usa Connect Challenge)
 
 export default async function handler(req, res) {
     // Apenas aceita POST
@@ -93,17 +17,8 @@ export default async function handler(req, res) {
             });
         }
 
-        // Validar variáveis de ambiente
-        const PAGBANK_PRIVATE_KEY = process.env.PAGBANK_PRIVATE_KEY;
+        // Validar variável de ambiente
         const PAGBANK_TOKEN = process.env.PAGBANK_TOKEN;
-
-        if (!PAGBANK_PRIVATE_KEY) {
-            console.error('❌ PAGBANK_PRIVATE_KEY não configurada nas variáveis de ambiente');
-            return res.status(500).json({
-                error: 'Erro de configuração',
-                message: 'Chave privada do PagBank não está configurada. Execute o script de setup e configure as variáveis no Vercel.'
-            });
-        }
 
         if (!PAGBANK_TOKEN) {
             console.error('❌ PAGBANK_TOKEN não configurado nas variáveis de ambiente');
@@ -116,12 +31,7 @@ export default async function handler(req, res) {
         // Endpoint PRODUÇÃO
         const PAGBANK_API = 'https://api.pagseguro.com/orders';
 
-        console.log('🔐 Obtendo autenticação Connect Challenge...');
-
-        // Obter autenticação com Connect Challenge
-        const authHeaders = await getAuthHeaders(PAGBANK_PRIVATE_KEY, PAGBANK_TOKEN);
-
-        console.log('✅ Autenticação obtida com sucesso');
+        console.log('💰 Criando cobrança PIX de R$ 1,00...');
 
         // Limpar telefone (apenas números)
         const telefoneLimpo = telefone.replace(/\D/g, '');
@@ -161,16 +71,19 @@ export default async function handler(req, res) {
                 expiration_date: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutos
             }],
             notification_urls: [
-                `${req.headers.origin || 'https://inscricoes.vercel.app'}/api/webhook-pagbank`
+                `${req.headers.origin || 'https://inscricoes-sigma.vercel.app'}/api/webhook-pagbank`
             ]
         };
 
         console.log('📤 Enviando para PagBank:', JSON.stringify(payload, null, 2));
 
-        // Chamar API do PagBank com autenticação Connect Challenge
+        // Chamar API do PagBank com autenticação Bearer simples
         const response = await fetch(PAGBANK_API, {
             method: 'POST',
-            headers: authHeaders, // Usa headers com token e challenge
+            headers: {
+                'Authorization': `Bearer ${PAGBANK_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(payload)
         });
 
