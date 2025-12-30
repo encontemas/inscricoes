@@ -15,11 +15,11 @@ export default async function handler(req, res) {
             });
         }
 
-        // Token do PagBank (SANDBOX para teste)
+        // Token do PagBank (PRODUÇÃO)
         const PAGBANK_TOKEN = process.env.PAGBANK_TOKEN || '38d30b40-ed80-4a1d-a74a-2d6ff6efb9c080b1cca24b8892bd1d01ab733037fd9005e1-3fb2-4ff3-b160-9ce3d23902df';
 
-        // Endpoint Sandbox (teste)
-        const PAGBANK_API = 'https://sandbox.api.pagseguro.com/orders';
+        // Endpoint PRODUÇÃO
+        const PAGBANK_API = 'https://api.pagseguro.com/orders';
 
         // Limpar telefone (apenas números)
         const telefoneLimpo = telefone.replace(/\D/g, '');
