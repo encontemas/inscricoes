@@ -21,11 +21,14 @@ function decryptChallenge(encryptedChallengeBase64, privateKeyPem) {
 }
 
 // Função inline para obter autenticação
-async function getAuthHeaders(privateKey) {
+async function getAuthHeaders(privateKey, authToken) {
     try {
         const response = await fetch('https://api.pagseguro.com/oauth2/token', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': `Bearer ${authToken}`
+            },
             body: new URLSearchParams({
                 grant_type: 'challenge',
                 scope: 'certificate.create'
@@ -78,12 +81,17 @@ export default async function handler(req, res) {
         console.log('💰 Gerando PIX da primeira parcela para:', email);
 
         const PAGBANK_PRIVATE_KEY = process.env.PAGBANK_PRIVATE_KEY;
+        const PAGBANK_TOKEN = process.env.PAGBANK_TOKEN;
 
         if (!PAGBANK_PRIVATE_KEY) {
             throw new Error('Chave privada do PagBank não configurada');
         }
 
-        const authHeaders = await getAuthHeaders(PAGBANK_PRIVATE_KEY);
+        if (!PAGBANK_TOKEN) {
+            throw new Error('Token de autenticação do PagBank não configurado');
+        }
+
+        const authHeaders = await getAuthHeaders(PAGBANK_PRIVATE_KEY, PAGBANK_TOKEN);
 
         const valorParcela = (450.00 / numero_parcelas).toFixed(2);
 

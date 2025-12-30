@@ -4,6 +4,7 @@ export default async function handler(req, res) {
         GOOGLE_SERVICE_ACCOUNT_JSON: !!process.env.GOOGLE_SERVICE_ACCOUNT_JSON,
         GOOGLE_SHEETS_SPREADSHEET_ID: !!process.env.GOOGLE_SHEETS_SPREADSHEET_ID,
         PAGBANK_PRIVATE_KEY: !!process.env.PAGBANK_PRIVATE_KEY,
+        PAGBANK_TOKEN: !!process.env.PAGBANK_TOKEN,
 
         // Tentar parsear o JSON para verificar se está válido
         googleCredentialsValid: false,
