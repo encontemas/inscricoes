@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Formulário de inscrição - 3º Encontemas da Diversidade 2026">
+    <title>Inscrição - Encontemas 2026</title>
+    <style>
+        /* Reset e Variáveis */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary-color: #10b981;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --bg-light: #f9fafb;
+            --white: #ffffff;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: var(--bg-light);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            background: var(--gradient);
+            color: var(--white);
+            padding: 3rem 0;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+
+        /* Formulário */
+        .form-container {
+            background: var(--white);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            margin-top: -2rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-section-title {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--bg-light);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .required::after {
+            content: " *";
+            color: #ef4444;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 0.8rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .checkbox-group {
+            margin: 1rem 0;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            cursor: pointer;
+            margin-bottom: 0.75rem;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .checkbox-label span {
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+
+        .link-button {
+            color: var(--primary-color);
+            text-decoration: underline;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            font: inherit;
+        }
+
+        .link-button:hover {
+            color: var(--primary-dark);
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+        }
+
+        .info-box strong {
+            color: var(--primary-color);
+        }
+
+        .parcela-info {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .parcela-valor {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0.5rem 0;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: var(--gradient);
+            color: var(--white);
+            border: none;
+            padding: 1.2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            margin-top: 2rem;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            overflow-y: auto;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: var(--white);
+            padding: 3rem;
+            border-radius: 15px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.3s;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            color: var(--text-light);
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--text-dark);
+        }
+
+        .modal-content h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-right: 2rem;
+        }
+
+        .modal-content h3 {
+            color: var(--text-dark);
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .modal-content p,
+        .modal-content ul {
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            line-height: 1.8;
+        }
+
+        .modal-content ul {
+            padding-left: 1.5rem;
+        }
+
+        .modal-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Success Modal */
+        .success-modal {
+            text-align: center;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--secondary-color);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .qr-code-container {
+            margin: 2rem 0;
+            padding: 2rem;
+            background: var(--bg-light);
+            border-radius: 10px;
+        }
+
+        .qr-code-container img {
+            max-width: 300px;
+            width: 100%;
+            height: auto;
+            margin: 1rem auto;
+            display: block;
+        }
+
+        .copy-button {
+            background: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: all 0.3s;
+        }
+
+        .copy-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .pix-code {
+            background: var(--white);
+            padding: 1rem;
+            border-radius: 8px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+            border: 2px dashed var(--primary-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid var(--white);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .form-container {
+                padding: 2rem 1.5rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 2rem 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 2rem 0;
+            }
+
+            .form-container {
+                padding: 1.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="container">
+            <h1>Inscrição - Encontemas 2026</h1>
+            <p>Preencha o formulário abaixo para garantir sua vaga</p>
+        </div>
+    </div>
+
+    <!-- Formulário -->
+    <div class="container">
+        <div class="form-container">
+            <form id="formInscricao">
+                <!-- Dados Pessoais -->
+                <div class="form-section">
+                    <h2 class="form-section-title">Dados Pessoais</h2>
+
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="nome_completo" class="required">Nome Completo</label>
+                            <input type="text" id="nome_completo" name="nome_completo" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email" class="required">E-mail</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="telefone" class="required">Telefone/WhatsApp</label>
+                            <input type="tel" id="telefone" name="telefone" placeholder="(11) 99999-9999" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cpf">CPF (opcional)</label>
+                            <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00">
+                        </div>
+                        <div class="form-group">
+                            <label for="cidade_pais" class="required">Cidade/País</label>
+                            <input type="text" id="cidade_pais" name="cidade_pais" placeholder="Ex: São Paulo - SP" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informações NA -->
+                <div class="form-section">
+                    <h2 class="form-section-title">Informações de Narcóticos Anônimos</h2>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="grupo_escolha">Grupo de Escolha (opcional)</label>
+                            <input type="text" id="grupo_escolha" name="grupo_escolha" placeholder="Nome do grupo">
+                        </div>
+                        <div class="form-group">
+                            <label for="csa">CSA (opcional)</label>
+                            <input type="text" id="csa" name="csa" placeholder="Ex: CSA São Paulo">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Necessidades Especiais -->
+                <div class="form-section">
+                    <h2 class="form-section-title">Acessibilidade e Necessidades</h2>
+
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="possui_deficiencia" name="possui_deficiencia">
+                            <span>Possuo alguma deficiência ou necessidade especial</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group full-width" id="descricao_necessidades_container" style="display: none;">
+                        <label for="descricao_necessidades">Descreva suas necessidades</label>
+                        <textarea id="descricao_necessidades" name="descricao_necessidades" placeholder="Descreva aqui qualquer necessidade especial, restrição alimentar ou acomodação que você precise"></textarea>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="interesse_hospedagem" name="interesse_hospedagem">
+                            <span>Tenho interesse em informações sobre hospedagem</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Pagamento -->
+                <div class="form-section">
+                    <h2 class="form-section-title">Forma de Pagamento</h2>
+
+                    <div class="info-box">
+                        <strong>Valor do Evento:</strong> R$ 450,00<br>
+                        Você pode parcelar em até 11x sem juros via PIX
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="numero_parcelas" class="required">Número de Parcelas</label>
+                            <select id="numero_parcelas" name="numero_parcelas" required>
+                                <option value="">Selecione...</option>
+                                <option value="1">À vista (1x)</option>
+                                <option value="2">2x sem juros</option>
+                                <option value="3">3x sem juros</option>
+                                <option value="4">4x sem juros</option>
+                                <option value="5">5x sem juros</option>
+                                <option value="6">6x sem juros</option>
+                                <option value="7">7x sem juros</option>
+                                <option value="8">8x sem juros</option>
+                                <option value="9">9x sem juros</option>
+                                <option value="10">10x sem juros</option>
+                                <option value="11">11x sem juros</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dia_vencimento">Dia de Vencimento Preferencial (opcional)</label>
+                            <select id="dia_vencimento" name="dia_vencimento">
+                                <option value="">Selecione...</option>
+                                <option value="5">Dia 5</option>
+                                <option value="10">Dia 10</option>
+                                <option value="15">Dia 15</option>
+                                <option value="20">Dia 20</option>
+                                <option value="25">Dia 25</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="parcela-info" id="parcela_info" style="display: none;">
+                        <div>Valor de cada parcela:</div>
+                        <div class="parcela-valor" id="valor_parcela">R$ 0,00</div>
+                    </div>
+                </div>
+
+                <!-- Observações -->
+                <div class="form-section">
+                    <h2 class="form-section-title">Observações</h2>
+
+                    <div class="form-group full-width">
+                        <label for="observacoes">Observações Adicionais (opcional)</label>
+                        <textarea id="observacoes" name="observacoes" placeholder="Alguma informação adicional que você gostaria de compartilhar"></textarea>
+                    </div>
+                </div>
+
+                <!-- Termos -->
+                <div class="form-section">
+                    <h2 class="form-section-title">Termos e Condições</h2>
+
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="maior_idade" name="maior_idade" required>
+                            <span class="required">Confirmo que sou maior de 18 anos</span>
+                        </label>
+
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="aceite_termo_lgpd" name="aceite_termo_lgpd" required>
+                            <span class="required">Li e aceito o
+                                <button type="button" class="link-button" onclick="abrirModal('modalLGPD')">
+                                    Termo de Consentimento LGPD
+                                </button>
+                            </span>
+                        </label>
+
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="aceite_termo_desistencia" name="aceite_termo_desistencia" required>
+                            <span class="required">Estou ciente de que em caso de desistência não há devolução de valores pagos</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btnSubmit">
+                    <span id="btnText">Finalizar Inscrição e Gerar PIX</span>
+                    <span id="btnSpinner" style="display: none;" class="spinner"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal LGPD -->
+    <div id="modalLGPD" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="fecharModal('modalLGPD')">&times;</button>
+            <h2>Termo de Consentimento LGPD</h2>
+
+            <p>Ao preencher este formulário de inscrição para o <strong>3º Encontemas da Diversidade</strong>, você consente que seus dados pessoais sejam coletados e utilizados exclusivamente para as finalidades descritas abaixo, em conformidade com a <strong>Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018)</strong>.</p>
+
+            <h3>1. Dados Coletados</h3>
+            <p>Os seguintes dados pessoais serão coletados:</p>
+            <ul>
+                <li><strong>Dados obrigatórios:</strong> Nome completo, e-mail, telefone/WhatsApp, cidade/país, confirmação de maioridade</li>
+                <li><strong>Dados opcionais:</strong> CPF, grupo de escolha, CSA, informações sobre deficiência ou necessidades especiais, interesse em hospedagem, preferências de pagamento, observações adicionais</li>
+            </ul>
+
+            <h3>2. Finalidade do Tratamento</h3>
+            <p>Seus dados pessoais serão utilizados exclusivamente para:</p>
+            <ul>
+                <li>Processar sua inscrição no evento</li>
+                <li>Emitir comprovantes e cobranças de pagamento</li>
+                <li>Enviar informações sobre o evento (programação, localização, atualizações)</li>
+                <li>Atender necessidades especiais informadas</li>
+                <li>Fornecer informações sobre hospedagem (se solicitado)</li>
+                <li>Contato em caso de emergências ou alterações no evento</li>
+            </ul>
+
+            <h3>3. Compartilhamento de Dados</h3>
+            <p>Seus dados pessoais <strong>não serão vendidos, alugados ou compartilhados</strong> com terceiros para fins comerciais ou publicitários.</p>
+            <p>Os dados poderão ser compartilhados apenas com:</p>
+            <ul>
+                <li><strong>Processadores de pagamento:</strong> Para viabilizar as transações financeiras (PagBank)</li>
+                <li><strong>Organizadores do evento:</strong> Apenas os membros da equipe responsável pela organização do Encontemas terão acesso aos dados necessários para o cumprimento de suas funções</li>
+            </ul>
+
+            <h3>4. Armazenamento e Segurança</h3>
+            <p>Os dados coletados serão armazenados de forma segura em plataformas protegidas (Google Sheets) com acesso restrito aos organizadores do evento.</p>
+            <p>Implementamos medidas técnicas e organizacionais apropriadas para proteger seus dados contra acesso não autorizado, alteração, divulgação ou destruição.</p>
+
+            <h3>5. Prazo de Retenção</h3>
+            <p>Seus dados pessoais serão mantidos pelo período necessário para:</p>
+            <ul>
+                <li>Realização do evento e cumprimento de obrigações relacionadas</li>
+                <li>Atendimento de obrigações legais, fiscais e regulatórias</li>
+                <li>Resolução de eventuais disputas ou questões jurídicas</li>
+            </ul>
+            <p>Após esse período, os dados serão anonimizados ou excluídos, salvo se houver base legal que justifique sua retenção.</p>
+
+            <h3>6. Seus Direitos</h3>
+            <p>Em conformidade com a LGPD, você tem o direito de:</p>
+            <ul>
+                <li><strong>Acesso:</strong> Solicitar confirmação sobre a existência de tratamento e acesso aos seus dados</li>
+                <li><strong>Correção:</strong> Solicitar a correção de dados incompletos, inexatos ou desatualizados</li>
+                <li><strong>Eliminação:</strong> Solicitar a eliminação de dados tratados com seu consentimento (ressalvadas hipóteses legais de retenção)</li>
+                <li><strong>Portabilidade:</strong> Solicitar a portabilidade dos dados a outro fornecedor</li>
+                <li><strong>Revogação do consentimento:</strong> Revogar seu consentimento a qualquer momento (podendo impossibilitar sua participação no evento)</li>
+            </ul>
+
+            <h3>7. Como Exercer Seus Direitos</h3>
+            <p>Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dados pessoais, entre em contato com os organizadores do evento:</p>
+            <ul>
+                <li><strong>Felipe (Coordenador de Inscrições):</strong> (21) 96859-0400</li>
+                <li><strong>Agatha M. (Coordenadora do Evento):</strong> (13) 99642-1985</li>
+                <li><strong>Gustavo N. (Tesoureiro):</strong> (11) 95970-0094</li>
+            </ul>
+
+            <h3>8. Consentimento</h3>
+            <p>Ao marcar a caixa "Li e aceito o Termo de Consentimento LGPD" e enviar este formulário, você declara ter lido, compreendido e concordado com os termos deste documento, consentindo expressamente com o tratamento de seus dados pessoais conforme descrito.</p>
+
+            <p><strong>Data de vigência:</strong> Este termo está em vigor a partir de 27 de janeiro de 2025.</p>
+        </div>
+    </div>
+
+    <!-- Modal Sucesso -->
+    <div id="modalSucesso" class="modal">
+        <div class="modal-content success-modal">
+            <button class="modal-close" onclick="fecharModal('modalSucesso')">&times;</button>
+            <div class="success-icon">✓</div>
+            <h2>Inscrição Realizada com Sucesso!</h2>
+            <p>Sua inscrição foi registrada. Agora complete o pagamento da primeira parcela:</p>
+
+            <div class="qr-code-container" id="pixContainer">
+                <h3>PIX - Primeira Parcela</h3>
+                <div id="pixValor" style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color); margin: 1rem 0;"></div>
+                <img id="qrCodeImagem" src="" alt="QR Code PIX">
+                <p>Escaneie o QR Code acima ou copie o código PIX:</p>
+                <div class="pix-code" id="pixCodigo"></div>
+                <button class="copy-button" onclick="copiarPixCopia()">Copiar Código PIX</button>
+            </div>
+
+            <div class="info-box" style="margin-top: 2rem;">
+                <strong>Importante:</strong> Você receberá um e-mail com a confirmação da inscrição e as instruções para as próximas parcelas.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variável global para armazenar o código PIX
+        let pixCopiaCola = '';
+
+        // Calcular valor da parcela
+        document.getElementById('numero_parcelas').addEventListener('change', function() {
+            const numeroParcelas = parseInt(this.value);
+            if (numeroParcelas) {
+                const valorTotal = 450.00;
+                const valorParcela = (valorTotal / numeroParcelas).toFixed(2);
+                document.getElementById('valor_parcela').textContent = `R$ ${valorParcela}`;
+                document.getElementById('parcela_info').style.display = 'block';
+            } else {
+                document.getElementById('parcela_info').style.display = 'none';
+            }
+        });
+
+        // Mostrar/ocultar campo de descrição de necessidades
+        document.getElementById('possui_deficiencia').addEventListener('change', function() {
+            const container = document.getElementById('descricao_necessidades_container');
+            container.style.display = this.checked ? 'block' : 'none';
+            if (!this.checked) {
+                document.getElementById('descricao_necessidades').value = '';
+            }
+        });
+
+        // Máscaras de formatação
+        document.getElementById('telefone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+                value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+            }
+            e.target.value = value;
+        });
+
+        document.getElementById('cpf').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            }
+            e.target.value = value;
+        });
+
+        // Funções de modal
+        function abrirModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function fecharModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Fechar modal ao clicar fora
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    fecharModal(this.id);
+                }
+            });
+        });
+
+        // Copiar código PIX
+        function copiarPixCopia() {
+            navigator.clipboard.writeText(pixCopiaCola).then(() => {
+                const btn = event.target;
+                const textoOriginal = btn.textContent;
+                btn.textContent = 'Copiado!';
+                btn.style.background = 'var(--secondary-color)';
+                setTimeout(() => {
+                    btn.textContent = textoOriginal;
+                    btn.style.background = '';
+                }, 2000);
+            }).catch(err => {
+                alert('Erro ao copiar código PIX. Por favor, copie manualmente.');
+                console.error('Erro ao copiar:', err);
+            });
+        }
+
+        // Enviar formulário
+        document.getElementById('formInscricao').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Validações básicas
+            const maiorIdade = document.getElementById('maior_idade').checked;
+            const aceiteLGPD = document.getElementById('aceite_termo_lgpd').checked;
+            const aceiteDesistencia = document.getElementById('aceite_termo_desistencia').checked;
+
+            if (!maiorIdade) {
+                alert('É necessário ser maior de 18 anos para participar do evento.');
+                return;
+            }
+
+            if (!aceiteLGPD) {
+                alert('É necessário aceitar o Termo de Consentimento LGPD.');
+                return;
+            }
+
+            if (!aceiteDesistencia) {
+                alert('É necessário estar ciente das condições de desistência.');
+                return;
+            }
+
+            // Coletar dados do formulário
+            const formData = {
+                nome_completo: document.getElementById('nome_completo').value,
+                email: document.getElementById('email').value,
+                telefone: document.getElementById('telefone').value,
+                cpf: document.getElementById('cpf').value || null,
+                cidade_pais: document.getElementById('cidade_pais').value,
+                grupo_escolha: document.getElementById('grupo_escolha').value || null,
+                csa: document.getElementById('csa').value || null,
+                possui_deficiencia: document.getElementById('possui_deficiencia').checked,
+                descricao_necessidades: document.getElementById('descricao_necessidades').value || null,
+                interesse_hospedagem: document.getElementById('interesse_hospedagem').checked,
+                numero_parcelas: parseInt(document.getElementById('numero_parcelas').value),
+                dia_vencimento: document.getElementById('dia_vencimento').value || null,
+                observacoes: document.getElementById('observacoes').value || null,
+                maior_idade: true,
+                aceite_termo_lgpd: true,
+                aceite_termo_desistencia: true
+            };
+
+            // Mostrar loading
+            const btnSubmit = document.getElementById('btnSubmit');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+
+            btnSubmit.disabled = true;
+            btnText.textContent = 'Processando...';
+            btnSpinner.style.display = 'inline-block';
+
+            try {
+                // Enviar para API
+                const response = await fetch('/api/inscricao', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || data.error || 'Erro ao processar inscrição');
+                }
+
+                // Exibir modal de sucesso com PIX
+                if (data.pix) {
+                    pixCopiaCola = data.pix.qr_code_texto;
+                    document.getElementById('pixValor').textContent = data.pix.valor;
+                    document.getElementById('qrCodeImagem').src = data.pix.qr_code_imagem;
+                    document.getElementById('pixCodigo').textContent = data.pix.qr_code_texto;
+                    abrirModal('modalSucesso');
+
+                    // Limpar formulário
+                    document.getElementById('formInscricao').reset();
+                    document.getElementById('parcela_info').style.display = 'none';
+                } else {
+                    alert('Inscrição realizada com sucesso! Você receberá as informações de pagamento por e-mail.');
+                }
+
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao processar inscrição: ' + error.message);
+            } finally {
+                // Restaurar botão
+                btnSubmit.disabled = false;
+                btnText.textContent = 'Finalizar Inscrição e Gerar PIX';
+                btnSpinner.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
