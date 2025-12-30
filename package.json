@@ -2,7 +2,7 @@
   "name": "inscricoes-sigma",
   "version": "1.0.0",
   "description": "Sistema de inscrições com pagamento PIX via PagBank",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "setup-keys": "node scripts/setup-keys-standalone.js"
   },

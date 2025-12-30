@@ -1,5 +1,5 @@
 // API Serverless para criar cobrança PIX no PagBank com Connect Challenge
-const { getAuthHeaders } = require('../lib/pagbank-auth');
+import { getAuthHeaders } from '../lib/pagbank-auth.js';
 
 export default async function handler(req, res) {
     // Apenas aceita POST
