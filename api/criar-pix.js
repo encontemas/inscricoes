@@ -1,4 +1,6 @@
-// API Serverless para criar cobrança PIX no PagBank
+// API Serverless para criar cobrança PIX no PagBank com Connect Challenge
+const { getAuthHeaders } = require('../lib/pagbank-auth');
+
 export default async function handler(req, res) {
     // Apenas aceita POST
     if (req.method !== 'POST') {
@@ -15,11 +17,26 @@ export default async function handler(req, res) {
             });
         }
 
-        // Token do PagBank (PRODUÇÃO)
-        const PAGBANK_TOKEN = process.env.PAGBANK_TOKEN || '38d30b40-ed80-4a1d-a74a-2d6ff6efb9c080b1cca24b8892bd1d01ab733037fd9005e1-3fb2-4ff3-b160-9ce3d23902df';
+        // Validar variáveis de ambiente
+        const PAGBANK_PRIVATE_KEY = process.env.PAGBANK_PRIVATE_KEY;
+
+        if (!PAGBANK_PRIVATE_KEY) {
+            console.error('❌ PAGBANK_PRIVATE_KEY não configurada nas variáveis de ambiente');
+            return res.status(500).json({
+                error: 'Erro de configuração',
+                message: 'Chave privada do PagBank não está configurada. Execute o script de setup e configure as variáveis no Vercel.'
+            });
+        }
 
         // Endpoint PRODUÇÃO
         const PAGBANK_API = 'https://api.pagseguro.com/orders';
+
+        console.log('🔐 Obtendo autenticação Connect Challenge...');
+
+        // Obter autenticação com Connect Challenge
+        const authHeaders = await getAuthHeaders(PAGBANK_PRIVATE_KEY);
+
+        console.log('✅ Autenticação obtida com sucesso');
 
         // Limpar telefone (apenas números)
         const telefoneLimpo = telefone.replace(/\D/g, '');
@@ -65,13 +82,10 @@ export default async function handler(req, res) {
 
         console.log('📤 Enviando para PagBank:', JSON.stringify(payload, null, 2));
 
-        // Chamar API do PagBank
+        // Chamar API do PagBank com autenticação Connect Challenge
         const response = await fetch(PAGBANK_API, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${PAGBANK_TOKEN}`,
-                'Content-Type': 'application/json'
-            },
+            headers: authHeaders, // Usa headers com token e challenge
             body: JSON.stringify(payload)
         });
 

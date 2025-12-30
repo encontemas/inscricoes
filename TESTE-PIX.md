@@ -55,7 +55,12 @@ vercel --prod
 No dashboard do Vercel:
 - Settings → Environment Variables
 - Adicione:
-  - `PAGBANK_TOKEN` = `seu_token_aqui`
+  - `PAGBANK_TOKEN` = `seu_token_de_producao_aqui`
+
+**IMPORTANTE:**
+- A variável `PAGBANK_TOKEN` é **obrigatória**
+- **NÃO é necessário** adicionar `PAGBANK_EMAIL` - o email não é usado pela API
+- O código agora **não tem fallback** - se a variável não estiver configurada, retornará erro claro
 
 ### 3. Acessar
 ```
