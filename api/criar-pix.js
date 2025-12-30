@@ -36,13 +36,29 @@ async function getAuthHeaders(privateKey) {
             })
         });
 
+        console.log('📥 Status token response:', response.status, response.statusText);
+
+        const responseText = await response.text();
+        console.log('📥 Token response body:', responseText);
+
         if (!response.ok) {
-            const errorData = await response.json();
+            let errorData;
+            try {
+                errorData = JSON.parse(responseText);
+            } catch {
+                errorData = { message: responseText || 'Resposta vazia do PagBank' };
+            }
             console.error('❌ Erro ao obter token PagBank:', errorData);
-            throw new Error(`Erro ao obter token: ${JSON.stringify(errorData)}`);
+            throw new Error(`Erro ao obter token (${response.status}): ${JSON.stringify(errorData)}`);
         }
 
-        const data = await response.json();
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('❌ Erro ao parsear resposta do token:', parseError);
+            throw new Error(`Token response vazio ou inválido: ${responseText}`);
+        }
         console.log('✅ Token obtido do PagBank');
 
         // 2. Descriptografar o challenge
