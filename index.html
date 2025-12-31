@@ -75,26 +75,15 @@
     <section id="sobre" class="section sobre">
         <div class="container">
             <h2 class="section-title">Sobre o Evento</h2>
-            <p class="section-description">
-                Um fim de semana de confraternização e fortalecimento da nossa irmandade,
-                com programação completa voltada para diversidade e inclusão em NA.
-            </p>
-            <div class="features">
-                <div class="feature-card">
-                    <div class="feature-icon">🌈</div>
-                    <h3>Diversidade</h3>
-                    <p>Celebrando a pluralidade e inclusão na recuperação</p>
+            <div class="sobre-content">
+                <div class="sobre-icon">
+                    <svg width="80" height="80" viewBox="0 0 640 512" fill="currentColor">
+                        <path d="M323.4 85.2l-96.8 78.4c-16.1 13-19.2 36.4-7 53.1c12.9 17.8 38 21.3 55.3 7.8l99.3-77.2c7-5.4 17-4.2 22.5 2.8s4.2 17-2.8 22.5l-20.9 16.2L550.2 352H592c26.5 0 48-21.5 48-48V176c0-26.5-21.5-48-48-48H516h-4-.7l-3.9-2.5L434.8 79c-15.3-9.8-33.2-15-51.4-15c-21.8 0-43 7.5-60 21.2zm22.8 124.4l-51.7 40.2C263 274.4 217.3 268 193.7 235.6c-22.2-30.5-16.6-73.1 12.7-96.8l83.2-67.3c-11.6-4.9-24.1-7.4-36.8-7.4C234 64 215.7 69.6 200 80l-72 48H48c-26.5 0-48 21.5-48 48V304c0 26.5 21.5 48 48 48H156.2l91.4 83.4c19.6 17.9 49.9 16.5 67.8-3.1c5.5-6.1 9.2-13.2 11.1-20.6l17 15.6c19.5 17.9 49.9 16.6 67.8-2.9c4.5-4.9 7.8-10.6 9.9-16.5c19.4 13 45.8 10.3 62.1-7.5c17.9-19.5 16.6-49.9-2.9-67.8l-134.2-123z"/>
+                    </svg>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">💚</div>
-                    <h3>Recuperação</h3>
-                    <p>Compartilhando experiência, força e esperança</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🤝</div>
-                    <h3>Unidade</h3>
-                    <p>Fortalecendo laços de fraternidade na irmandade</p>
-                </div>
+                <p class="sobre-text">
+                    Em sua 3ª edição, o <strong>Encontemas da Diversidade</strong> é um evento de Narcóticos Anônimos de interesse especial LGBTQIAPN+, que celebra e reforça a importância da diversidade na irmandade. Com o tema <strong>"Nós Realmente Nos Recuperamos"</strong>, este ano, reafirmamos que qualquer adicto, independentemente de sua cor, identidade sexual, gênero, religiosidade ou qualquer outro fator, pode encontrar acolhimento, identificação e uma nova maneira de viver, sem julgamento. Nos encontraremos neste espaço seguro de partilha e recuperação, nos dias <strong>28, 29 e 30 de novembro</strong>, em Cajamar, São Paulo.
+                </p>
             </div>
         </div>
     </section>
@@ -106,23 +95,25 @@
             <div class="detalhes-grid">
                 <div class="detalhe-card">
                     <h3>📅 Programação</h3>
-                    <ul>
-                        <li><strong>Sexta (27/11):</strong> Abertura e recepção</li>
-                        <li><strong>Sábado (28/11):</strong> Programação completa</li>
-                        <li><strong>Domingo (29/11):</strong> Encerramento</li>
-                    </ul>
+                    <p><strong>Programação em breve</strong></p>
+                    <p style="margin-top: 1rem;">
+                        <a href="https://acampamentoterradosaber.com.br/wp-content/uploads/2024/10/Cardapio-Premium.pdf" target="_blank" class="btn-cardapio">
+                            📋 Ver Cardápio
+                        </a>
+                    </p>
                 </div>
                 <div class="detalhe-card">
                     <h3>🏨 Local</h3>
-                    <p><strong>Terra do Saber</strong></p>
-                    <p>Espaço completo para eventos</p>
-                    <p>Cajamar - São Paulo</p>
+                    <p><strong>Terra do Saber - Cajamar/SP</strong></p>
+                    <p style="margin-top: 1rem;">🛏️ Hospedagem em quartos coletivos preenchidos por ordem de inscrição</p>
+                    <p>🏊 Piscinas, torneio de queimada e entretenimento</p>
                 </div>
                 <div class="detalhe-card">
                     <h3>🎯 Vagas Limitadas</h3>
-                    <p>Apenas <strong>150 participantes</strong></p>
-                    <p>Inscrições por ordem de chegada</p>
-                    <p class="destaque">Garanta sua vaga agora!</p>
+                    <p>Apenas <strong>150 participantes!</strong></p>
+                    <p style="margin-top: 1rem;">✅ Inscrições confirmadas após o primeiro pagamento</p>
+                    <p>⚠️ Não haverá devolução do investimento em caso de desistência</p>
+                    <p class="destaque" style="margin-top: 1rem;">Garanta já sua vaga!</p>
                 </div>
             </div>
         </div>
@@ -316,9 +307,13 @@
                     <h3 class="form-section-title">Dados Pessoais</h3>
 
                     <div class="form-row">
-                        <div class="form-group full-width">
+                        <div class="form-group">
                             <label for="nome_completo" class="required">Nome Completo</label>
                             <input type="text" id="nome_completo" name="nome_completo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="nome_social">Nome Social</label>
+                            <input type="text" id="nome_social" name="nome_social">
                         </div>
                     </div>
 
@@ -328,19 +323,19 @@
                             <input type="email" id="email" name="email" required>
                         </div>
                         <div class="form-group">
-                            <label for="telefone" class="required">Telefone/WhatsApp</label>
-                            <input type="tel" id="telefone" name="telefone" placeholder="(11) 99999-9999" required>
+                            <label for="telefone" class="required">Celular/WhatsApp</label>
+                            <input type="tel" id="telefone" name="telefone" placeholder="+55 (11) 99999-9999" required>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="cpf" class="required">CPF</label>
-                            <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" required>
+                            <label for="cpf" class="required">CPF ou Passaporte</label>
+                            <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00 ou Passaporte" required>
                         </div>
                         <div class="form-group">
                             <label for="cidade_pais" class="required">Cidade/País</label>
-                            <input type="text" id="cidade_pais" name="cidade_pais" placeholder="Ex: São Paulo - SP" required>
+                            <input type="text" id="cidade_pais" name="cidade_pais" placeholder="Ex: São Paulo - SP / Brasil" required>
                         </div>
                     </div>
                 </div>
@@ -351,24 +346,29 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="grupo_escolha">Grupo de Escolha (opcional)</label>
+                            <label for="grupo_escolha">Grupo de Escolha</label>
                             <input type="text" id="grupo_escolha" name="grupo_escolha" placeholder="Nome do grupo">
                         </div>
                         <div class="form-group">
-                            <label for="csa">CSA (opcional)</label>
+                            <label for="csa">CSA</label>
                             <input type="text" id="csa" name="csa" placeholder="Ex: CSA São Paulo">
                         </div>
                     </div>
+
+                    <div class="form-group full-width">
+                        <label for="grupo_pessoas">Tenho um grupo de pessoas comigo / Observações e Dúvidas</label>
+                        <textarea id="grupo_pessoas" name="grupo_pessoas" rows="3" placeholder="Se você vem com um grupo de amigos ou tem alguma dúvida, compartilhe aqui. Entraremos em contato!"></textarea>
+                    </div>
                 </div>
 
-                <!-- Necessidades Especiais -->
+                <!-- Necessidades Especiais e Transfer -->
                 <div class="form-section">
-                    <h3 class="form-section-title">Acessibilidade e Necessidades</h3>
+                    <h3 class="form-section-title">Acessibilidade e Transfer</h3>
 
                     <div class="checkbox-group">
                         <label class="checkbox-label">
                             <input type="checkbox" id="possui_deficiencia" name="possui_deficiencia">
-                            <span>Possuo alguma deficiência ou necessidade especial</span>
+                            <span>Sou pessoa com deficiência ou necessidade especial</span>
                         </label>
                     </div>
 
@@ -379,8 +379,8 @@
 
                     <div class="checkbox-group">
                         <label class="checkbox-label">
-                            <input type="checkbox" id="interesse_hospedagem" name="interesse_hospedagem">
-                            <span>Tenho interesse em informações sobre hospedagem</span>
+                            <input type="checkbox" id="interesse_transfer" name="interesse_transfer">
+                            <span>Me interesso pelo Transfer (serviço pago à parte - entraremos em contato)</span>
                         </label>
                     </div>
                 </div>
@@ -418,16 +418,6 @@
                     <div class="parcela-info" id="parcela_info" style="display: none;">
                         <div>Valor de cada parcela:</div>
                         <div class="parcela-valor" id="valor_parcela">R$ 0,00</div>
-                    </div>
-                </div>
-
-                <!-- Observações -->
-                <div class="form-section">
-                    <h3 class="form-section-title">Observações</h3>
-
-                    <div class="form-group full-width">
-                        <label for="observacoes">Observações Adicionais (opcional)</label>
-                        <textarea id="observacoes" name="observacoes" placeholder="Alguma informação adicional que você gostaria de compartilhar"></textarea>
                     </div>
                 </div>
 
