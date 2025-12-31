@@ -567,20 +567,29 @@
                 const data = await response.json();
 
                 parcelas = [];
-                const diaVencimento = parseInt(inscritoData.dia_vencimento);
                 const hoje = new Date();
                 hoje.setHours(0, 0, 0, 0);
 
                 for (let i = 1; i <= inscritoData.numero_parcelas; i++) {
-                    // Calcular data de vencimento
-                    const vencimento = new Date();
-                    vencimento.setMonth(vencimento.getMonth() + (i - 1));
-                    vencimento.setDate(diaVencimento);
-                    vencimento.setHours(0, 0, 0, 0);
-
-                    // Verificar status do pagamento na planilha
+                    // Buscar data de vencimento e status da planilha
+                    const dataVencimentoKey = `data_vencimento_${String(i).padStart(2, '0')}`;
                     const parcelaKey = `parcela_${String(i).padStart(2, '0')}_paga`;
                     const dataPagamentoKey = `data_pagamento_${String(i).padStart(2, '0')}`;
+
+                    // Obter data de vencimento da planilha
+                    let dataVencimentoStr = data[dataVencimentoKey] || '';
+                    let vencimento;
+
+                    if (dataVencimentoStr) {
+                        // Converter data brasileira (dd/mm/aaaa) para objeto Date
+                        const [dia, mes, ano] = dataVencimentoStr.split('/');
+                        vencimento = new Date(ano, parseInt(mes) - 1, dia);
+                        vencimento.setHours(0, 0, 0, 0);
+                    } else {
+                        // Fallback: usar data atual se não tiver na planilha
+                        vencimento = new Date();
+                        vencimento.setHours(0, 0, 0, 0);
+                    }
 
                     const isPaga = data[parcelaKey] === true || data[parcelaKey] === 'TRUE' || data[parcelaKey] === 1;
                     const dataPagamento = data[dataPagamentoKey];
