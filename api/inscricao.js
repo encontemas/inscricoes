@@ -24,6 +24,36 @@ async function salvarInscricao(dadosInscricao) {
         const timestamp = new Date().getTime();
         const idGerado = `INS-${timestamp}-${Math.floor(Math.random() * 1000)}`;
 
+        // Calcular datas de vencimento das parcelas
+        const diaVencimento = parseInt(dadosInscricao.dia_vencimento) || 10;
+        const numeroParcelas = parseInt(dadosInscricao.numero_parcelas);
+        const hoje = new Date();
+        const diaAtual = hoje.getDate();
+
+        const datasVencimento = [];
+        for (let i = 1; i <= 11; i++) { // Sempre preparar 11 espaços
+            if (i <= numeroParcelas) {
+                let vencimento;
+                if (i === 1) {
+                    // Primeira parcela: se dia escolhido já passou, vence hoje
+                    if (diaAtual >= diaVencimento) {
+                        vencimento = new Date(hoje);
+                    } else {
+                        vencimento = new Date();
+                        vencimento.setDate(diaVencimento);
+                    }
+                } else {
+                    // Demais parcelas: dia escolhido dos meses seguintes
+                    vencimento = new Date();
+                    vencimento.setMonth(vencimento.getMonth() + (i - 1));
+                    vencimento.setDate(diaVencimento);
+                }
+                datasVencimento.push(vencimento.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }));
+            } else {
+                datasVencimento.push(''); // Parcelas não usadas ficam vazias
+            }
+        }
+
         const valores = [
             idGerado, // id_inscricao preenchido pelo sistema
             agora, // data_inscricao
@@ -38,10 +68,10 @@ async function salvarInscricao(dadosInscricao) {
             dadosInscricao.csa || '',
             dadosInscricao.possui_deficiencia ? 1 : 0,
             dadosInscricao.descricao_necessidades || '',
-            dadosInscricao.interesse_hospedagem ? 1 : 0,
+            0, // interesse_hospedagem (campo antigo, sempre 0)
             dadosInscricao.aceite_termo_lgpd ? 1 : 0,
             dadosInscricao.aceite_termo_desistencia ? 1 : 0,
-            dadosInscricao.observacoes || '',
+            '', // observacoes (campo antigo, sempre vazio)
             450.00, // valor_total (fixo)
             dadosInscricao.numero_parcelas,
             (450.00 / dadosInscricao.numero_parcelas).toFixed(2), // valor_parcela
@@ -49,14 +79,20 @@ async function salvarInscricao(dadosInscricao) {
             'PIX', // forma_pagamento
             0, // inscricao_confirmada (será 1 após primeiro pagamento)
             '', // data_confirmacao (vazio inicialmente)
-            // Flags de parcelas (24 a 45) - todas iniciam como 0
-            0, '', 0, '', 0, '', 0, '', 0, '', 0, '', // parcelas 01-06
-            0, '', 0, '', 0, '', 0, '', 0, '', // parcelas 07-11
+            // Flags de parcelas com datas de vencimento (24 a 45)
+            0, datasVencimento[0], 0, datasVencimento[1], 0, datasVencimento[2], // parcelas 01-03
+            0, datasVencimento[3], 0, datasVencimento[4], 0, datasVencimento[5], // parcelas 04-06
+            0, datasVencimento[6], 0, datasVencimento[7], 0, datasVencimento[8], // parcelas 07-09
+            0, datasVencimento[9], 0, datasVencimento[10], // parcelas 10-11
             // Campos calculados (47 a 50)
             0, // total_parcelas_pagas
             0.00, // valor_total_pago
             450.00, // saldo_devedor
-            0.00 // percentual_pago
+            0.00, // percentual_pago
+            // Novos campos (51 a 53)
+            '', // nome_social (não usado mais, sempre vazio)
+            dadosInscricao.grupo_pessoas || '', // grupo_pessoas
+            dadosInscricao.interesse_transfer ? 1 : 0 // interesse_transfer
         ];
 
         // Mantenha o INSERT_ROWS que adicionamos antes, é importante

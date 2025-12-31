@@ -176,33 +176,21 @@ function copiarPixCopia() {
     });
 }
 
-// Calcular número máximo de parcelas baseado na data (dia 20 como limite)
+// Calcular número máximo de parcelas baseado na data
 function calcularMaxParcelas() {
     const hoje = new Date();
-    const diaAtual = hoje.getDate();
-    const mesAtual = hoje.getMonth(); // 0-11
+    const mesAtual = hoje.getMonth(); // 0-11 (0=Janeiro, 11=Dezembro)
     const anoAtual = hoje.getFullYear();
 
-    // Data do evento: 27 de novembro de 2026
-    const dataEvento = new Date(2026, 10, 27); // Mês 10 = novembro (0-indexed)
+    // Data limite: 25 de novembro de 2026
+    const dataLimite = new Date(2026, 10, 25); // Mês 10 = novembro (0-indexed)
 
-    // Se estamos após o dia 20, começamos a contar do próximo mês
-    let mesInicio = mesAtual;
-    let anoInicio = anoAtual;
+    // Calcular número de meses desde hoje até novembro/2026
+    const mesesAteEvento = (dataLimite.getFullYear() - anoAtual) * 12 + (dataLimite.getMonth() - mesAtual);
 
-    if (diaAtual > 20) {
-        mesInicio++;
-        if (mesInicio > 11) {
-            mesInicio = 0;
-            anoInicio++;
-        }
-    }
-
-    // Calcular número de meses até o evento
-    const mesesAteEvento = (dataEvento.getFullYear() - anoInicio) * 12 + (dataEvento.getMonth() - mesInicio);
-
-    // Máximo de 11 parcelas, mas limitado pelos meses disponíveis
-    return Math.min(11, Math.max(1, mesesAteEvento));
+    // Máximo de 12 parcelas (se estivermos em dezembro/2025)
+    // À medida que os meses passam, diminui automaticamente
+    return Math.min(12, Math.max(1, mesesAteEvento));
 }
 
 // Adicionar evento de máscara no campo telefone
@@ -241,14 +229,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Obter dia de vencimento selecionado (ou 10 como padrão)
                 const diaVencimento = parseInt(document.getElementById('dia_vencimento').value) || 10;
 
-                // Gerar lista de datas de vencimento
-                const dataAtual = new Date();
-
                 let html = '<div style="margin-top: 1rem;"><strong>Vencimento de cada parcela:</strong></div>';
                 html += '<div style="margin-top: 0.5rem; max-height: 300px; overflow-y: auto;">';
 
                 for (let i = 1; i <= parcelas; i++) {
-                    const vencimento = new Date(dataAtual);
+                    let vencimento;
 
                     if (i === 1) {
                         // Primeira parcela: se o dia escolhido já passou no mês atual, vence hoje/amanhã
@@ -257,13 +242,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         if (diaAtual >= diaVencimento) {
                             // Já passou o dia escolhido, primeira parcela vence hoje
-                            vencimento.setTime(hoje.getTime());
+                            vencimento = new Date(hoje);
                         } else {
                             // Ainda não passou, primeira parcela vence no dia escolhido deste mês
+                            vencimento = new Date();
                             vencimento.setDate(diaVencimento);
                         }
                     } else {
                         // Demais parcelas: sempre no dia escolhido dos meses seguintes
+                        // Começar do mês atual e adicionar (i-1) meses
+                        vencimento = new Date();
                         vencimento.setMonth(vencimento.getMonth() + (i - 1));
                         vencimento.setDate(diaVencimento);
                     }
