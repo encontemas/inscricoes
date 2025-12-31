@@ -176,11 +176,62 @@ function copiarPixCopia() {
     });
 }
 
+// Calcular número máximo de parcelas baseado na data (dia 20 como limite)
+function calcularMaxParcelas() {
+    const hoje = new Date();
+    const diaAtual = hoje.getDate();
+    const mesAtual = hoje.getMonth(); // 0-11
+    const anoAtual = hoje.getFullYear();
+
+    // Data do evento: 27 de novembro de 2026
+    const dataEvento = new Date(2026, 10, 27); // Mês 10 = novembro (0-indexed)
+
+    // Se estamos após o dia 20, começamos a contar do próximo mês
+    let mesInicio = mesAtual;
+    let anoInicio = anoAtual;
+
+    if (diaAtual > 20) {
+        mesInicio++;
+        if (mesInicio > 11) {
+            mesInicio = 0;
+            anoInicio++;
+        }
+    }
+
+    // Calcular número de meses até o evento
+    const mesesAteEvento = (dataEvento.getFullYear() - anoInicio) * 12 + (dataEvento.getMonth() - mesInicio);
+
+    // Máximo de 11 parcelas, mas limitado pelos meses disponíveis
+    return Math.min(11, Math.max(1, mesesAteEvento));
+}
+
 // Adicionar evento de máscara no campo telefone
 document.addEventListener('DOMContentLoaded', function() {
-    // Calcular valor da parcela
+    // Atualizar opções de parcelas dinamicamente
     const numeroParcelas = document.getElementById('numero_parcelas');
     if (numeroParcelas) {
+        // Calcular e popular opções
+        const maxParcelas = calcularMaxParcelas();
+
+        // Limpar opções existentes (mantendo apenas o "Selecione...")
+        while (numeroParcelas.options.length > 1) {
+            numeroParcelas.remove(1);
+        }
+
+        // Adicionar opções dinâmicas
+        for (let i = 1; i <= maxParcelas; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i === 1 ? 'À vista (1x)' : `${i}x sem juros`;
+            numeroParcelas.appendChild(option);
+        }
+
+        // Atualizar texto informativo
+        const infoBox = document.querySelector('.info-box');
+        if (infoBox) {
+            infoBox.innerHTML = `<strong>Valor do Evento:</strong> R$ 450,00<br>Você pode parcelar em até ${maxParcelas}x sem juros via PIX`;
+        }
+
         numeroParcelas.addEventListener('change', function() {
             const parcelas = parseInt(this.value);
             if (parcelas) {

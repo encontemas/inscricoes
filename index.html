@@ -335,8 +335,8 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="cpf">CPF (opcional)</label>
-                            <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00">
+                            <label for="cpf" class="required">CPF</label>
+                            <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" required>
                         </div>
                         <div class="form-group">
                             <label for="cidade_pais" class="required">Cidade/País</label>
@@ -399,17 +399,7 @@
                             <label for="numero_parcelas" class="required">Número de Parcelas</label>
                             <select id="numero_parcelas" name="numero_parcelas" required>
                                 <option value="">Selecione...</option>
-                                <option value="1">À vista (1x)</option>
-                                <option value="2">2x sem juros</option>
-                                <option value="3">3x sem juros</option>
-                                <option value="4">4x sem juros</option>
-                                <option value="5">5x sem juros</option>
-                                <option value="6">6x sem juros</option>
-                                <option value="7">7x sem juros</option>
-                                <option value="8">8x sem juros</option>
-                                <option value="9">9x sem juros</option>
-                                <option value="10">10x sem juros</option>
-                                <option value="11">11x sem juros</option>
+                                <!-- Opções geradas dinamicamente via JavaScript -->
                             </select>
                         </div>
                         <div class="form-group">
@@ -616,7 +606,8 @@
     <footer class="footer">
         <div class="container">
             <p>&copy; 2025 Encontemas da Diversidade. Todos os direitos reservados.</p>
-            <p>Narcóticos Anônimos - Recuperação, Diversidade e Inclusão</p>
+            <p>Narcóticos Anônimos é uma irmandade mundial, sem fins lucrativos, de adictos em recuperação.</p>
+            <p>Para mais informações sobre NA, visite: <a href="https://na.org.br" target="_blank" rel="noopener noreferrer" class="footer-link">na.org.br</a></p>
         </div>
     </footer>
 
