@@ -17,10 +17,12 @@ async function salvarInscricao(dadosInscricao) {
         const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
 
         // Preparar dados conforme estrutura da planilha
-        const agora = new Date().toISOString();
-        
+        // Ajustar para fuso horário de São Paulo (GMT-3)
+        const agora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
         // CORREÇÃO: Gerar ID via código para preencher a Coluna A
-        const idGerado = `INS-${agora}-${Math.floor(Math.random() * 1000)}`;
+        const timestamp = new Date().getTime();
+        const idGerado = `INS-${timestamp}-${Math.floor(Math.random() * 1000)}`;
 
         const valores = [
             idGerado, // id_inscricao preenchido pelo sistema

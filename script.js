@@ -237,12 +237,53 @@ document.addEventListener('DOMContentLoaded', function() {
             if (parcelas) {
                 const valorTotal = 450.00;
                 const valorParcela = (valorTotal / parcelas).toFixed(2);
-                document.getElementById('valor_parcela').textContent = `R$ ${valorParcela}`;
+
+                // Obter dia de vencimento selecionado (ou 10 como padrão)
+                const diaVencimento = parseInt(document.getElementById('dia_vencimento').value) || 10;
+
+                // Gerar lista de datas de vencimento
+                const dataAtual = new Date();
+
+                let html = '<div style="margin-top: 1rem;"><strong>Vencimento de cada parcela:</strong></div>';
+                html += '<div style="margin-top: 0.5rem; max-height: 300px; overflow-y: auto;">';
+
+                for (let i = 1; i <= parcelas; i++) {
+                    const vencimento = new Date(dataAtual);
+                    vencimento.setMonth(vencimento.getMonth() + (i - 1));
+                    vencimento.setDate(diaVencimento);
+
+                    // Formatar data no padrão brasileiro
+                    const dataFormatada = vencimento.toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+
+                    html += `<div style="padding: 0.5rem; margin: 0.25rem 0; background: #f0f0f0; border-radius: 4px; display: flex; justify-content: space-between;">
+                        <span><strong>Parcela ${i}/${parcelas}:</strong> ${dataFormatada}</span>
+                        <span style="color: var(--primary-color); font-weight: bold;">R$ ${valorParcela}</span>
+                    </div>`;
+                }
+
+                html += '</div>';
+
+                document.getElementById('parcela_info').innerHTML = html;
                 document.getElementById('parcela_info').style.display = 'block';
             } else {
                 document.getElementById('parcela_info').style.display = 'none';
             }
         });
+
+        // Atualizar parcelas quando dia de vencimento mudar
+        const diaVencimento = document.getElementById('dia_vencimento');
+        if (diaVencimento) {
+            diaVencimento.addEventListener('change', function() {
+                // Trigger change no número de parcelas para recalcular
+                if (numeroParcelas.value) {
+                    numeroParcelas.dispatchEvent(new Event('change'));
+                }
+            });
+        }
     }
 
     // Mostrar/ocultar campo de descrição de necessidades
