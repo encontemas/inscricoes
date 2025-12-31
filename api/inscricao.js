@@ -50,7 +50,10 @@ async function salvarInscricao(dadosInscricao) {
                 } else {
                     // Demais parcelas: a partir da primeira parcela, adicionar meses
                     vencimento = new Date(primeiraParcelaData);
+                    // IMPORTANTE: Ajustar dia para 1 antes de mudar mês (evita overflow)
+                    vencimento.setDate(1);
                     vencimento.setMonth(primeiraParcelaData.getMonth() + (i - 1));
+                    // Depois ajustar para o dia de vencimento
                     vencimento.setDate(diaVencimento);
                 }
                 datasVencimento.push(vencimento.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }));

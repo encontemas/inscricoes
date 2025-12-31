@@ -258,16 +258,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         // Demais parcelas: a partir da primeira parcela, adicionar meses
                         vencimento = new Date(primeiraParcelaData);
+                        // IMPORTANTE: Ajustar dia para 1 antes de mudar mês (evita overflow)
+                        vencimento.setDate(1);
                         vencimento.setMonth(primeiraParcelaData.getMonth() + (i - 1));
+                        // Depois ajustar para o dia de vencimento
                         vencimento.setDate(diaVencimento);
                     }
 
-                    // Formatar data no padrão brasileiro
-                    const dataFormatada = vencimento.toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                    });
+                    // Formatar data no padrão brasileiro dd/mm/aaaa
+                    const dataFormatada = vencimento.toLocaleDateString('pt-BR');
 
                     html += `<div style="padding: 0.5rem; margin: 0.25rem 0; background: #f0f0f0; border-radius: 4px; display: flex; justify-content: space-between;">
                         <span><strong>Parcela ${i}/${parcelas}:</strong> ${dataFormatada}</span>
