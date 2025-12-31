@@ -30,22 +30,27 @@ async function salvarInscricao(dadosInscricao) {
         const hoje = new Date();
         const diaAtual = hoje.getDate();
 
+        // Calcular data base da primeira parcela
+        let primeiraParcelaData;
+        if (diaAtual >= diaVencimento) {
+            // Já passou o dia escolhido, primeira parcela vence hoje
+            primeiraParcelaData = new Date(hoje);
+        } else {
+            // Ainda não passou, primeira parcela vence no dia escolhido deste mês
+            primeiraParcelaData = new Date();
+            primeiraParcelaData.setDate(diaVencimento);
+        }
+
         const datasVencimento = [];
         for (let i = 1; i <= 11; i++) { // Sempre preparar 11 espaços
             if (i <= numeroParcelas) {
                 let vencimento;
                 if (i === 1) {
-                    // Primeira parcela: se dia escolhido já passou, vence hoje
-                    if (diaAtual >= diaVencimento) {
-                        vencimento = new Date(hoje);
-                    } else {
-                        vencimento = new Date();
-                        vencimento.setDate(diaVencimento);
-                    }
+                    vencimento = new Date(primeiraParcelaData);
                 } else {
-                    // Demais parcelas: dia escolhido dos meses seguintes
-                    vencimento = new Date();
-                    vencimento.setMonth(vencimento.getMonth() + (i - 1));
+                    // Demais parcelas: a partir da primeira parcela, adicionar meses
+                    vencimento = new Date(primeiraParcelaData);
+                    vencimento.setMonth(primeiraParcelaData.getMonth() + (i - 1));
                     vencimento.setDate(diaVencimento);
                 }
                 datasVencimento.push(vencimento.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }));

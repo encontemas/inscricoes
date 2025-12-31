@@ -236,27 +236,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 let html = '<div style="margin-top: 1rem;"><strong>Vencimento de cada parcela:</strong></div>';
                 html += '<div style="margin-top: 0.5rem; max-height: 300px; overflow-y: auto;">';
 
+                // Calcular data base da primeira parcela
+                const hoje = new Date();
+                const diaAtual = hoje.getDate();
+
+                let primeiraParcelaData;
+                if (diaAtual >= diaVencimento) {
+                    // Já passou o dia escolhido, primeira parcela vence hoje
+                    primeiraParcelaData = new Date(hoje);
+                } else {
+                    // Ainda não passou, primeira parcela vence no dia escolhido deste mês
+                    primeiraParcelaData = new Date();
+                    primeiraParcelaData.setDate(diaVencimento);
+                }
+
                 for (let i = 1; i <= parcelas; i++) {
                     let vencimento;
 
                     if (i === 1) {
-                        // Primeira parcela: se o dia escolhido já passou no mês atual, vence hoje/amanhã
-                        const hoje = new Date();
-                        const diaAtual = hoje.getDate();
-
-                        if (diaAtual >= diaVencimento) {
-                            // Já passou o dia escolhido, primeira parcela vence hoje
-                            vencimento = new Date(hoje);
-                        } else {
-                            // Ainda não passou, primeira parcela vence no dia escolhido deste mês
-                            vencimento = new Date();
-                            vencimento.setDate(diaVencimento);
-                        }
+                        vencimento = new Date(primeiraParcelaData);
                     } else {
-                        // Demais parcelas: sempre no dia escolhido dos meses seguintes
-                        // Começar do mês atual e adicionar (i-1) meses
-                        vencimento = new Date();
-                        vencimento.setMonth(vencimento.getMonth() + (i - 1));
+                        // Demais parcelas: a partir da primeira parcela, adicionar meses
+                        vencimento = new Date(primeiraParcelaData);
+                        vencimento.setMonth(primeiraParcelaData.getMonth() + (i - 1));
                         vencimento.setDate(diaVencimento);
                     }
 
