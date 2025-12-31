@@ -249,8 +249,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 for (let i = 1; i <= parcelas; i++) {
                     const vencimento = new Date(dataAtual);
-                    vencimento.setMonth(vencimento.getMonth() + (i - 1));
-                    vencimento.setDate(diaVencimento);
+
+                    if (i === 1) {
+                        // Primeira parcela: se o dia escolhido já passou no mês atual, vence hoje/amanhã
+                        const hoje = new Date();
+                        const diaAtual = hoje.getDate();
+
+                        if (diaAtual >= diaVencimento) {
+                            // Já passou o dia escolhido, primeira parcela vence hoje
+                            vencimento.setTime(hoje.getTime());
+                        } else {
+                            // Ainda não passou, primeira parcela vence no dia escolhido deste mês
+                            vencimento.setDate(diaVencimento);
+                        }
+                    } else {
+                        // Demais parcelas: sempre no dia escolhido dos meses seguintes
+                        vencimento.setMonth(vencimento.getMonth() + (i - 1));
+                        vencimento.setDate(diaVencimento);
+                    }
 
                     // Formatar data no padrão brasileiro
                     const dataFormatada = vencimento.toLocaleDateString('pt-BR', {
