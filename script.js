@@ -82,15 +82,18 @@ function scrollToInscricao() {
 }
 
 // Funções para galeria de imagens e vídeos
-function abrirImagem(src) {
+function abrirImagem(src, titulo = '') {
     const modal = document.getElementById('modalGaleria');
     const modalImg = document.getElementById('modalImagem');
     const modalVideo = document.getElementById('modalVideo');
+    const modalTitulo = document.getElementById('modalTitulo');
 
     modalImg.src = src;
     modalImg.style.display = 'block';
     modalVideo.style.display = 'none';
     modalVideo.innerHTML = '';
+    modalTitulo.textContent = titulo;
+    modalTitulo.style.display = titulo ? 'block' : 'none';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
