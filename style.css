@@ -174,7 +174,7 @@ body {
 /* Hero Section */
 .hero {
     background: var(--gradient);
-    background-image: url('fundo_sessao_cartaz.jpg'), var(--gradient);
+    background-image: url('https://acampamentoterradosaber.com.br/wp-content/uploads/2024/10/Area-externa-1.jpg'), var(--gradient);
     background-blend-mode: overlay;
     background-size: cover;
     background-position: center;
@@ -659,11 +659,6 @@ body {
 /* Formulário de Inscrição */
 .inscricao {
     background: var(--bg-light);
-    background-image: url('https://acampamentoterradosaber.com.br/wp-content/uploads/2024/10/Area-externa-1.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
 }
 
 .form-inscricao {
