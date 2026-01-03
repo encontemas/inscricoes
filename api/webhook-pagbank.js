@@ -270,15 +270,20 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento) {
         // TODO: Melhorar lógica para identificar qual parcela foi paga baseado no valor ou referenceId
         const numeroParcela = 1;
         const parcelaKey = `parcela_${String(numeroParcela).padStart(2, '0')}_paga`;
-        const dataPagamentoKey = `data_pagamento_${String(numeroParcela).padStart(2, '0')}`;
+        const dataPagaKey = `data_paga_${String(numeroParcela).padStart(2, '0')}`; // Data efetiva do pagamento
 
         // Encontrar índices das colunas
         const parcelaIndex = headers.indexOf(parcelaKey);
-        const dataPagamentoIndex = headers.indexOf(dataPagamentoKey);
+        let dataPagaIndex = headers.indexOf(dataPagaKey);
 
         if (parcelaIndex === -1) {
             console.error(`❌ Coluna "${parcelaKey}" não encontrada na planilha`);
             return;
+        }
+
+        // Se não existir coluna data_paga_XX, precisa ser criada
+        if (dataPagaIndex === -1) {
+            console.warn(`⚠️ Coluna "${dataPagaKey}" não encontrada. Será necessário criar manualmente na planilha.`);
         }
 
         // Preparar atualizações
@@ -291,14 +296,15 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento) {
             values: [[1]]
         });
 
-        // Atualizar data de pagamento se a coluna existir
-        if (dataPagamentoIndex !== -1) {
-            const dataPagamentoCol = String.fromCharCode(65 + dataPagamentoIndex);
-            const dataPagamento = new Date(dadosPagamento.paidAt || new Date()).toLocaleDateString('pt-BR');
+        // Atualizar data efetiva do pagamento se a coluna existir
+        if (dataPagaIndex !== -1) {
+            const dataPagaCol = String.fromCharCode(65 + dataPagaIndex);
+            const dataPaga = new Date(dadosPagamento.paidAt || new Date()).toLocaleDateString('pt-BR');
             updates.push({
-                range: `Inscrições!${dataPagamentoCol}${rowIndex + 1}`,
-                values: [[dataPagamento]]
+                range: `Inscrições!${dataPagaCol}${rowIndex + 1}`,
+                values: [[dataPaga]]
             });
+            console.log(`📅 Atualizando ${dataPagaKey} = ${dataPaga}`);
         }
 
         // Executar todas as atualizações

@@ -573,11 +573,11 @@
 
                 for (let i = 1; i <= inscritoData.numero_parcelas; i++) {
                     // Buscar data de vencimento e status da planilha
-                    const dataVencimentoKey = `data_vencimento_${String(i).padStart(2, '0')}`;
                     const parcelaKey = `parcela_${String(i).padStart(2, '0')}_paga`;
-                    const dataPagamentoKey = `data_pagamento_${String(i).padStart(2, '0')}`;
+                    const dataVencimentoKey = `data_pagamento_${String(i).padStart(2, '0')}`; // Este campo é na verdade o vencimento
+                    const dataPagaKey = `data_paga_${String(i).padStart(2, '0')}`; // Data efetiva do pagamento
 
-                    // Obter data de vencimento da planilha
+                    // Obter data de vencimento da planilha (campo chamado data_pagamento mas é o vencimento)
                     let dataVencimentoStr = data[dataVencimentoKey] || '';
                     let vencimento;
 
@@ -595,7 +595,7 @@
                     // Verificar se está paga: aceita 1, "1", true, "TRUE", "true"
                     const valorPaga = data[parcelaKey];
                     const isPaga = valorPaga === 1 || valorPaga === '1' || valorPaga === true || valorPaga === 'TRUE' || valorPaga === 'true';
-                    const dataPagamento = data[dataPagamentoKey];
+                    const dataPaga = data[dataPagaKey]; // Data em que foi efetivamente pago
 
                     let status = 'pending';
                     if (isPaga) {
@@ -610,7 +610,7 @@
                         vencimento: vencimento.toISOString().split('T')[0],
                         status: status,
                         pix_id: isPaga ? `PIX_${i}` : null,
-                        data_pagamento: dataPagamento || null
+                        data_paga: dataPaga || null // Data efetiva do pagamento
                     });
                 }
 
@@ -645,7 +645,7 @@
                     <div class="parcela-info">
                         <h3>Parcela ${parcela.numero}/${inscritoData.numero_parcelas}</h3>
                         <p>Vencimento: ${formatarData(parcela.vencimento)}</p>
-                        ${parcela.status === 'paid' ? `<p>✓ Pago em ${formatarData(parcela.data_pagamento)}</p>` : ''}
+                        ${parcela.status === 'paid' && parcela.data_paga ? `<p>✓ Pago em ${formatarData(parcela.data_paga)}</p>` : ''}
                         <span class="status-badge status-${parcela.status}">
                             ${getStatusLabel(parcela.status)}
                         </span>
