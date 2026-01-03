@@ -87,11 +87,18 @@ async function salvarInscricao(dadosInscricao) {
             'PIX', // forma_pagamento
             0, // inscricao_confirmada (será 1 após primeiro pagamento)
             '', // data_confirmacao (vazio inicialmente)
-            // Flags de parcelas com datas de vencimento (24 a 45)
-            0, datasVencimento[0], 0, datasVencimento[1], 0, datasVencimento[2], // parcelas 01-03
-            0, datasVencimento[3], 0, datasVencimento[4], 0, datasVencimento[5], // parcelas 04-06
-            0, datasVencimento[6], 0, datasVencimento[7], 0, datasVencimento[8], // parcelas 07-09
-            0, datasVencimento[9], 0, datasVencimento[10], // parcelas 10-11
+            // Parcelas com: parcela_XX_paga, data_pagamento_XX (vencimento), data_paga_XX (pago em)
+            0, datasVencimento[0], '', // parcela_01
+            0, datasVencimento[1], '', // parcela_02
+            0, datasVencimento[2], '', // parcela_03
+            0, datasVencimento[3], '', // parcela_04
+            0, datasVencimento[4], '', // parcela_05
+            0, datasVencimento[5], '', // parcela_06
+            0, datasVencimento[6], '', // parcela_07
+            0, datasVencimento[7], '', // parcela_08
+            0, datasVencimento[8], '', // parcela_09
+            0, datasVencimento[9], '', // parcela_10
+            0, datasVencimento[10], '', // parcela_11
             // Campos calculados (47 a 50)
             0, // total_parcelas_pagas
             0.00, // valor_total_pago
