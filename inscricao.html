@@ -535,9 +535,9 @@
                 <div class="form-section">
                     <h2 class="form-section-title">Forma de Pagamento</h2>
 
-                    <div class="info-box">
+                    <div class="info-box" id="infoParcelamento">
                         <strong>Valor do Evento:</strong> R$ 450,00<br>
-                        Você pode parcelar em até 11x sem juros via PIX
+                        <span id="textoParcelamento">Você pode parcelar em até 11x sem juros via PIX</span>
                     </div>
 
                     <div class="form-row">
@@ -545,17 +545,7 @@
                             <label for="numero_parcelas" class="required">Número de Parcelas</label>
                             <select id="numero_parcelas" name="numero_parcelas" required>
                                 <option value="">Selecione...</option>
-                                <option value="1">À vista (1x)</option>
-                                <option value="2">2x sem juros</option>
-                                <option value="3">3x sem juros</option>
-                                <option value="4">4x sem juros</option>
-                                <option value="5">5x sem juros</option>
-                                <option value="6">6x sem juros</option>
-                                <option value="7">7x sem juros</option>
-                                <option value="8">8x sem juros</option>
-                                <option value="9">9x sem juros</option>
-                                <option value="10">10x sem juros</option>
-                                <option value="11">11x sem juros</option>
+                                <!-- Opções serão geradas dinamicamente pelo JavaScript -->
                             </select>
                         </div>
                         <div class="form-group">
@@ -773,6 +763,74 @@
         let inscritoCPF = '';
         let numeroParcelas = 1;
         let intervalVerificacao = null;
+
+        // Função para calcular máximo de parcelas permitidas
+        function calcularMaximoParcelas() {
+            const hoje = new Date();
+            const mesAtual = hoje.getMonth() + 1; // Janeiro = 1, Fevereiro = 2, etc.
+            const anoAtual = hoje.getFullYear();
+
+            // Evento em novembro/2026
+            const mesEvento = 11; // Novembro
+            const anoEvento = 2026;
+
+            // Calcular meses restantes até o evento
+            const mesesRestantes = (anoEvento - anoAtual) * 12 + (mesEvento - mesAtual);
+
+            // Durante Janeiro e Fevereiro de 2026: máximo 10 parcelas
+            // A partir de Março: diminui 1 parcela por mês
+            let maximoParcelas;
+
+            if (anoAtual < 2026) {
+                // Antes de 2026: permite 11 parcelas
+                maximoParcelas = 11;
+            } else if (anoAtual === 2026) {
+                if (mesAtual <= 2) {
+                    // Janeiro ou Fevereiro de 2026: máximo 10 parcelas
+                    maximoParcelas = 10;
+                } else {
+                    // A partir de Março: meses restantes até novembro
+                    maximoParcelas = Math.max(1, mesesRestantes);
+                }
+            } else {
+                // Depois de 2026: não permite mais inscrições
+                maximoParcelas = 1;
+            }
+
+            return maximoParcelas;
+        }
+
+        // Função para gerar opções de parcelas
+        function gerarOpcoesParcelas() {
+            const select = document.getElementById('numero_parcelas');
+            const textoParcelamento = document.getElementById('textoParcelamento');
+            const maximoParcelas = calcularMaximoParcelas();
+
+            // Limpar opções existentes (exceto a primeira)
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+
+            // Adicionar opções de 1 até o máximo permitido
+            for (let i = 1; i <= maximoParcelas; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                if (i === 1) {
+                    option.textContent = 'À vista (1x)';
+                } else {
+                    option.textContent = `${i}x sem juros`;
+                }
+                select.appendChild(option);
+            }
+
+            // Atualizar texto informativo
+            textoParcelamento.textContent = `Você pode parcelar em até ${maximoParcelas}x sem juros via PIX`;
+        }
+
+        // Gerar opções ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            gerarOpcoesParcelas();
+        });
 
         // Calcular valor da parcela
         document.getElementById('numero_parcelas').addEventListener('change', function() {

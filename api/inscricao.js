@@ -2,6 +2,44 @@
 import { google } from 'googleapis';
 
 /**
+ * Calcula o máximo de parcelas permitidas baseado na data atual
+ */
+function calcularMaximoParcelas() {
+    const hoje = new Date();
+    const mesAtual = hoje.getMonth() + 1; // Janeiro = 1, Fevereiro = 2, etc.
+    const anoAtual = hoje.getFullYear();
+
+    // Evento em novembro/2026
+    const mesEvento = 11; // Novembro
+    const anoEvento = 2026;
+
+    // Calcular meses restantes até o evento
+    const mesesRestantes = (anoEvento - anoAtual) * 12 + (mesEvento - mesAtual);
+
+    // Durante Janeiro e Fevereiro de 2026: máximo 10 parcelas
+    // A partir de Março: diminui 1 parcela por mês
+    let maximoParcelas;
+
+    if (anoAtual < 2026) {
+        // Antes de 2026: permite 11 parcelas
+        maximoParcelas = 11;
+    } else if (anoAtual === 2026) {
+        if (mesAtual <= 2) {
+            // Janeiro ou Fevereiro de 2026: máximo 10 parcelas
+            maximoParcelas = 10;
+        } else {
+            // A partir de Março: meses restantes até novembro
+            maximoParcelas = Math.max(1, mesesRestantes);
+        }
+    } else {
+        // Depois de 2026: não permite mais inscrições
+        maximoParcelas = 1;
+    }
+
+    return maximoParcelas;
+}
+
+/**
  * Salva inscrição na planilha Google Sheets
  */
 async function salvarInscricao(dadosInscricao) {
@@ -189,10 +227,13 @@ export default async function handler(req, res) {
             });
         }
 
-        if (!dados.numero_parcelas || dados.numero_parcelas < 1 || dados.numero_parcelas > 11) {
+        // Validar número de parcelas com base na data atual
+        const maximoParcelasPermitido = calcularMaximoParcelas();
+
+        if (!dados.numero_parcelas || dados.numero_parcelas < 1 || dados.numero_parcelas > maximoParcelasPermitido) {
             return res.status(400).json({
                 error: 'Número de parcelas inválido',
-                message: 'Escolha entre 1 e 11 parcelas'
+                message: `Escolha entre 1 e ${maximoParcelasPermitido} parcelas`
             });
         }
 
