@@ -592,7 +592,9 @@
                         vencimento.setHours(0, 0, 0, 0);
                     }
 
-                    const isPaga = data[parcelaKey] === true || data[parcelaKey] === 'TRUE' || data[parcelaKey] === 1;
+                    // Verificar se está paga: aceita 1, "1", true, "TRUE", "true"
+                    const valorPaga = data[parcelaKey];
+                    const isPaga = valorPaga === 1 || valorPaga === '1' || valorPaga === true || valorPaga === 'TRUE' || valorPaga === 'true';
                     const dataPagamento = data[dataPagamentoKey];
 
                     let status = 'pending';

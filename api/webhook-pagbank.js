@@ -174,6 +174,9 @@ async function registrarPagamento(dadosPagamento) {
 
         console.log('✅ Pagamento registrado na planilha Pagamentos!');
 
+        // Atualizar status de pagamento na aba Inscrições
+        await atualizarStatusPagamentoInscricao(dadosPagamento);
+
         // Enviar email de confirmação ao inscrito
         try {
             const { enviarConfirmacaoPagamento } = await import('./enviar-email.js');
@@ -198,5 +201,119 @@ async function registrarPagamento(dadosPagamento) {
     } catch (error) {
         console.error('❌ Erro ao registrar pagamento:', error);
         throw error;
+    }
+}
+
+// Função para atualizar status de pagamento na aba Inscrições
+async function atualizarStatusPagamentoInscricao(dadosPagamento) {
+    try {
+        console.log('📝 Atualizando status de pagamento na aba Inscrições...');
+
+        const auth = new google.auth.GoogleAuth({
+            credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON),
+            scopes: ['https://www.googleapis.com/auth/spreadsheets']
+        });
+
+        const sheets = google.sheets({ version: 'v4', auth });
+        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+
+        // Extrair email do reference_id ou dos dados do cliente
+        const email = dadosPagamento.customerEmail;
+
+        if (!email) {
+            console.warn('⚠️ Email não encontrado no pagamento, não é possível atualizar inscrição');
+            return;
+        }
+
+        console.log('🔍 Buscando inscrição com email:', email);
+
+        // Buscar dados na planilha Inscrições
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range: 'Inscrições!A:AZ',
+        });
+
+        const rows = response.data.values;
+
+        if (!rows || rows.length <= 1) {
+            console.warn('⚠️ Nenhuma inscrição encontrada na planilha');
+            return;
+        }
+
+        // Cabeçalhos (primeira linha)
+        const headers = rows[0];
+        const emailIndex = headers.indexOf('email');
+
+        if (emailIndex === -1) {
+            console.error('❌ Coluna "email" não encontrada na planilha');
+            return;
+        }
+
+        // Buscar linha do inscrito pelo email
+        let rowIndex = -1;
+        for (let i = 1; i < rows.length; i++) {
+            const rowEmail = (rows[i][emailIndex] || '').toLowerCase().trim();
+            if (rowEmail === email.toLowerCase().trim()) {
+                rowIndex = i;
+                break;
+            }
+        }
+
+        if (rowIndex === -1) {
+            console.warn('⚠️ Inscrição não encontrada para email:', email);
+            return;
+        }
+
+        console.log('✅ Inscrição encontrada na linha:', rowIndex + 1);
+
+        // Determinar qual parcela está sendo paga (por enquanto, marcar como parcela 01)
+        // TODO: Melhorar lógica para identificar qual parcela foi paga baseado no valor ou referenceId
+        const numeroParcela = 1;
+        const parcelaKey = `parcela_${String(numeroParcela).padStart(2, '0')}_paga`;
+        const dataPagamentoKey = `data_pagamento_${String(numeroParcela).padStart(2, '0')}`;
+
+        // Encontrar índices das colunas
+        const parcelaIndex = headers.indexOf(parcelaKey);
+        const dataPagamentoIndex = headers.indexOf(dataPagamentoKey);
+
+        if (parcelaIndex === -1) {
+            console.error(`❌ Coluna "${parcelaKey}" não encontrada na planilha`);
+            return;
+        }
+
+        // Preparar atualizações
+        const updates = [];
+
+        // Marcar parcela como paga (valor = 1)
+        const parcelaCol = String.fromCharCode(65 + parcelaIndex); // A=65, B=66, etc.
+        updates.push({
+            range: `Inscrições!${parcelaCol}${rowIndex + 1}`,
+            values: [[1]]
+        });
+
+        // Atualizar data de pagamento se a coluna existir
+        if (dataPagamentoIndex !== -1) {
+            const dataPagamentoCol = String.fromCharCode(65 + dataPagamentoIndex);
+            const dataPagamento = new Date(dadosPagamento.paidAt || new Date()).toLocaleDateString('pt-BR');
+            updates.push({
+                range: `Inscrições!${dataPagamentoCol}${rowIndex + 1}`,
+                values: [[dataPagamento]]
+            });
+        }
+
+        // Executar todas as atualizações
+        await sheets.spreadsheets.values.batchUpdate({
+            spreadsheetId,
+            resource: {
+                valueInputOption: 'RAW',
+                data: updates
+            }
+        });
+
+        console.log(`✅ Status de pagamento atualizado: ${parcelaKey} = 1 para ${email}`);
+
+    } catch (error) {
+        console.error('❌ Erro ao atualizar status de pagamento na inscrição:', error);
+        // Não lançar erro para não quebrar o webhook
     }
 }
