@@ -224,6 +224,23 @@
             cursor: not-allowed;
         }
 
+        .btn-primary {
+            background: var(--gradient);
+            color: var(--white);
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
         /* Modal */
         .modal {
             display: none;
@@ -676,32 +693,86 @@
         </div>
     </div>
 
-    <!-- Modal Sucesso -->
+    <!-- Modal Sucesso - Aguardando Pagamento -->
     <div id="modalSucesso" class="modal">
         <div class="modal-content success-modal">
             <button class="modal-close" onclick="fecharModal('modalSucesso')">&times;</button>
             <div class="success-icon">✓</div>
-            <h2>Inscrição Realizada com Sucesso!</h2>
-            <p>Sua inscrição foi registrada. Agora complete o pagamento da primeira parcela:</p>
+            <h2 id="tituloSucesso">Cadastro Concluído com Sucesso!</h2>
+            <p id="descricaoSucesso">Sua inscrição foi registrada. Complete o pagamento para confirmar:</p>
 
+            <!-- Container PIX - Aguardando Pagamento -->
             <div class="qr-code-container" id="pixContainer">
-                <h3>PIX - Primeira Parcela</h3>
+                <h3 id="parcelaTexto">PIX - Primeira Parcela</h3>
                 <div id="pixValor" style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color); margin: 1rem 0;"></div>
+
+                <!-- Status de Pagamento -->
+                <div id="statusPagamento" style="padding: 1rem; margin: 1rem 0; border-radius: 8px; background: #fffbeb; border: 2px solid #f59e0b;">
+                    <p style="color: #92400e; font-weight: 600; margin: 0;">
+                        ⏳ Aguardando pagamento...
+                    </p>
+                    <p style="color: #92400e; font-size: 0.9rem; margin: 0.5rem 0 0 0;">
+                        A confirmação pode levar alguns segundos
+                    </p>
+                </div>
+
                 <img id="qrCodeImagem" src="" alt="QR Code PIX">
                 <p>Escaneie o QR Code acima ou copie o código PIX:</p>
                 <div class="pix-code" id="pixCodigo"></div>
-                <button class="copy-button" onclick="copiarPixCopia()">Copiar Código PIX</button>
+                <button class="copy-button" onclick="copiarPixCopia()">📋 Copiar Código PIX</button>
             </div>
 
             <div class="info-box" style="margin-top: 2rem;">
-                <strong>Importante:</strong> Você receberá um e-mail com a confirmação da inscrição e as instruções para as próximas parcelas.
+                <strong>ℹ️ Importante:</strong>
+                <p style="margin: 0.5rem 0 0 0;">Sua inscrição será confirmada assim que o pagamento <span id="tipoParcelaInfo">da primeira parcela</span> for detectado pelo sistema.</p>
+                <p style="margin: 0.5rem 0 0 0;">Você receberá um e-mail com a confirmação e instruções.</p>
             </div>
+
+            <button class="btn-primary" onclick="irParaAreaInscrito()" style="margin-top: 1.5rem; width: 100%; padding: 1rem; font-size: 1rem;">
+                Acessar Área do Inscrito
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Sucesso - Pagamento Confirmado -->
+    <div id="modalPagamentoConfirmado" class="modal">
+        <div class="modal-content success-modal">
+            <div class="success-icon" style="background: #10b981;">🎉</div>
+            <h2>Parabéns! Pagamento Confirmado!</h2>
+            <p style="font-size: 1.1rem; color: var(--text-dark); margin: 1.5rem 0;">
+                Sua inscrição foi confirmada com sucesso!
+            </p>
+
+            <div style="background: #f0fdf4; padding: 1.5rem; border-radius: 12px; border: 2px solid #10b981; margin: 1.5rem 0;">
+                <p style="color: #065f46; font-weight: 600; margin: 0 0 0.5rem 0;">
+                    ✅ <span id="parcelaPagaTexto">Primeira parcela</span> recebida
+                </p>
+                <p style="color: #065f46; margin: 0; font-size: 0.95rem;">
+                    <span id="mensagemCondicional">Sua participação está condicionada ao pagamento completo de todas as parcelas.</span>
+                </p>
+            </div>
+
+            <div class="info-box" style="margin-top: 1.5rem;">
+                <strong>📧 Próximos Passos:</strong>
+                <ul style="text-align: left; margin: 0.5rem 0 0 1.5rem; line-height: 1.8;">
+                    <li>Você receberá um email de confirmação</li>
+                    <li id="proximaParcelaInfo">Acesse a Área do Inscrito para pagar as próximas parcelas</li>
+                    <li>Fique atento às atualizações sobre o evento</li>
+                </ul>
+            </div>
+
+            <button class="btn-primary" onclick="irParaAreaInscrito()" style="margin-top: 1.5rem; width: 100%; padding: 1rem; font-size: 1rem;">
+                Acessar Área do Inscrito
+            </button>
         </div>
     </div>
 
     <script>
-        // Variável global para armazenar o código PIX
+        // Variáveis globais
         let pixCopiaCola = '';
+        let inscritoCPF = '';
+        let numeroParcelas = 1;
+        let intervalVerificacao = null;
 
         // Calcular valor da parcela
         document.getElementById('numero_parcelas').addEventListener('change', function() {
@@ -851,13 +922,30 @@
                     throw new Error(data.message || data.error || 'Erro ao processar inscrição');
                 }
 
+                // Armazenar dados para verificação
+                inscritoCPF = formData.cpf.replace(/\D/g, '');
+                numeroParcelas = parseInt(formData.numero_parcelas);
+
                 // Exibir modal de sucesso com PIX
                 if (data.pix) {
                     pixCopiaCola = data.pix.qr_code_texto;
                     document.getElementById('pixValor').textContent = data.pix.valor;
                     document.getElementById('qrCodeImagem').src = data.pix.qr_code_imagem;
                     document.getElementById('pixCodigo').textContent = data.pix.qr_code_texto;
+
+                    // Ajustar mensagens baseado no número de parcelas
+                    if (numeroParcelas === 1) {
+                        document.getElementById('parcelaTexto').textContent = 'PIX - Pagamento Único';
+                        document.getElementById('tipoParcelaInfo').textContent = 'do pagamento único';
+                    } else {
+                        document.getElementById('parcelaTexto').textContent = 'PIX - Primeira Parcela';
+                        document.getElementById('tipoParcelaInfo').textContent = 'da primeira parcela';
+                    }
+
                     abrirModal('modalSucesso');
+
+                    // Iniciar verificação automática de pagamento
+                    iniciarVerificacaoPagamento();
 
                     // Limpar formulário
                     document.getElementById('formInscricao').reset();
@@ -875,6 +963,96 @@
                 btnText.textContent = 'Finalizar Inscrição e Gerar PIX';
                 btnSpinner.style.display = 'none';
             }
+        });
+
+        // Função para verificar pagamento automaticamente
+        async function verificarPagamento() {
+            if (!inscritoCPF) return;
+
+            try {
+                const response = await fetch('/api/inscrito', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cpf: inscritoCPF })
+                });
+
+                const data = await response.json();
+
+                // Verificar se está paga: aceita 1, "1", true, "TRUE", "true"
+                const isPaga = data.parcela_01_paga === 1 ||
+                               data.parcela_01_paga === '1' ||
+                               data.parcela_01_paga === true ||
+                               data.parcela_01_paga === 'TRUE' ||
+                               data.parcela_01_paga === 'true';
+
+                if (response.ok && isPaga) {
+                    // Pagamento confirmado!
+                    pararVerificacaoPagamento();
+                    mostrarPagamentoConfirmado();
+                }
+            } catch (error) {
+                console.error('Erro ao verificar pagamento:', error);
+            }
+        }
+
+        // Iniciar verificação de pagamento a cada 5 segundos
+        function iniciarVerificacaoPagamento() {
+            if (intervalVerificacao) {
+                clearInterval(intervalVerificacao);
+            }
+
+            // Verificar imediatamente e depois a cada 5 segundos
+            verificarPagamento();
+            intervalVerificacao = setInterval(verificarPagamento, 5000);
+
+            // Parar após 5 minutos (60 verificações)
+            setTimeout(() => {
+                pararVerificacaoPagamento();
+            }, 300000);
+        }
+
+        // Parar verificação de pagamento
+        function pararVerificacaoPagamento() {
+            if (intervalVerificacao) {
+                clearInterval(intervalVerificacao);
+                intervalVerificacao = null;
+            }
+        }
+
+        // Mostrar modal de pagamento confirmado
+        function mostrarPagamentoConfirmado() {
+            // Ajustar mensagens baseado no número de parcelas
+            if (numeroParcelas === 1) {
+                document.getElementById('parcelaPagaTexto').textContent = 'Pagamento único';
+                document.getElementById('mensagemCondicional').textContent = 'Sua participação no evento está confirmada!';
+                document.getElementById('proximaParcelaInfo').style.display = 'none';
+            } else {
+                document.getElementById('parcelaPagaTexto').textContent = 'Primeira parcela';
+                document.getElementById('mensagemCondicional').textContent = 'Sua participação está condicionada ao pagamento completo de todas as parcelas.';
+                document.getElementById('proximaParcelaInfo').style.display = 'list-item';
+            }
+
+            // Fechar modal de aguardando e abrir modal de confirmado
+            fecharModal('modalSucesso');
+            abrirModal('modalPagamentoConfirmado');
+
+            // Salvar CPF no localStorage para acesso à área do inscrito
+            localStorage.setItem('inscrito_cpf', inscritoCPF);
+        }
+
+        // Função para ir para área do inscrito
+        function irParaAreaInscrito() {
+            if (inscritoCPF) {
+                localStorage.setItem('inscrito_cpf', inscritoCPF);
+            }
+            window.location.href = '/area-inscrito.html';
+        }
+
+        // Limpar interval ao sair da página
+        window.addEventListener('beforeunload', () => {
+            pararVerificacaoPagamento();
         });
     </script>
 </body>
