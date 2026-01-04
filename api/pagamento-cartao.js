@@ -149,6 +149,7 @@ export default async function handler(req, res) {
         console.log('🔐 Encrypted card length:', cartao_encrypted.length);
         console.log('🔐 Encrypted card (first 50 chars):', cartao_encrypted.substring(0, 50));
         console.log('🔐 Encrypted card (last 50 chars):', cartao_encrypted.substring(cartao_encrypted.length - 50));
+        console.log('✨ Usando public key atualizada');
 
         // Fazer requisição para PagBank
         // Determinar ambiente (sandbox ou produção)
