@@ -539,13 +539,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Criptografar dados do cartão usando PagBank SDK
                     let cartaoEncrypted;
                     try {
+                        // Buscar chave pública do PagBank baseada no ambiente
+                        const keyResponse = await fetch('/api/pagbank-public-key');
+                        const keyData = await keyResponse.json();
+
+                        if (!keyResponse.ok) {
+                            throw new Error('Não foi possível obter chave de criptografia');
+                        }
+
+                        console.log(`🔑 Usando chave pública PagBank (${keyData.environment})`);
+
                         // Separar mês e ano da validade
                         const [mes, ano] = cartaoValidade.split('/');
                         const anoCompleto = '20' + ano; // Converter AA para AAAA
 
                         // Usar a biblioteca PagBank para criptografar
                         const card = window.PagSeguro.encryptCard({
-                            publicKey: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAr+ZqgD892U9/HXsa7XqBZUayPquAfh9xx4iwUbTSUAvTlmiXFQNTp0Bvt/5vK2FhMj39qSv1zi2OuBjvW38q1E3LhJdFQTKvURCiYwb6y2JmJMIK4OxXxg0TaVrKoBEJJ7f4p6dzPZZ8HNJwAUAj3u8mPcUNbfwmQmUmzCkkRjhZ7VcKGdjC1rNAqnl56xPbP/+Ou2fU3qvgJWxwQWCYMALDU3LNJJ7sXgZqJv8rBF8P1/hDUfDYYBxJ3kRFKyKVIzqG6mMRCNqpDvWj9Xy8HTa6Ug0iL2vWJNFwUXSfGvCfMdmQKpXVVVUBjbPPhXdNDwHsD4F0TxjJXfPhQUQPVQIDAQAB', // Chave pública do PagBank sandbox
+                            publicKey: keyData.publicKey,
                             holder: cartaoTitular,
                             number: cartaoNumero,
                             expMonth: mes,
