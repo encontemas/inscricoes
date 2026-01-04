@@ -100,7 +100,7 @@ export default async function handler(req, res) {
                 tax_id: cpfLimpo,
                 phones: [
                     {
-                        country: 55,
+                        country: "55",
                         area: ddd,
                         number: numeroTelefone,
                         type: "MOBILE"
@@ -138,13 +138,12 @@ export default async function handler(req, res) {
                         type: "CREDIT_CARD",
                         installments: parcelasCartao,
                         capture: true,
-                        soft_descriptor: "ACAMPAMENTO TDS",
+                        soft_descriptor: "ACAMPAMENTO",
                         card: {
-                            encrypted: cartao_encrypted
-                        },
-                        holder: {
-                            name: cartao_titular || nome_completo,
-                            tax_id: cpfLimpo
+                            encrypted: cartao_encrypted,
+                            holder: {
+                                name: cartao_titular || nome_completo
+                            }
                         }
                     }
                 }
