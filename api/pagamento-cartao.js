@@ -1,6 +1,4 @@
 // API para processar pagamento por cartão de crédito via PagBank
-import fetch from 'node-fetch';
-
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Método não permitido' });
