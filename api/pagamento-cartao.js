@@ -16,7 +16,8 @@ export default async function handler(req, res) {
             valor_total,
             cartao_encrypted,
             cartao_numero_final,
-            cartao_bandeira
+            cartao_bandeira,
+            numero_parcelas_cartao = 1 // Número de parcelas no cartão (1-11x)
         } = req.body;
 
         // Validações
@@ -24,6 +25,15 @@ export default async function handler(req, res) {
             return res.status(400).json({
                 error: 'Dados incompletos',
                 message: 'Todos os campos são obrigatórios'
+            });
+        }
+
+        // Validar número de parcelas no cartão
+        const parcelasCartao = parseInt(numero_parcelas_cartao);
+        if (parcelasCartao < 1 || parcelasCartao > 11) {
+            return res.status(400).json({
+                error: 'Número de parcelas inválido',
+                message: 'Escolha entre 1 e 11 parcelas no cartão'
             });
         }
 
@@ -92,7 +102,7 @@ export default async function handler(req, res) {
                     },
                     payment_method: {
                         type: "CREDIT_CARD",
-                        installments: 1,
+                        installments: parcelasCartao,
                         capture: true,
                         card: {
                             encrypted: cartao_encrypted

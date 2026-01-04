@@ -574,7 +574,27 @@
 
                     <div id="cartao_fields" style="display: none;">
                         <div class="info-box" style="background: #fff3cd; border-left: 4px solid #ffc107;">
-                            <strong>⚠️ Atenção:</strong> O pagamento por cartão de crédito é feito em uma única vez (R$ 450,00). Após a confirmação, sua inscrição será automaticamente confirmada e todas as parcelas marcadas como pagas.
+                            <strong>⚠️ Atenção:</strong> O pagamento por cartão de crédito pode ser parcelado em até 11x sem juros. Após a confirmação, sua inscrição será automaticamente confirmada e todas as suas parcelas PIX marcadas como pagas.
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="parcelas_cartao" class="required">Parcelas no Cartão</label>
+                                <select id="parcelas_cartao" name="parcelas_cartao" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="1">À vista (1x de R$ 450,00)</option>
+                                    <option value="2">2x de R$ 225,00 sem juros</option>
+                                    <option value="3">3x de R$ 150,00 sem juros</option>
+                                    <option value="4">4x de R$ 112,50 sem juros</option>
+                                    <option value="5">5x de R$ 90,00 sem juros</option>
+                                    <option value="6">6x de R$ 75,00 sem juros</option>
+                                    <option value="7">7x de R$ 64,29 sem juros</option>
+                                    <option value="8">8x de R$ 56,25 sem juros</option>
+                                    <option value="9">9x de R$ 50,00 sem juros</option>
+                                    <option value="10">10x de R$ 45,00 sem juros</option>
+                                    <option value="11">11x de R$ 40,91 sem juros</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="form-row">
@@ -1098,8 +1118,9 @@
                     const validade = document.getElementById('validade_cartao').value;
                     const cvv = document.getElementById('cvv_cartao').value;
                     const titular = document.getElementById('titular_cartao').value;
+                    const parcelasCartao = document.getElementById('parcelas_cartao').value;
 
-                    if (!numeroCartao || !validade || !cvv || !titular) {
+                    if (!numeroCartao || !validade || !cvv || !titular || !parcelasCartao) {
                         throw new Error('Preencha todos os dados do cartão');
                     }
 
@@ -1116,7 +1137,8 @@
                         valor_total: 450.00,
                         cartao_encrypted: cartaoEncrypted,
                         cartao_numero_final: numeroCartao.slice(-4),
-                        cartao_bandeira: detectarBandeira(numeroCartao)
+                        cartao_bandeira: detectarBandeira(numeroCartao),
+                        numero_parcelas_cartao: parseInt(parcelasCartao)
                     };
 
                     const pagamentoResponse = await fetch('/api/pagamento-cartao', {

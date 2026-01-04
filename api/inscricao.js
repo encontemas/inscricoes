@@ -145,7 +145,12 @@ async function salvarInscricao(dadosInscricao) {
             // Novos campos (51 a 53)
             '', // nome_social (não usado mais, sempre vazio)
             dadosInscricao.grupo_pessoas || '', // grupo_pessoas
-            dadosInscricao.interesse_transfer ? 1 : 0 // interesse_transfer
+            dadosInscricao.interesse_transfer ? 1 : 0, // interesse_transfer
+            // Campos de pagamento (54 a 57)
+            dadosInscricao.metodo_pagamento === 'cartao' ? 'CARTAO' : 'PIX', // tipo_pagamento
+            '', // parcelas_cartao (vazio inicialmente, preenchido pelo webhook)
+            '', // transacao_id (vazio inicialmente, preenchido pelo webhook)
+            'PENDENTE' // status_pagamento (PENDENTE, APROVADO, RECUSADO)
         ];
 
         // Mantenha o INSERT_ROWS que adicionamos antes, é importante

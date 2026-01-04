@@ -44,7 +44,8 @@ export default async function handler(req, res) {
                 paidAt: paidCharge.paid_at,
                 customerEmail: notification.customer?.email,
                 paymentMethod: paymentMethod,
-                isCardPayment: isCardPayment
+                isCardPayment: isCardPayment,
+                installments: paidCharge.payment_method?.installments || 1
             });
         }
 
@@ -348,6 +349,40 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
             } else {
                 console.warn(`⚠️ Coluna "${dataPagaKey}" não encontrada.`);
             }
+        }
+
+        // Atualizar campos adicionais de pagamento (parcelas_cartao, transacao_id, status_pagamento)
+        const parcelasCartaoIndex = headers.indexOf('parcelas_cartao');
+        const transacaoIdIndex = headers.indexOf('transacao_id');
+        const statusPagamentoIndex = headers.indexOf('status_pagamento');
+
+        if (isCardPayment && parcelasCartaoIndex !== -1) {
+            const parcelasCartaoCol = String.fromCharCode(65 + parcelasCartaoIndex);
+            const parcelasCartao = dadosPagamento.installments || 1;
+            updates.push({
+                range: `Inscrições!${parcelasCartaoCol}${rowIndex + 1}`,
+                values: [[parcelasCartao]]
+            });
+            console.log(`💳 Atualizando parcelas_cartao = ${parcelasCartao}`);
+        }
+
+        if (transacaoIdIndex !== -1) {
+            const transacaoIdCol = String.fromCharCode(65 + transacaoIdIndex);
+            const transacaoId = dadosPagamento.orderId || dadosPagamento.chargeId || '';
+            updates.push({
+                range: `Inscrições!${transacaoIdCol}${rowIndex + 1}`,
+                values: [[transacaoId]]
+            });
+            console.log(`🔑 Atualizando transacao_id = ${transacaoId}`);
+        }
+
+        if (statusPagamentoIndex !== -1) {
+            const statusPagamentoCol = String.fromCharCode(65 + statusPagamentoIndex);
+            updates.push({
+                range: `Inscrições!${statusPagamentoCol}${rowIndex + 1}`,
+                values: [['APROVADO']]
+            });
+            console.log(`✅ Atualizando status_pagamento = APROVADO`);
         }
 
         // Executar todas as atualizações
