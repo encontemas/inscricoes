@@ -21,12 +21,18 @@ export default async function handler(req, res) {
         const paidCharge = charges.find(charge => charge.status === 'PAID');
 
         if (paidCharge) {
+            // Detectar método de pagamento
+            const paymentMethod = paidCharge.payment_method?.type || 'UNKNOWN';
+            const isCardPayment = paymentMethod === 'CREDIT_CARD' || paymentMethod === 'DEBIT_CARD';
+
             console.log('✅ Pagamento confirmado!', {
                 orderId,
                 referenceId,
                 chargeId: paidCharge.id,
                 amount: paidCharge.amount?.value,
-                paidAt: paidCharge.paid_at
+                paidAt: paidCharge.paid_at,
+                paymentMethod: paymentMethod,
+                isCardPayment: isCardPayment
             });
 
             // Registrar pagamento no Google Sheets
@@ -36,7 +42,9 @@ export default async function handler(req, res) {
                 chargeId: paidCharge.id,
                 amount: paidCharge.amount?.value,
                 paidAt: paidCharge.paid_at,
-                customerEmail: notification.customer?.email
+                customerEmail: notification.customer?.email,
+                paymentMethod: paymentMethod,
+                isCardPayment: isCardPayment
             });
         }
 
@@ -175,7 +183,8 @@ async function registrarPagamento(dadosPagamento) {
         console.log('✅ Pagamento registrado na planilha Pagamentos!');
 
         // Atualizar status de pagamento na aba Inscrições
-        await atualizarStatusPagamentoInscricao(dadosPagamento);
+        // Se for cartão, marcar todas as parcelas como pagas
+        await atualizarStatusPagamentoInscricao(dadosPagamento, dadosPagamento.isCardPayment);
 
         // Enviar email de confirmação ao inscrito
         try {
@@ -205,9 +214,10 @@ async function registrarPagamento(dadosPagamento) {
 }
 
 // Função para atualizar status de pagamento na aba Inscrições
-async function atualizarStatusPagamentoInscricao(dadosPagamento) {
+async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment = false) {
     try {
         console.log('📝 Atualizando status de pagamento na aba Inscrições...');
+        console.log('💳 Tipo de pagamento:', isCardPayment ? 'CARTÃO (marcar todas)' : 'PIX (marcar primeira)');
 
         const auth = new google.auth.GoogleAuth({
             credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON),
@@ -243,6 +253,7 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento) {
         // Cabeçalhos (primeira linha)
         const headers = rows[0];
         const emailIndex = headers.indexOf('email');
+        const numeroParcelasIndex = headers.indexOf('numero_parcelas');
 
         if (emailIndex === -1) {
             console.error('❌ Coluna "email" não encontrada na planilha');
@@ -266,57 +277,94 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento) {
 
         console.log('✅ Inscrição encontrada na linha:', rowIndex + 1);
 
-        // Determinar qual parcela está sendo paga (por enquanto, marcar como parcela 01)
-        // TODO: Melhorar lógica para identificar qual parcela foi paga baseado no valor ou referenceId
-        const numeroParcela = 1;
-        const parcelaKey = `parcela_${String(numeroParcela).padStart(2, '0')}_paga`;
-        const dataPagaKey = `data_paga_${String(numeroParcela).padStart(2, '0')}`; // Data efetiva do pagamento
-
-        // Encontrar índices das colunas
-        const parcelaIndex = headers.indexOf(parcelaKey);
-        let dataPagaIndex = headers.indexOf(dataPagaKey);
-
-        if (parcelaIndex === -1) {
-            console.error(`❌ Coluna "${parcelaKey}" não encontrada na planilha`);
-            return;
-        }
-
-        // Se não existir coluna data_paga_XX, precisa ser criada
-        if (dataPagaIndex === -1) {
-            console.warn(`⚠️ Coluna "${dataPagaKey}" não encontrada. Será necessário criar manualmente na planilha.`);
-        }
+        // Buscar número de parcelas da inscrição
+        const totalParcelas = parseInt(rows[rowIndex][numeroParcelasIndex]) || 1;
+        console.log(`📊 Total de parcelas: ${totalParcelas}`);
 
         // Preparar atualizações
         const updates = [];
+        const dataPaga = new Date(dadosPagamento.paidAt || new Date()).toLocaleDateString('pt-BR');
 
-        // Marcar parcela como paga (valor = 1)
-        const parcelaCol = String.fromCharCode(65 + parcelaIndex); // A=65, B=66, etc.
-        updates.push({
-            range: `Inscrições!${parcelaCol}${rowIndex + 1}`,
-            values: [[1]]
-        });
+        if (isCardPayment) {
+            // CARTÃO: Marcar TODAS as parcelas como pagas
+            console.log(`💳 Cartão confirmado - Marcando TODAS as ${totalParcelas} parcelas como pagas`);
 
-        // Atualizar data efetiva do pagamento se a coluna existir
-        if (dataPagaIndex !== -1) {
-            const dataPagaCol = String.fromCharCode(65 + dataPagaIndex);
-            const dataPaga = new Date(dadosPagamento.paidAt || new Date()).toLocaleDateString('pt-BR');
+            for (let i = 1; i <= totalParcelas; i++) {
+                const parcelaKey = `parcela_${String(i).padStart(2, '0')}_paga`;
+                const dataPagaKey = `data_paga_${String(i).padStart(2, '0')}`;
+
+                const parcelaIndex = headers.indexOf(parcelaKey);
+                const dataPagaIndex = headers.indexOf(dataPagaKey);
+
+                if (parcelaIndex !== -1) {
+                    const parcelaCol = String.fromCharCode(65 + parcelaIndex);
+                    updates.push({
+                        range: `Inscrições!${parcelaCol}${rowIndex + 1}`,
+                        values: [[1]]
+                    });
+                    console.log(`  ✓ ${parcelaKey} = 1`);
+                }
+
+                if (dataPagaIndex !== -1) {
+                    const dataPagaCol = String.fromCharCode(65 + dataPagaIndex);
+                    updates.push({
+                        range: `Inscrições!${dataPagaCol}${rowIndex + 1}`,
+                        values: [[dataPaga]]
+                    });
+                    console.log(`  ✓ ${dataPagaKey} = ${dataPaga}`);
+                }
+            }
+        } else {
+            // PIX: Marcar apenas a primeira parcela como paga
+            console.log('💰 PIX confirmado - Marcando primeira parcela como paga');
+
+            const numeroParcela = 1;
+            const parcelaKey = `parcela_${String(numeroParcela).padStart(2, '0')}_paga`;
+            const dataPagaKey = `data_paga_${String(numeroParcela).padStart(2, '0')}`;
+
+            const parcelaIndex = headers.indexOf(parcelaKey);
+            const dataPagaIndex = headers.indexOf(dataPagaKey);
+
+            if (parcelaIndex === -1) {
+                console.error(`❌ Coluna "${parcelaKey}" não encontrada na planilha`);
+                return;
+            }
+
+            // Marcar parcela como paga (valor = 1)
+            const parcelaCol = String.fromCharCode(65 + parcelaIndex);
             updates.push({
-                range: `Inscrições!${dataPagaCol}${rowIndex + 1}`,
-                values: [[dataPaga]]
+                range: `Inscrições!${parcelaCol}${rowIndex + 1}`,
+                values: [[1]]
             });
-            console.log(`📅 Atualizando ${dataPagaKey} = ${dataPaga}`);
+
+            // Atualizar data efetiva do pagamento se a coluna existir
+            if (dataPagaIndex !== -1) {
+                const dataPagaCol = String.fromCharCode(65 + dataPagaIndex);
+                updates.push({
+                    range: `Inscrições!${dataPagaCol}${rowIndex + 1}`,
+                    values: [[dataPaga]]
+                });
+                console.log(`📅 Atualizando ${dataPagaKey} = ${dataPaga}`);
+            } else {
+                console.warn(`⚠️ Coluna "${dataPagaKey}" não encontrada.`);
+            }
         }
 
         // Executar todas as atualizações
-        await sheets.spreadsheets.values.batchUpdate({
-            spreadsheetId,
-            resource: {
-                valueInputOption: 'RAW',
-                data: updates
-            }
-        });
+        if (updates.length > 0) {
+            await sheets.spreadsheets.values.batchUpdate({
+                spreadsheetId,
+                resource: {
+                    valueInputOption: 'RAW',
+                    data: updates
+                }
+            });
 
-        console.log(`✅ Status de pagamento atualizado: ${parcelaKey} = 1 para ${email}`);
+            console.log(`✅ Status de pagamento atualizado com sucesso para ${email}`);
+            console.log(`📊 Total de campos atualizados: ${updates.length}`);
+        } else {
+            console.warn('⚠️ Nenhuma atualização foi preparada');
+        }
 
     } catch (error) {
         console.error('❌ Erro ao atualizar status de pagamento na inscrição:', error);
