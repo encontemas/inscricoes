@@ -8,13 +8,28 @@ export default async function handler(req, res) {
         // Determinar ambiente baseado em variável de ambiente
         const isProduction = process.env.PAGBANK_ENV === 'production';
 
-        // Chaves públicas do PagBank
-        const publicKeys = {
-            sandbox: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAr+ZqgD892U9/HXsa7XqBZUayPquAfh9xx4iwUbTSUAvTlmiXFQNTp0Bvt/5vK2FhMj39qSv1zi2OuBjvW38q1E3LhJdFQTKvURCiYwb6y2JmJMIK4OxXxg0TaVrKoBEJJ7f4p6dzPZZ8HNJwAUAj3u8mPcUNbfwmQmUmzCkkRjhZ7VcKGdjC1rNAqnl56xPbP/+Ou2fU3qvgJWxwQWCYMALDU3LNJJ7sXgZqJv8rBF8P1/hDUfDYYBxJ3kRFKyKVIzqG6mMRCNqpDvWj9Xy8HTa6Ug0iL2vWJNFwUXSfGvCfMdmQKpXVVVUBjbPPhXdNDwHsD4F0TxjJXfPhQUQPVQIDAQAB',
-            production: process.env.PAGBANK_PUBLIC_KEY_PROD || 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAr+ZqgD892U9/HXsa7XqBZUayPquAfh9xx4iwUbTSUAvTlmiXFQNTp0Bvt/5vK2FhMj39qSv1zi2OuBjvW38q1E3LhJdFQTKvURCiYwb6y2JmJMIK4OxXxg0TaVrKoBEJJ7f4p6dzPZZ8HNJwAUAj3u8mPcUNbfwmQmUmzCkkRjhZ7VcKGdjC1rNAqnl56xPbP/+Ou2fU3qvgJWxwQWCYMALDU3LNJJ7sXgZqJv8rBF8P1/hDUfDYYBxJ3kRFKyKVIzqG6mMRCNqpDvWj9Xy8HTa6Ug0iL2vWJNFwUXSfGvCfMdmQKpXVVVUBjbPPhXdNDwHsD4F0TxjJXfPhQUQPVQIDAQAB'
-        };
+        // Buscar chaves públicas das variáveis de ambiente
+        const publicKeySandbox = process.env.PAGBANK_PUBLIC_KEY_SANDBOX;
+        const publicKeyProduction = process.env.PAGBANK_PUBLIC_KEY_PROD;
 
-        const publicKey = isProduction ? publicKeys.production : publicKeys.sandbox;
+        // Validar que as chaves existem
+        if (!publicKeySandbox) {
+            console.error('❌ PAGBANK_PUBLIC_KEY_SANDBOX não configurada');
+            return res.status(500).json({
+                error: 'Configuração incompleta',
+                message: 'Chave pública sandbox não configurada'
+            });
+        }
+
+        if (isProduction && !publicKeyProduction) {
+            console.error('❌ PAGBANK_PUBLIC_KEY_PROD não configurada');
+            return res.status(500).json({
+                error: 'Configuração incompleta',
+                message: 'Chave pública produção não configurada'
+            });
+        }
+
+        const publicKey = isProduction ? publicKeyProduction : publicKeySandbox;
         const environment = isProduction ? 'production' : 'sandbox';
 
         console.log(`📌 Retornando chave pública do PagBank para ambiente: ${environment}`);
