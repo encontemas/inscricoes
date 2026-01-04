@@ -121,7 +121,7 @@ export default async function handler(req, res) {
         const isProduction = process.env.PAGBANK_ENV === 'production';
         const pagBankUrl = isProduction
             ? 'https://api.pagbank.com/orders'
-            : 'https://sandbox.api.pagbank.com/orders';
+            : 'https://sandbox.api.pagseguro.com/orders';
 
         console.log('🌐 URL PagBank:', pagBankUrl);
         console.log('🔑 Token (primeiros 10 chars):', pagBankToken.substring(0, 10) + '...');
