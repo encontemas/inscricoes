@@ -115,6 +115,18 @@ export default async function handler(req, res) {
                     unit_amount: valorCentavos
                 }
             ],
+            shipping: {
+                address: {
+                    street: "Avenida Brigadeiro Faria Lima",
+                    number: "1384",
+                    complement: "",
+                    locality: "Pinheiros",
+                    city: "Sao Paulo",
+                    region_code: "SP",
+                    country: "BRA",
+                    postal_code: "01452002"
+                }
+            },
             charges: [
                 {
                     reference_id: `CHARGE_${timestamp}`,
