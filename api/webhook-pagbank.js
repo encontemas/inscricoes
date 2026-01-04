@@ -84,7 +84,7 @@ async function registrarPagamento(dadosPagamento) {
         });
 
         const sheets = google.sheets({ version: 'v4', auth });
-        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+        const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
 
         // Verificar se aba Pagamentos existe, senão criar
         const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
@@ -225,7 +225,7 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
         });
 
         const sheets = google.sheets({ version: 'v4', auth });
-        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+        const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
 
         // Extrair email do reference_id ou dos dados do cliente
         const email = dadosPagamento.customerEmail;
