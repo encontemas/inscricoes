@@ -170,10 +170,25 @@ export default async function handler(req, res) {
 
         const responseData = await response.json();
 
-        console.log('📥 Resposta PagBank:', JSON.stringify(responseData, null, 2));
+        console.log('📥 Resposta PagBank (Status:', response.status, ')');
+        console.log('Response completo:', JSON.stringify(responseData, null, 2));
 
         if (!response.ok) {
-            console.error('❌ Erro na API PagBank:', responseData);
+            console.error('❌ Erro na API PagBank');
+            console.error('Status:', response.status);
+            console.error('Response:', JSON.stringify(responseData, null, 2));
+
+            // Tentar extrair detalhes específicos do erro
+            if (responseData.error_messages && Array.isArray(responseData.error_messages)) {
+                responseData.error_messages.forEach((err, index) => {
+                    console.error(`Erro ${index + 1}:`, {
+                        code: err.code,
+                        description: err.description,
+                        parameter_name: err.parameter_name || 'não especificado'
+                    });
+                });
+            }
+
             return res.status(response.status).json({
                 error: 'Erro ao processar pagamento',
                 message: responseData.error_messages?.[0]?.description || 'Erro desconhecido',
