@@ -542,13 +542,24 @@
 
                     <div class="form-row">
                         <div class="form-group">
+                            <label for="metodo_pagamento" class="required">Método de Pagamento</label>
+                            <select id="metodo_pagamento" name="metodo_pagamento" required>
+                                <option value="">Selecione...</option>
+                                <option value="pix">PIX (Parcelado ou à vista)</option>
+                                <option value="cartao">Cartão de Crédito (Pagamento único)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row" id="row_parcelas" style="display: none;">
+                        <div class="form-group">
                             <label for="numero_parcelas" class="required">Número de Parcelas</label>
                             <select id="numero_parcelas" name="numero_parcelas" required>
                                 <option value="">Selecione...</option>
                                 <!-- Opções serão geradas dinamicamente pelo JavaScript -->
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" id="group_dia_vencimento">
                             <label for="dia_vencimento">Dia de Vencimento Preferencial (opcional)</label>
                             <select id="dia_vencimento" name="dia_vencimento">
                                 <option value="">Selecione...</option>
@@ -558,6 +569,37 @@
                                 <option value="20">Dia 20</option>
                                 <option value="25">Dia 25</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div id="cartao_fields" style="display: none;">
+                        <div class="info-box" style="background: #fff3cd; border-left: 4px solid #ffc107;">
+                            <strong>⚠️ Atenção:</strong> O pagamento por cartão de crédito é feito em uma única vez (R$ 450,00). Após a confirmação, sua inscrição será automaticamente confirmada e todas as parcelas marcadas como pagas.
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="titular_cartao" class="required">Nome do Titular (como no cartão)</label>
+                                <input type="text" id="titular_cartao" name="titular_cartao" placeholder="NOME COMO ESTÁ NO CARTÃO">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="numero_cartao" class="required">Número do Cartão</label>
+                                <input type="text" id="numero_cartao" name="numero_cartao" placeholder="0000 0000 0000 0000" maxlength="19">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="validade_cartao" class="required">Validade (MM/AA)</label>
+                                <input type="text" id="validade_cartao" name="validade_cartao" placeholder="MM/AA" maxlength="5">
+                            </div>
+                            <div class="form-group">
+                                <label for="cvv_cartao" class="required">CVV</label>
+                                <input type="text" id="cvv_cartao" name="cvv_cartao" placeholder="000" maxlength="4">
+                            </div>
                         </div>
                     </div>
 
@@ -833,6 +875,65 @@
             gerarOpcoesParcelas();
         });
 
+        // Controlar exibição dos campos de pagamento
+        document.getElementById('metodo_pagamento').addEventListener('change', function() {
+            const metodoPagamento = this.value;
+            const rowParcelas = document.getElementById('row_parcelas');
+            const cartaoFields = document.getElementById('cartao_fields');
+            const numeroParcelas = document.getElementById('numero_parcelas');
+            const parcelaInfo = document.getElementById('parcela_info');
+
+            if (metodoPagamento === 'pix') {
+                // Mostrar campos de PIX (parcelas e dia de vencimento)
+                rowParcelas.style.display = 'flex';
+                cartaoFields.style.display = 'none';
+                numeroParcelas.required = true;
+
+                // Limpar campos de cartão
+                document.getElementById('titular_cartao').value = '';
+                document.getElementById('numero_cartao').value = '';
+                document.getElementById('validade_cartao').value = '';
+                document.getElementById('cvv_cartao').value = '';
+
+            } else if (metodoPagamento === 'cartao') {
+                // Mostrar campos de cartão
+                rowParcelas.style.display = 'none';
+                cartaoFields.style.display = 'block';
+                parcelaInfo.style.display = 'none';
+                numeroParcelas.required = false;
+
+                // Definir automaticamente como 1 parcela (pagamento único)
+                numeroParcelas.value = '1';
+
+            } else {
+                // Nenhum método selecionado, esconder tudo
+                rowParcelas.style.display = 'none';
+                cartaoFields.style.display = 'none';
+                parcelaInfo.style.display = 'none';
+            }
+        });
+
+        // Formatar número do cartão
+        document.getElementById('numero_cartao').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+            e.target.value = value;
+        });
+
+        // Formatar validade do cartão
+        document.getElementById('validade_cartao').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        // Formatar CVV
+        document.getElementById('cvv_cartao').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
         // Calcular valor da parcela
         document.getElementById('numero_parcelas').addEventListener('change', function() {
             const numeroParcelas = parseInt(this.value);
@@ -937,6 +1038,8 @@
             }
 
             // Coletar dados do formulário
+            const metodoPagamento = document.getElementById('metodo_pagamento').value;
+
             const formData = {
                 nome_completo: document.getElementById('nome_completo').value,
                 email: document.getElementById('email').value,
@@ -953,7 +1056,8 @@
                 observacoes: document.getElementById('observacoes').value || null,
                 maior_idade: true,
                 aceite_termo_lgpd: true,
-                aceite_termo_desistencia: true
+                aceite_termo_desistencia: true,
+                metodo_pagamento: metodoPagamento
             };
 
             // Mostrar loading
@@ -966,7 +1070,7 @@
             btnSpinner.style.display = 'inline-block';
 
             try {
-                // Enviar para API
+                // Enviar para API de inscrição
                 const response = await fetch('/api/inscricao', {
                     method: 'POST',
                     headers: {
@@ -982,11 +1086,58 @@
                 }
 
                 // Armazenar dados para verificação
-                inscritoCPF = formData.cpf.replace(/\D/g, '');
+                inscritoCPF = formData.cpf ? formData.cpf.replace(/\D/g, '') : '';
                 numeroParcelas = parseInt(formData.numero_parcelas);
 
-                // Exibir modal de sucesso com PIX
-                if (data.pix) {
+                // Se for pagamento via CARTÃO, processar pagamento agora
+                if (metodoPagamento === 'cartao') {
+                    btnText.textContent = 'Processando pagamento...';
+
+                    // Validar campos do cartão
+                    const numeroCartao = document.getElementById('numero_cartao').value.replace(/\D/g, '');
+                    const validade = document.getElementById('validade_cartao').value;
+                    const cvv = document.getElementById('cvv_cartao').value;
+                    const titular = document.getElementById('titular_cartao').value;
+
+                    if (!numeroCartao || !validade || !cvv || !titular) {
+                        throw new Error('Preencha todos os dados do cartão');
+                    }
+
+                    // Para testes em sandbox, usar os encrypted values fornecidos pelo PagBank
+                    // Em produção, isso seria criptografado no frontend usando a chave pública do PagBank
+                    const cartaoEncrypted = 'TESTE_' + numeroCartao; // Placeholder - em produção seria criptografado
+
+                    const pagamentoData = {
+                        inscricao_id: data.inscricao?.id || `INS-${Date.now()}`,
+                        nome_completo: formData.nome_completo,
+                        email: formData.email,
+                        cpf: formData.cpf,
+                        telefone: formData.telefone,
+                        valor_total: 450.00,
+                        cartao_encrypted: cartaoEncrypted,
+                        cartao_numero_final: numeroCartao.slice(-4),
+                        cartao_bandeira: detectarBandeira(numeroCartao)
+                    };
+
+                    const pagamentoResponse = await fetch('/api/pagamento-cartao', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(pagamentoData)
+                    });
+
+                    const pagamentoResult = await pagamentoResponse.json();
+
+                    if (!pagamentoResponse.ok) {
+                        throw new Error(pagamentoResult.message || 'Erro ao processar pagamento com cartão');
+                    }
+
+                    // Mostrar modal de sucesso do cartão
+                    mostrarModalSucessoCartao(pagamentoResult);
+
+                } else if (data.pix) {
+                    // Exibir modal de sucesso com PIX
                     pixCopiaCola = data.pix.qr_code_texto;
                     document.getElementById('pixValor').textContent = data.pix.valor;
                     document.getElementById('qrCodeImagem').src = data.pix.qr_code_imagem;
@@ -1025,6 +1176,65 @@
                 btnSpinner.style.display = 'none';
             }
         });
+
+        // Função para detectar bandeira do cartão
+        function detectarBandeira(numero) {
+            const bin = numero.substring(0, 6);
+
+            if (/^4/.test(numero)) return 'Visa';
+            if (/^5[1-5]/.test(numero)) return 'Mastercard';
+            if (/^3[47]/.test(numero)) return 'Amex';
+            if (/^6(?:011|5)/.test(numero)) return 'Discover';
+            if (/^35/.test(numero)) return 'JCB';
+            if (/^(30[0-5]|3[68])/.test(numero)) return 'Diners';
+            if (/^(6304|6706|6709|6771)/.test(numero)) return 'Laser';
+            if (/^(636368|438935|504175|451416|636297)/.test(numero)) return 'Elo';
+            if (/^(5067|4576|4011)/.test(numero)) return 'Elo';
+
+            return 'Desconhecida';
+        }
+
+        // Função para mostrar modal de sucesso do cartão
+        function mostrarModalSucessoCartao(resultado) {
+            // Criar e mostrar modal customizado para cartão
+            const modal = document.getElementById('modalSucesso');
+
+            // Limpar conteúdo anterior
+            const modalContent = modal.querySelector('.modal-content');
+
+            modalContent.innerHTML = `
+                <button class="modal-close" onclick="fecharModal('modalSucesso')">&times;</button>
+                <h2 style="color: #4CAF50;">✅ Pagamento Aprovado!</h2>
+                <div class="success-message">
+                    <p><strong>Sua inscrição foi confirmada com sucesso!</strong></p>
+                    <p>O pagamento via cartão de crédito foi aprovado.</p>
+
+                    <div style="background: #f0f9f0; padding: 1.5rem; border-radius: 10px; margin: 1.5rem 0;">
+                        <h3 style="color: #2e7d32; margin-bottom: 1rem;">Detalhes do Pagamento</h3>
+                        <p><strong>Valor Total:</strong> R$ 450,00</p>
+                        <p><strong>Status:</strong> ${resultado.approved ? 'APROVADO ✅' : 'PROCESSANDO ⏳'}</p>
+                        <p><strong>ID da Transação:</strong> ${resultado.order_id || 'N/A'}</p>
+                    </div>
+
+                    <div style="background: #e3f2fd; padding: 1.5rem; border-radius: 10px; margin: 1.5rem 0;">
+                        <h3 style="color: #1976d2; margin-bottom: 1rem;">ℹ️ Importante</h3>
+                        <p>Como o pagamento foi feito por cartão de crédito em parcela única, <strong>todas as suas parcelas foram automaticamente marcadas como pagas</strong>.</p>
+                        <p>Sua inscrição está <strong>totalmente confirmada</strong>!</p>
+                    </div>
+
+                    <p>Você receberá um email de confirmação em breve.</p>
+                    <p>Para acompanhar sua inscrição, acesse a área do inscrito.</p>
+
+                    <button class="btn-primary" onclick="window.location.href='area-inscrito.html'" style="margin-top: 1.5rem; width: 100%;">
+                        Ir para Área do Inscrito
+                    </button>
+                </div>
+            `;
+
+            modal.classList.add('active');
+
+            // Não iniciar verificação de pagamento, pois já foi confirmado
+        }
 
         // Função para verificar pagamento automaticamente
         async function verificarPagamento() {
