@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capturar Logs - Pagamento Cartão (Dados Reais)</title>
+    <script src="https://assets.pagseguro.com.br/checkout-sdk-js/rc/dist/browser/pagseguro.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .alert {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .alert strong {
+            color: #856404;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .logs-container {
+            display: none;
+            margin-top: 40px;
+        }
+
+        .log-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .log-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .log-content {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            padding: 10px 20px;
+            font-size: 14px;
+            margin-top: 10px;
+            width: auto;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .success-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .error-badge {
+            display: inline-block;
+            background: #dc3545;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .instructions {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 4px;
+        }
+
+        .instructions h3 {
+            color: #0c5393;
+            margin-bottom: 15px;
+        }
+
+        .instructions ol {
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Capturar Logs de Pagamento - Cartão</h1>
+        <p class="subtitle">Use esta página para gerar logs com DADOS REAIS para enviar ao PagBank</p>
+
+        <div class="alert">
+            <strong>⚠️ IMPORTANTE:</strong> Preencha com dados REAIS da venda, mas use o CARTÃO DE TESTE que o PagBank forneceu.
+        </div>
+
+        <form id="paymentForm">
+            <div class="form-group">
+                <label>Nome Completo *</label>
+                <input type="text" id="nome_completo" required>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label>CPF *</label>
+                    <input type="text" id="cpf" maxlength="14" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>Telefone (com DDD) *</label>
+                    <input type="text" id="telefone" maxlength="15" required>
+                </div>
+                <div class="form-group">
+                    <label>Valor Total (R$) *</label>
+                    <input type="text" id="valor_total" value="450.00" required>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 20px; color: #333;">💳 Dados do Cartão de Teste</h3>
+
+            <div class="form-group">
+                <label>Número do Cartão *</label>
+                <input type="text" id="cartao_numero" maxlength="19" placeholder="0000 0000 0000 0000" required>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>Nome no Cartão *</label>
+                    <input type="text" id="cartao_titular" required>
+                </div>
+                <div class="form-group">
+                    <label>Validade (MM/AAAA) *</label>
+                    <input type="text" id="cartao_validade" maxlength="7" placeholder="03/2026" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>CVV *</label>
+                    <input type="text" id="cartao_cvv" maxlength="4" placeholder="123" required>
+                </div>
+                <div class="form-group">
+                    <label>Parcelas no Cartão *</label>
+                    <select id="numero_parcelas_cartao" required>
+                        <option value="1">1x sem juros</option>
+                        <option value="2">2x sem juros</option>
+                        <option value="3">3x sem juros</option>
+                        <option value="4">4x sem juros</option>
+                        <option value="5">5x sem juros</option>
+                        <option value="6">6x sem juros</option>
+                        <option value="7">7x sem juros</option>
+                        <option value="8">8x sem juros</option>
+                        <option value="9">9x sem juros</option>
+                        <option value="10">10x sem juros</option>
+                        <option value="11">11x sem juros</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit">🚀 PROCESSAR PAGAMENTO E CAPTURAR LOGS</button>
+        </form>
+
+        <div id="loading">
+            ⏳ Processando pagamento e capturando logs...
+        </div>
+
+        <div id="logsContainer" class="logs-container">
+            <h2 style="color: #333; margin-bottom: 20px;">📋 Logs Capturados</h2>
+            <div id="statusBadge"></div>
+
+            <div class="log-section">
+                <h3>📤 REQUEST (Enviado para PagBank)</h3>
+                <div class="log-content" id="requestLog"></div>
+                <button class="copy-btn" onclick="copiarLog('requestLog')">📋 Copiar Request</button>
+            </div>
+
+            <div class="log-section">
+                <h3>📥 RESPONSE (Recebido do PagBank)</h3>
+                <div class="log-content" id="responseLog"></div>
+                <button class="copy-btn" onclick="copiarLog('responseLog')">📋 Copiar Response</button>
+            </div>
+
+            <div class="log-section">
+                <h3>📦 LOGS COMPLETOS (Enviar para o PagBank)</h3>
+                <div class="log-content" id="fullLogs"></div>
+                <button class="copy-btn" onclick="copiarLog('fullLogs')">📋 Copiar TUDO</button>
+            </div>
+
+            <div class="instructions">
+                <h3>📧 Como enviar para o PagBank:</h3>
+                <ol>
+                    <li>Clique em "📋 Copiar TUDO" acima</li>
+                    <li>Responda o email do Gabriel de Souza Santos (alexguimaraes@outlook.com)</li>
+                    <li>Cole os logs no corpo do email</li>
+                    <li>Adicione uma mensagem: "Segue os logs da transação realizada com dados reais de venda conforme solicitado"</li>
+                    <li>Envie o email</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Máscaras
+        document.getElementById('cpf').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                e.target.value = value;
+            }
+        });
+
+        document.getElementById('telefone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+                value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+                e.target.value = value;
+            }
+        });
+
+        document.getElementById('cartao_numero').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 16) {
+                value = value.replace(/(\d{4})/g, '$1 ').trim();
+                e.target.value = value;
+            }
+        });
+
+        document.getElementById('cartao_validade').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 6) {
+                value = value.replace(/(\d{2})(\d)/, '$1/$2');
+                e.target.value = value;
+            }
+        });
+
+        // Processar pagamento
+        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const loading = document.getElementById('loading');
+            const logsContainer = document.getElementById('logsContainer');
+            const form = document.getElementById('paymentForm');
+
+            loading.style.display = 'block';
+            logsContainer.style.display = 'none';
+
+            try {
+                // Buscar chave pública
+                const keyResponse = await fetch('/api/pagbank-public-key');
+                const keyData = await keyResponse.json();
+
+                // Preparar dados do cartão
+                const cartaoNumero = document.getElementById('cartao_numero').value.replace(/\D/g, '');
+                const cartaoTitular = document.getElementById('cartao_titular').value;
+                const cartaoValidade = document.getElementById('cartao_validade').value;
+                const [mes, ano] = cartaoValidade.split('/');
+                const anoCompleto = ano.length === 2 ? '20' + ano : ano;
+                const cartaoCvv = document.getElementById('cartao_cvv').value;
+
+                // Criptografar cartão
+                const card = window.PagSeguro.encryptCard({
+                    publicKey: keyData.publicKey,
+                    holder: cartaoTitular,
+                    number: cartaoNumero,
+                    expMonth: mes,
+                    expYear: anoCompleto,
+                    securityCode: cartaoCvv
+                });
+
+                const cartaoEncrypted = card.encryptedCard;
+
+                // Preparar dados do pagamento
+                const formData = {
+                    inscricao_id: document.getElementById('email').value,
+                    nome_completo: document.getElementById('nome_completo').value,
+                    email: document.getElementById('email').value,
+                    cpf: document.getElementById('cpf').value,
+                    telefone: document.getElementById('telefone').value,
+                    valor_total: parseFloat(document.getElementById('valor_total').value),
+                    cartao_encrypted: cartaoEncrypted,
+                    cartao_titular: cartaoTitular,
+                    cartao_numero_final: cartaoNumero.slice(-4),
+                    cartao_bandeira: 'visa',
+                    numero_parcelas_cartao: parseInt(document.getElementById('numero_parcelas_cartao').value)
+                };
+
+                // Enviar para API de logs
+                const response = await fetch('/api/logs-pagamento-cartao', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                loading.style.display = 'none';
+                logsContainer.style.display = 'block';
+
+                // Exibir status
+                const statusBadge = document.getElementById('statusBadge');
+                if (result.success) {
+                    statusBadge.innerHTML = '<span class="success-badge">✅ PAGAMENTO APROVADO</span>';
+                } else {
+                    statusBadge.innerHTML = '<span class="error-badge">❌ PAGAMENTO RECUSADO</span>';
+                }
+
+                // Exibir REQUEST
+                document.getElementById('requestLog').textContent =
+                    '=== REQUEST ENVIADO PARA PAGBANK ===\n\n' +
+                    'URL: ' + result.logs.request.url + '\n' +
+                    'Method: ' + result.logs.request.method + '\n' +
+                    'Headers: ' + JSON.stringify(result.logs.request.headers, null, 2) + '\n\n' +
+                    'Payload:\n' + JSON.stringify(result.logs.request.payload, null, 2);
+
+                // Exibir RESPONSE
+                document.getElementById('responseLog').textContent =
+                    '=== RESPONSE RECEBIDO DO PAGBANK ===\n\n' +
+                    'Status: ' + result.logs.response.status + ' ' + result.logs.response.statusText + '\n\n' +
+                    'Body:\n' + JSON.stringify(result.logs.response.body, null, 2);
+
+                // Exibir LOGS COMPLETOS
+                const dataHora = new Date(result.logs.timestamp).toLocaleString('pt-BR');
+                document.getElementById('fullLogs').textContent =
+                    '========================================\n' +
+                    'LOGS DE PAGAMENTO CARTÃO - PAGBANK\n' +
+                    'Data/Hora: ' + dataHora + '\n' +
+                    '========================================\n\n' +
+                    document.getElementById('requestLog').textContent + '\n\n\n' +
+                    document.getElementById('responseLog').textContent + '\n\n' +
+                    '========================================\n' +
+                    'FIM DOS LOGS\n' +
+                    '========================================';
+
+            } catch (error) {
+                loading.style.display = 'none';
+                alert('Erro ao processar: ' + error.message);
+            }
+        });
+
+        function copiarLog(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Log copiado para área de transferência!');
+            });
+        }
+    </script>
+</body>
+</html>
