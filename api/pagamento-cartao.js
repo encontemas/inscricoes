@@ -87,9 +87,9 @@ export default async function handler(req, res) {
         console.log('  Valor (centavos):', valorCentavos);
         console.log('  Parcelas:', numero_parcelas_cartao);
 
-        // Reference ID único: inscricao_timestamp_email
+        // Reference ID único com máximo de 64 caracteres
         const timestamp = new Date().getTime();
-        const referenceId = `${inscricao_id}_${timestamp}_${email}`;
+        const referenceId = `ACMP_${timestamp}`;
 
         // Preparar payload para PagBank - Pagamento com Cartão
         const pagBankPayload = {

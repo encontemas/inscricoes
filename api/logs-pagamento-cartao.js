@@ -78,7 +78,8 @@ export default async function handler(req, res) {
         const valorCentavos = Math.round(parseFloat(valor_total) * 100);
 
         const timestamp = new Date().getTime();
-        const referenceId = `${inscricao_id}_${timestamp}_${email}`;
+        // Reference ID com no máximo 64 caracteres
+        const referenceId = `ACMP_${timestamp}`;
 
         // Preparar payload para PagBank
         const pagBankPayload = {
