@@ -714,7 +714,8 @@
 
             <div class="info-box" style="margin-top: 2rem;">
                 <strong>ℹ️ Importante:</strong>
-                <p style="margin: 0.5rem 0 0 0;">Sua inscrição será confirmada assim que o pagamento <span id="tipoParcelaInfo">da primeira parcela</span> for detectado pelo sistema.</p>
+                <p style="margin: 0.5rem 0 0 0;"><strong>Sua inscrição será efetivada após o pagamento <span id="tipoParcelaInfo">da primeira parcela</span>.</strong></p>
+                <p style="margin: 0.5rem 0 0 0;" id="mensagemConfirmacaoTotal">Sua inscrição será totalmente confirmada após o pagamento completo de todas as parcelas.</p>
                 <p style="margin: 0.5rem 0 0 0;">Você receberá um e-mail com a confirmação e instruções.</p>
             </div>
 
@@ -995,9 +996,11 @@
                     if (numeroParcelas === 1) {
                         document.getElementById('parcelaTexto').textContent = 'PIX - Pagamento Único';
                         document.getElementById('tipoParcelaInfo').textContent = 'do pagamento único';
+                        document.getElementById('mensagemConfirmacaoTotal').style.display = 'none'; // Esconder mensagem de parcelas
                     } else {
                         document.getElementById('parcelaTexto').textContent = 'PIX - Primeira Parcela';
                         document.getElementById('tipoParcelaInfo').textContent = 'da primeira parcela';
+                        document.getElementById('mensagemConfirmacaoTotal').style.display = 'block'; // Mostrar mensagem de parcelas
                     }
 
                     abrirModal('modalSucesso');
