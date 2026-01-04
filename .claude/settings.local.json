@@ -14,7 +14,11 @@
       "Bash(vercel --prod:*)",
       "Bash(node scripts/setup-keys-standalone.js:*)",
       "Bash(curl:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npm ls:*)",
+      "Bash(nslookup:*)",
+      "Bash(ping:*)",
+      "Bash(git rm:*)"
     ]
   }
 }
