@@ -8,28 +8,17 @@ export default async function handler(req, res) {
         // Determinar ambiente baseado em variável de ambiente
         const isProduction = process.env.PAGBANK_ENV === 'production';
 
-        // Buscar chaves públicas das variáveis de ambiente
-        const publicKeySandbox = process.env.PAGBANK_PUBLIC_KEY_SANDBOX;
-        const publicKeyProduction = process.env.PAGBANK_PUBLIC_KEY_PROD;
+        // Buscar chave pública da variável de ambiente
+        const publicKey = process.env.PAGBANK_PUBLIC_KEY;
 
-        // Validar que as chaves existem
-        if (!publicKeySandbox) {
-            console.error('❌ PAGBANK_PUBLIC_KEY_SANDBOX não configurada');
+        // Validar que a chave existe
+        if (!publicKey) {
+            console.error('❌ PAGBANK_PUBLIC_KEY não configurada');
             return res.status(500).json({
                 error: 'Configuração incompleta',
-                message: 'Chave pública sandbox não configurada'
+                message: 'Chave pública do PagBank não configurada'
             });
         }
-
-        if (isProduction && !publicKeyProduction) {
-            console.error('❌ PAGBANK_PUBLIC_KEY_PROD não configurada');
-            return res.status(500).json({
-                error: 'Configuração incompleta',
-                message: 'Chave pública produção não configurada'
-            });
-        }
-
-        const publicKey = isProduction ? publicKeyProduction : publicKeySandbox;
         const environment = isProduction ? 'production' : 'sandbox';
 
         console.log(`📌 Retornando chave pública do PagBank para ambiente: ${environment}`);
