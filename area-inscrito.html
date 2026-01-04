@@ -776,9 +776,24 @@
         }
 
         // Utilitários
-        function formatarData(dataISO) {
-            const data = new Date(dataISO + 'T00:00:00');
-            return data.toLocaleDateString('pt-BR');
+        function formatarData(dataStr) {
+            if (!dataStr) return '';
+
+            // Se já está no formato brasileiro (dd/mm/aaaa), retornar diretamente
+            if (dataStr.includes('/')) {
+                return dataStr;
+            }
+
+            // Senão, assumir que é ISO (aaaa-mm-dd) e converter
+            try {
+                const data = new Date(dataStr + 'T00:00:00');
+                if (isNaN(data.getTime())) {
+                    return dataStr; // Retornar original se não conseguir converter
+                }
+                return data.toLocaleDateString('pt-BR');
+            } catch (e) {
+                return dataStr; // Em caso de erro, retornar original
+            }
         }
 
         function formatarCPF(cpf) {
