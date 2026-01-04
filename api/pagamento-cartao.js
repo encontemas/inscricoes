@@ -141,9 +141,11 @@ export default async function handler(req, res) {
                         soft_descriptor: "ACAMPAMENTO",
                         card: {
                             encrypted: cartao_encrypted,
-                            holder: {
-                                name: cartao_titular || nome_completo
-                            }
+                            store: false
+                        },
+                        holder: {
+                            name: cartao_titular || nome_completo,
+                            tax_id: cpfLimpo
                         }
                     }
                 }
