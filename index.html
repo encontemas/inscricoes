@@ -517,33 +517,101 @@
 
                     <div class="info-box">
                         <strong>Valor do Evento:</strong> R$ 450,00<br>
-                        Você pode parcelar em até 11x sem juros via PIX
+                        Escolha entre PIX (parcelamento manual) ou Cartão de Crédito (parcelamento automático)
                     </div>
 
+                    <!-- Método de Pagamento -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="numero_parcelas" class="required">Número de Parcelas</label>
-                            <select id="numero_parcelas" name="numero_parcelas" required>
+                            <label for="metodo_pagamento" class="required">Método de Pagamento</label>
+                            <select id="metodo_pagamento" name="metodo_pagamento" required>
                                 <option value="">Selecione...</option>
-                                <!-- Opções geradas dinamicamente via JavaScript -->
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="dia_vencimento">Dia de Vencimento Preferencial (opcional)</label>
-                            <select id="dia_vencimento" name="dia_vencimento">
-                                <option value="">Selecione...</option>
-                                <option value="5">Dia 5</option>
-                                <option value="10">Dia 10</option>
-                                <option value="15">Dia 15</option>
-                                <option value="20">Dia 20</option>
-                                <option value="25">Dia 25</option>
+                                <option value="pix">PIX (você paga cada parcela manualmente)</option>
+                                <option value="cartao">Cartão de Crédito (operadora divide automaticamente)</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="parcela-info" id="parcela_info" style="display: none;">
-                        <div>Valor de cada parcela:</div>
-                        <div class="parcela-valor" id="valor_parcela">R$ 0,00</div>
+                    <!-- Seção PIX -->
+                    <div id="secao_pix" style="display: none;">
+                        <div class="info-box">
+                            💡 Com PIX, você escolhe em quantas parcelas quer pagar (até 11x). Você receberá os dados do PIX para cada parcela no vencimento.
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="numero_parcelas" class="required">Número de Parcelas (PIX)</label>
+                                <select id="numero_parcelas" name="numero_parcelas" required>
+                                    <option value="">Selecione...</option>
+                                    <!-- Opções geradas dinamicamente via JavaScript -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="dia_vencimento">Dia de Vencimento Preferencial</label>
+                                <select id="dia_vencimento" name="dia_vencimento">
+                                    <option value="">Selecione...</option>
+                                    <option value="5">Dia 5</option>
+                                    <option value="10">Dia 10</option>
+                                    <option value="15">Dia 15</option>
+                                    <option value="20">Dia 20</option>
+                                    <option value="25">Dia 25</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="parcela-info" id="parcela_info" style="display: none;">
+                            <div>Valor de cada parcela:</div>
+                            <div class="parcela-valor" id="valor_parcela">R$ 0,00</div>
+                        </div>
+                    </div>
+
+                    <!-- Seção Cartão de Crédito -->
+                    <div id="secao_cartao" style="display: none;">
+                        <div class="info-box">
+                            💳 Com Cartão, a operadora divide o valor automaticamente nas parcelas escolhidas (até 11x sem juros).
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="parcelas_cartao" class="required">Parcelas no Cartão</label>
+                                <select id="parcelas_cartao" name="parcelas_cartao">
+                                    <option value="">Selecione...</option>
+                                    <option value="1">À vista (1x de R$ 450,00)</option>
+                                    <option value="2">2x de R$ 225,00 sem juros</option>
+                                    <option value="3">3x de R$ 150,00 sem juros</option>
+                                    <option value="4">4x de R$ 112,50 sem juros</option>
+                                    <option value="5">5x de R$ 90,00 sem juros</option>
+                                    <option value="6">6x de R$ 75,00 sem juros</option>
+                                    <option value="7">7x de R$ 64,29 sem juros</option>
+                                    <option value="8">8x de R$ 56,25 sem juros</option>
+                                    <option value="9">9x de R$ 50,00 sem juros</option>
+                                    <option value="10">10x de R$ 45,00 sem juros</option>
+                                    <option value="11">11x de R$ 40,91 sem juros</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cartao_numero" class="required">Número do Cartão</label>
+                                <input type="text" id="cartao_numero" name="cartao_numero" placeholder="0000 0000 0000 0000" maxlength="19">
+                            </div>
+                            <div class="form-group">
+                                <label for="cartao_titular" class="required">Nome do Titular</label>
+                                <input type="text" id="cartao_titular" name="cartao_titular" placeholder="Nome como está no cartão">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cartao_validade" class="required">Validade (MM/AA)</label>
+                                <input type="text" id="cartao_validade" name="cartao_validade" placeholder="MM/AA" maxlength="5">
+                            </div>
+                            <div class="form-group">
+                                <label for="cartao_cvv" class="required">CVV</label>
+                                <input type="text" id="cartao_cvv" name="cartao_cvv" placeholder="123" maxlength="4">
+                            </div>
+                        </div>
                     </div>
                 </div>
 

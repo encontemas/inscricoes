@@ -298,6 +298,42 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Mostrar/ocultar seções de pagamento baseado no método escolhido
+    const metodoPagamento = document.getElementById('metodo_pagamento');
+    if (metodoPagamento) {
+        metodoPagamento.addEventListener('change', function() {
+            const secaoPix = document.getElementById('secao_pix');
+            const secaoCartao = document.getElementById('secao_cartao');
+
+            if (this.value === 'pix') {
+                secaoPix.style.display = 'block';
+                secaoCartao.style.display = 'none';
+                // Tornar campos PIX obrigatórios
+                document.getElementById('numero_parcelas').required = true;
+                // Remover obrigatoriedade dos campos do cartão
+                document.getElementById('parcelas_cartao').required = false;
+                document.getElementById('cartao_numero').required = false;
+                document.getElementById('cartao_titular').required = false;
+                document.getElementById('cartao_validade').required = false;
+                document.getElementById('cartao_cvv').required = false;
+            } else if (this.value === 'cartao') {
+                secaoPix.style.display = 'none';
+                secaoCartao.style.display = 'block';
+                // Tornar campos cartão obrigatórios
+                document.getElementById('parcelas_cartao').required = true;
+                document.getElementById('cartao_numero').required = true;
+                document.getElementById('cartao_titular').required = true;
+                document.getElementById('cartao_validade').required = true;
+                document.getElementById('cartao_cvv').required = true;
+                // Remover obrigatoriedade dos campos PIX
+                document.getElementById('numero_parcelas').required = false;
+            } else {
+                secaoPix.style.display = 'none';
+                secaoCartao.style.display = 'none';
+            }
+        });
+    }
+
     // Mostrar/ocultar campo de descrição de necessidades
     const possuiDeficiencia = document.getElementById('possui_deficiencia');
     if (possuiDeficiencia) {
@@ -333,6 +369,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
             }
             e.target.value = value;
+        });
+    }
+
+    // Máscaras para campos de cartão
+    const cartaoNumero = document.getElementById('cartao_numero');
+    if (cartaoNumero) {
+        cartaoNumero.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 16) {
+                value = value.replace(/(\d{4})(\d)/, '$1 $2');
+                value = value.replace(/(\d{4}) (\d{4})(\d)/, '$1 $2 $3');
+                value = value.replace(/(\d{4}) (\d{4}) (\d{4})(\d)/, '$1 $2 $3 $4');
+            }
+            e.target.value = value;
+        });
+    }
+
+    const cartaoValidade = document.getElementById('cartao_validade');
+    if (cartaoValidade) {
+        cartaoValidade.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 4) {
+                value = value.replace(/(\d{2})(\d)/, '$1/$2');
+            }
+            e.target.value = value;
+        });
+    }
+
+    const cartaoCvv = document.getElementById('cartao_cvv');
+    if (cartaoCvv) {
+        cartaoCvv.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
         });
     }
 
@@ -375,6 +443,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            // Obter método de pagamento
+            const metodoPagamento = document.getElementById('metodo_pagamento').value;
+
+            // Validar método de pagamento
+            if (!metodoPagamento) {
+                alert('Por favor, selecione um método de pagamento (PIX ou Cartão).');
+                return;
+            }
+
             // Coletar dados do formulário
             const formData = {
                 nome_completo: document.getElementById('nome_completo').value,
@@ -388,7 +465,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 possui_deficiencia: document.getElementById('possui_deficiencia').checked,
                 descricao_necessidades: document.getElementById('descricao_necessidades').value || null,
                 interesse_transfer: document.getElementById('interesse_transfer').checked,
-                numero_parcelas: parseInt(document.getElementById('numero_parcelas').value),
+                metodo_pagamento: metodoPagamento,
+                numero_parcelas: metodoPagamento === 'pix' ? parseInt(document.getElementById('numero_parcelas').value) : 1,
                 dia_vencimento: document.getElementById('dia_vencimento').value || null,
                 maior_idade: true,
                 aceite_termo_lgpd: true,
@@ -420,17 +498,92 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(data.message || data.error || 'Erro ao processar inscrição');
                 }
 
-                // Salvar dados no localStorage para a página de pagamento
-                localStorage.setItem('inscricao_nome', data.inscricao.nome);
-                localStorage.setItem('inscricao_email', data.inscricao.email);
-                localStorage.setItem('inscricao_parcelas', data.inscricao.numero_parcelas);
-                localStorage.setItem('inscricao_valor_parcela', data.inscricao.valor_parcela);
-                localStorage.setItem('inscricao_valor_total', data.inscricao.valor_total);
-                localStorage.setItem('inscricao_telefone', formData.telefone);
-                localStorage.setItem('inscricao_cpf', formData.cpf || '');
+                // Se escolheu cartão, processar pagamento com cartão agora
+                if (metodoPagamento === 'cartao') {
+                    // Coletar dados do cartão
+                    const cartaoNumero = document.getElementById('cartao_numero').value.replace(/\s/g, '');
+                    const cartaoTitular = document.getElementById('cartao_titular').value;
+                    const cartaoValidade = document.getElementById('cartao_validade').value;
+                    const cartaoCvv = document.getElementById('cartao_cvv').value;
+                    const parcelasCartao = parseInt(document.getElementById('parcelas_cartao').value);
 
-                // Redirecionar para página de pagamento
-                window.location.href = `/pagamento.html?nome=${encodeURIComponent(data.inscricao.nome)}&email=${encodeURIComponent(data.inscricao.email)}&parcelas=${data.inscricao.numero_parcelas}&valor_parcela=${encodeURIComponent(data.inscricao.valor_parcela)}&valor_total=${encodeURIComponent(data.inscricao.valor_total)}`;
+                    // Validar campos do cartão
+                    if (!cartaoNumero || cartaoNumero.length < 13) {
+                        alert('Número do cartão inválido');
+                        btnSubmit.disabled = false;
+                        btnText.textContent = 'Finalizar Inscrição';
+                        btnSpinner.style.display = 'none';
+                        return;
+                    }
+
+                    btnText.textContent = 'Processando pagamento...';
+
+                    // TODO: Integrar com PagBank para criptografar dados do cartão
+                    // Por enquanto, enviar dados "criptografados" (placeholder)
+                    const cartaoEncrypted = btoa(JSON.stringify({
+                        numero: cartaoNumero,
+                        titular: cartaoTitular,
+                        validade: cartaoValidade,
+                        cvv: cartaoCvv
+                    }));
+
+                    // Processar pagamento com cartão
+                    try {
+                        const pagamentoResponse = await fetch('/api/pagamento-cartao', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                inscricao_id: data.inscricao.email, // Usar email como ID temporário
+                                nome_completo: formData.nome_completo,
+                                email: formData.email,
+                                cpf: formData.cpf,
+                                telefone: formData.telefone,
+                                valor_total: 450.00,
+                                cartao_encrypted: cartaoEncrypted,
+                                cartao_numero_final: cartaoNumero.slice(-4),
+                                cartao_bandeira: 'UNKNOWN', // TODO: Detectar bandeira
+                                numero_parcelas_cartao: parcelasCartao
+                            })
+                        });
+
+                        const pagamentoData = await pagamentoResponse.json();
+
+                        if (!pagamentoResponse.ok) {
+                            throw new Error(pagamentoData.message || 'Erro ao processar pagamento com cartão');
+                        }
+
+                        if (pagamentoData.approved) {
+                            alert('Pagamento aprovado com sucesso! Você receberá um email de confirmação.');
+                            window.location.href = '/area-inscrito.html';
+                        } else {
+                            alert('Pagamento em processamento. Você receberá um email com a confirmação.');
+                            window.location.href = '/';
+                        }
+
+                    } catch (pagamentoError) {
+                        console.error('Erro ao processar pagamento:', pagamentoError);
+                        alert('Erro ao processar pagamento: ' + pagamentoError.message);
+                        btnSubmit.disabled = false;
+                        btnText.textContent = 'Finalizar Inscrição';
+                        btnSpinner.style.display = 'none';
+                        return;
+                    }
+
+                } else {
+                    // Pagamento PIX - redirecionar para página de pagamento
+                    localStorage.setItem('inscricao_nome', data.inscricao.nome);
+                    localStorage.setItem('inscricao_email', data.inscricao.email);
+                    localStorage.setItem('inscricao_parcelas', data.inscricao.numero_parcelas);
+                    localStorage.setItem('inscricao_valor_parcela', data.inscricao.valor_parcela);
+                    localStorage.setItem('inscricao_valor_total', data.inscricao.valor_total);
+                    localStorage.setItem('inscricao_telefone', formData.telefone);
+                    localStorage.setItem('inscricao_cpf', formData.cpf || '');
+
+                    // Redirecionar para página de pagamento PIX
+                    window.location.href = `/pagamento.html?nome=${encodeURIComponent(data.inscricao.nome)}&email=${encodeURIComponent(data.inscricao.email)}&parcelas=${data.inscricao.numero_parcelas}&valor_parcela=${encodeURIComponent(data.inscricao.valor_parcela)}&valor_total=${encodeURIComponent(data.inscricao.valor_total)}`;
+                }
 
             } catch (error) {
                 console.error('Erro:', error);
