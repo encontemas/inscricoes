@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerar Chave Pública PagBank</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 40px;
+            background: #1a1a1a;
+            color: #fff;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        button {
+            padding: 20px 40px;
+            font-size: 18px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+        .success {
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            border-left: 4px solid #f44336;
+        }
+        .key-box {
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            word-break: break-all;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+        .copy-btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            background: #2196F3;
+            margin-top: 10px;
+        }
+        .steps {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #FF9800;
+        }
+        .steps ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .steps li {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔑 Gerar Chave Pública do PagBank</h1>
+
+    <p>Esta ferramenta gera uma nova chave pública usando seu token do PagBank.</p>
+    <p><strong>Isso vai resolver o problema de cartão criptografado!</strong></p>
+
+    <button onclick="gerarChave()">🚀 GERAR CHAVE PÚBLICA AGORA</button>
+
+    <div id="loading" style="display: none; color: #FFeb3b;">
+        ⏳ Gerando chave pública do PagBank...
+    </div>
+
+    <div id="result" class="result"></div>
+
+    <div class="steps">
+        <h3>📝 Depois de gerar a chave, siga estes passos:</h3>
+        <ol>
+            <li>Copie a chave pública gerada (clique no botão "Copiar")</li>
+            <li>Acesse: <a href="https://vercel.com/encontemas-projects/inscricoes/settings/environment-variables" target="_blank" style="color: #2196F3;">Vercel → Environment Variables</a></li>
+            <li>Encontre a variável <code>PAGBANK_PUBLIC_KEY</code></li>
+            <li>Clique em "Edit" (ícone de lápis)</li>
+            <li>Cole a NOVA chave pública</li>
+            <li>Clique em "Save"</li>
+            <li>Vá em "Deployments" e clique em "Redeploy"</li>
+            <li>Aguarde o deploy finalizar</li>
+            <li>Teste o pagamento novamente!</li>
+        </ol>
+    </div>
+
+    <script>
+        async function gerarChave() {
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+
+            loading.style.display = 'block';
+            result.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/gerar-chave-publica', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                loading.style.display = 'none';
+                result.style.display = 'block';
+
+                if (response.ok && data.success) {
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <h2>✅ Chave Pública Gerada com Sucesso!</h2>
+                        <p><strong>Criada em:</strong> ${data.created_at}</p>
+
+                        <div class="key-box" id="publicKey">${data.public_key}</div>
+
+                        <button class="copy-btn" onclick="copiarChave()">📋 COPIAR CHAVE</button>
+
+                        <p style="color: #FFeb3b; margin-top: 20px;">
+                            ⚠️ <strong>IMPORTANTE:</strong> Agora vá no Vercel e atualize a variável PAGBANK_PUBLIC_KEY com esta chave!
+                        </p>
+                    `;
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `
+                        <h2>❌ Erro ao Gerar Chave</h2>
+                        <p><strong>Mensagem:</strong> ${data.error || 'Erro desconhecido'}</p>
+                        <p><strong>Detalhes:</strong></p>
+                        <pre>${JSON.stringify(data.details || data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                result.className = 'result error';
+                result.innerHTML = `
+                    <h2>❌ Erro de Conexão</h2>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        function copiarChave() {
+            const key = document.getElementById('publicKey').textContent;
+            navigator.clipboard.writeText(key).then(() => {
+                alert('✅ Chave copiada para área de transferência!');
+            });
+        }
+    </script>
+</body>
+</html>
