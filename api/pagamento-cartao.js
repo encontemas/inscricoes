@@ -109,7 +109,7 @@ export default async function handler(req, res) {
             items: [
                 {
                     reference_id: "INSCRICAO_ACAMPAMENTO",
-                    name: "Inscrição Acampamento Terra do Saber 2026",
+                    name: "Inscricao Acampamento Terra do Saber 2026",
                     quantity: 1,
                     unit_amount: valorCentavos
                 }
@@ -117,7 +117,7 @@ export default async function handler(req, res) {
             charges: [
                 {
                     reference_id: `CHARGE_${timestamp}`,
-                    description: "Pagamento inscrição via Cartão de Crédito",
+                    description: "Pagamento inscricao via Cartao de Credito",
                     amount: {
                         value: valorCentavos,
                         currency: "BRL"
@@ -126,6 +126,7 @@ export default async function handler(req, res) {
                         type: "CREDIT_CARD",
                         installments: parcelasCartao,
                         capture: true,
+                        soft_descriptor: "ACAMPAMENTO TDS",
                         card: {
                             encrypted: cartao_encrypted
                         }
