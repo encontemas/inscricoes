@@ -119,7 +119,6 @@ export default async function handler(req, res) {
                 address: {
                     street: "Avenida Brigadeiro Faria Lima",
                     number: "1384",
-                    complement: "",
                     locality: "Pinheiros",
                     city: "Sao Paulo",
                     region_code: "SP",
