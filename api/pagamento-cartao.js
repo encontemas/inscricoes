@@ -55,12 +55,36 @@ export default async function handler(req, res) {
         const cpfLimpo = cpf.replace(/\D/g, '');
         const telefoneLimpo = telefone.replace(/\D/g, '');
 
+        // Validar CPF (deve ter 11 dígitos)
+        if (cpfLimpo.length !== 11) {
+            console.error('❌ CPF inválido:', cpfLimpo);
+            return res.status(400).json({
+                error: 'CPF inválido',
+                message: 'CPF deve conter 11 dígitos'
+            });
+        }
+
         // Extrair DDD e número do telefone
         const ddd = telefoneLimpo.substring(0, 2);
         const numeroTelefone = telefoneLimpo.substring(2);
 
+        // Validar telefone (DDD + 8 ou 9 dígitos)
+        if (ddd.length !== 2 || (numeroTelefone.length !== 8 && numeroTelefone.length !== 9)) {
+            console.error('❌ Telefone inválido. DDD:', ddd, 'Número:', numeroTelefone);
+            return res.status(400).json({
+                error: 'Telefone inválido',
+                message: 'Telefone deve estar no formato: DDD + 8 ou 9 dígitos'
+            });
+        }
+
         // Converter valor para centavos
         const valorCentavos = Math.round(parseFloat(valor_total) * 100);
+
+        console.log('📋 Dados processados:');
+        console.log('  CPF:', cpfLimpo);
+        console.log('  Telefone - DDD:', ddd, 'Número:', numeroTelefone);
+        console.log('  Valor (centavos):', valorCentavos);
+        console.log('  Parcelas:', numero_parcelas_cartao);
 
         // Reference ID único: inscricao_timestamp_email
         const timestamp = new Date().getTime();
