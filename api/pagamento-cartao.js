@@ -111,7 +111,7 @@ export default async function handler(req, res) {
                 }
             ],
             notification_urls: [
-                `${process.env.VERCEL_URL || 'https://inscricao-eta.vercel.app'}/api/webhook-pagbank`
+                `https://inscricoes-sigma.vercel.app/api/webhook-pagbank`
             ]
         };
 
@@ -119,7 +119,14 @@ export default async function handler(req, res) {
         console.log('Payload:', JSON.stringify(pagBankPayload, null, 2));
 
         // Fazer requisição para PagBank
-        const pagBankUrl = process.env.PAGBANK_API_URL || 'https://sandbox.api.pagbank.com/orders';
+        // Determinar ambiente (sandbox ou produção)
+        const isProduction = process.env.PAGBANK_ENV === 'production';
+        const pagBankUrl = isProduction
+            ? 'https://api.pagbank.com/orders'
+            : 'https://sandbox.api.pagbank.com/orders';
+
+        console.log('🌐 URL PagBank:', pagBankUrl);
+        console.log('🔑 Token (primeiros 10 chars):', pagBankToken.substring(0, 10) + '...');
 
         const response = await fetch(pagBankUrl, {
             method: 'POST',
@@ -167,9 +174,14 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('❌ Erro ao processar pagamento:', error);
+        console.error('Stack trace:', error.stack);
+        console.error('Tipo do erro:', error.name);
+
         return res.status(500).json({
             error: 'Erro interno do servidor',
-            message: error.message
+            message: error.message,
+            errorType: error.name,
+            details: error.cause || 'Sem detalhes adicionais'
         });
     }
 }
