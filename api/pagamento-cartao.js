@@ -100,7 +100,7 @@ export default async function handler(req, res) {
                 tax_id: cpfLimpo,
                 phones: [
                     {
-                        country: "55",
+                        country: 55,
                         area: ddd,
                         number: numeroTelefone,
                         type: "MOBILE"
@@ -128,8 +128,8 @@ export default async function handler(req, res) {
             },
             charges: [
                 {
-                    reference_id: `CHARGE_${timestamp}`,
-                    description: "Pagamento inscricao via Cartao de Credito",
+                    reference_id: timestamp.toString(),
+                    description: "Inscricao Acampamento",
                     amount: {
                         value: valorCentavos,
                         currency: "BRL"
