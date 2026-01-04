@@ -206,6 +206,29 @@ export default async function handler(req, res) {
         console.log('Order ID:', responseData.id);
         console.log('Status do pagamento:', paymentStatus);
 
+        // Se pagamento APROVADO, atualizar planilha IMEDIATAMENTE
+        if (paymentStatus === 'PAID') {
+            console.log('💳 Pagamento aprovado! Atualizando planilha...');
+
+            try {
+                const { atualizarStatusPagamentoCartao } = await import('./webhook-pagbank.js');
+
+                await atualizarStatusPagamentoCartao({
+                    orderId: responseData.id,
+                    chargeId: charge.id,
+                    amount: charge.amount.value,
+                    paidAt: charge.paid_at,
+                    customerEmail: email,
+                    installments: parcelasCartao
+                });
+
+                console.log('✅ Planilha atualizada com sucesso!');
+            } catch (updateError) {
+                console.error('⚠️ Erro ao atualizar planilha (não crítico):', updateError);
+                // Não falhar a requisição se a atualização falhar
+            }
+        }
+
         // Retornar resposta
         return res.status(200).json({
             success: true,

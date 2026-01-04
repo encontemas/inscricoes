@@ -214,6 +214,11 @@ async function registrarPagamento(dadosPagamento) {
     }
 }
 
+// Função auxiliar exportada para uso direto em pagamento-cartao.js
+export async function atualizarStatusPagamentoCartao(dadosPagamento) {
+    return atualizarStatusPagamentoInscricao(dadosPagamento, true); // true = é cartão
+}
+
 // Função para atualizar status de pagamento na aba Inscrições
 async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment = false) {
     try {

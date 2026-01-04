@@ -603,10 +603,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
 
                         if (pagamentoData.approved) {
-                            alert('Pagamento aprovado com sucesso! Você receberá um email de confirmação.');
-                            window.location.href = '/area-inscrito.html';
+                            alert(`✅ Pagamento aprovado com sucesso!\n\nPara acessar sua área do inscrito:\n1. Vá para a página inicial\n2. Digite seu CPF no campo "Pagar Parcelas"\n3. Clique em "→" para acessar`);
+                            window.location.href = '/';
                         } else {
-                            alert('Pagamento em processamento. Você receberá um email com a confirmação.');
+                            alert('Pagamento em processamento. Aguarde a confirmação.');
                             window.location.href = '/';
                         }
 

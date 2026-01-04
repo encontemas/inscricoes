@@ -59,17 +59,24 @@ export default async function handler(req, res) {
             });
         }
 
-        // Buscar inscrito pelo CPF
-        const inscritoRow = rows.slice(1).find(row => {
+        // Buscar TODOS os inscritos com este CPF
+        const inscritosComCPF = rows.slice(1).filter(row => {
             const rowCPF = (row[cpfIndex] || '').replace(/\D/g, '');
             return rowCPF === cpfLimpo;
         });
 
-        if (!inscritoRow) {
+        if (inscritosComCPF.length === 0) {
             return res.status(404).json({
                 error: 'CPF não encontrado',
                 message: 'Verifique se você já realizou sua inscrição'
             });
+        }
+
+        // Se houver múltiplas inscrições, pegar sempre a MAIS RECENTE (última linha)
+        const inscritoRow = inscritosComCPF[inscritosComCPF.length - 1];
+
+        if (inscritosComCPF.length > 1) {
+            console.log(`ℹ️ Encontradas ${inscritosComCPF.length} inscrições para o CPF ${cpfLimpo}. Retornando a mais recente.`);
         }
 
         // Montar objeto com dados do inscrito
