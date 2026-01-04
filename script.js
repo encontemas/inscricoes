@@ -516,16 +516,53 @@ document.addEventListener('DOMContentLoaded', function() {
                         return;
                     }
 
+                    // Validar validade MM/AA
+                    if (!cartaoValidade || !/^\d{2}\/\d{2}$/.test(cartaoValidade)) {
+                        alert('Validade do cartão inválida (use MM/AA)');
+                        btnSubmit.disabled = false;
+                        btnText.textContent = 'Finalizar Inscrição';
+                        btnSpinner.style.display = 'none';
+                        return;
+                    }
+
+                    // Validar CVV
+                    if (!cartaoCvv || cartaoCvv.length < 3) {
+                        alert('CVV inválido');
+                        btnSubmit.disabled = false;
+                        btnText.textContent = 'Finalizar Inscrição';
+                        btnSpinner.style.display = 'none';
+                        return;
+                    }
+
                     btnText.textContent = 'Processando pagamento...';
 
-                    // TODO: Integrar com PagBank para criptografar dados do cartão
-                    // Por enquanto, enviar dados "criptografados" (placeholder)
-                    const cartaoEncrypted = btoa(JSON.stringify({
-                        numero: cartaoNumero,
-                        titular: cartaoTitular,
-                        validade: cartaoValidade,
-                        cvv: cartaoCvv
-                    }));
+                    // Criptografar dados do cartão usando PagBank SDK
+                    let cartaoEncrypted;
+                    try {
+                        // Separar mês e ano da validade
+                        const [mes, ano] = cartaoValidade.split('/');
+                        const anoCompleto = '20' + ano; // Converter AA para AAAA
+
+                        // Usar a biblioteca PagBank para criptografar
+                        const card = window.PagSeguro.encryptCard({
+                            publicKey: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAr+ZqgD892U9/HXsa7XqBZUayPquAfh9xx4iwUbTSUAvTlmiXFQNTp0Bvt/5vK2FhMj39qSv1zi2OuBjvW38q1E3LhJdFQTKvURCiYwb6y2JmJMIK4OxXxg0TaVrKoBEJJ7f4p6dzPZZ8HNJwAUAj3u8mPcUNbfwmQmUmzCkkRjhZ7VcKGdjC1rNAqnl56xPbP/+Ou2fU3qvgJWxwQWCYMALDU3LNJJ7sXgZqJv8rBF8P1/hDUfDYYBxJ3kRFKyKVIzqG6mMRCNqpDvWj9Xy8HTa6Ug0iL2vWJNFwUXSfGvCfMdmQKpXVVVUBjbPPhXdNDwHsD4F0TxjJXfPhQUQPVQIDAQAB', // Chave pública do PagBank sandbox
+                            holder: cartaoTitular,
+                            number: cartaoNumero,
+                            expMonth: mes,
+                            expYear: anoCompleto,
+                            securityCode: cartaoCvv
+                        });
+
+                        cartaoEncrypted = card.encryptedCard;
+
+                    } catch (encryptError) {
+                        console.error('Erro ao criptografar cartão:', encryptError);
+                        alert('Erro ao processar dados do cartão. Verifique os dados e tente novamente.');
+                        btnSubmit.disabled = false;
+                        btnText.textContent = 'Finalizar Inscrição';
+                        btnSpinner.style.display = 'none';
+                        return;
+                    }
 
                     // Processar pagamento com cartão
                     try {
