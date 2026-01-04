@@ -13,6 +13,7 @@ export default async function handler(req, res) {
             telefone,
             valor_total,
             cartao_encrypted,
+            cartao_titular,
             cartao_numero_final,
             cartao_bandeira,
             numero_parcelas_cartao = 1 // Número de parcelas no cartão (1-11x)
@@ -129,6 +130,10 @@ export default async function handler(req, res) {
                         soft_descriptor: "ACAMPAMENTO TDS",
                         card: {
                             encrypted: cartao_encrypted
+                        },
+                        holder: {
+                            name: cartao_titular || nome_completo,
+                            tax_id: cpfLimpo
                         }
                     }
                 }
@@ -140,6 +145,9 @@ export default async function handler(req, res) {
 
         console.log('📤 Enviando requisição para PagBank (Cartão)...');
         console.log('Payload:', JSON.stringify(pagBankPayload, null, 2));
+        console.log('🔐 Encrypted card length:', cartao_encrypted.length);
+        console.log('🔐 Encrypted card (first 50 chars):', cartao_encrypted.substring(0, 50));
+        console.log('🔐 Encrypted card (last 50 chars):', cartao_encrypted.substring(cartao_encrypted.length - 50));
 
         // Fazer requisição para PagBank
         // Determinar ambiente (sandbox ou produção)

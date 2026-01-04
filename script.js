@@ -589,6 +589,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 telefone: formData.telefone,
                                 valor_total: 450.00,
                                 cartao_encrypted: cartaoEncrypted,
+                                cartao_titular: cartaoTitular,
                                 cartao_numero_final: cartaoNumero.slice(-4),
                                 cartao_bandeira: 'UNKNOWN', // TODO: Detectar bandeira
                                 numero_parcelas_cartao: parcelasCartao
