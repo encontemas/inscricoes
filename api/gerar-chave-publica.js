@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     try {
         const pagBankToken = process.env.PAGBANK_TOKEN;
         const envValue = (process.env.PAGBANK_ENV || '').trim().toLowerCase();
-        const isProduction = envValue === 'production';
+        const isProduction = envValue === '' || envValue.startsWith('prod');
 
         if (!pagBankToken) {
             return res.status(500).json({
@@ -55,6 +55,7 @@ export default async function handler(req, res) {
                 ok: response.ok,
                 status: response.status,
                 statusText: response.statusText,
+                contentType: response.headers.get('content-type'),
                 data,
                 environment: environmentLabel
             };
