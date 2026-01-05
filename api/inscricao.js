@@ -100,12 +100,19 @@ async function salvarInscricao(dadosInscricao) {
             }
         }
 
+        // Garantir que CPF seja tratado como string com zeros à esquerda
+        const cpfFormatado = String(dadosInscricao.cpf || '').replace(/\D/g, '').padStart(11, '0');
+
+        // Determinar método de pagamento (case-insensitive)
+        const metodoPagamento = (dadosInscricao.metodo_pagamento || 'PIX').toUpperCase();
+        const tipoPagamento = metodoPagamento === 'CARTAO' ? 'CARTAO' : 'PIX';
+
         const valores = [
             idGerado, // id_inscricao preenchido pelo sistema
             agora, // data_inscricao
             agora, // data_atualizacao
             dadosInscricao.nome_completo,
-            dadosInscricao.cpf || '',
+            cpfFormatado, // CPF formatado com zeros à esquerda
             dadosInscricao.maior_idade ? 1 : 0,
             dadosInscricao.email,
             dadosInscricao.telefone,
@@ -122,7 +129,7 @@ async function salvarInscricao(dadosInscricao) {
             dadosInscricao.numero_parcelas,
             (450.00 / dadosInscricao.numero_parcelas).toFixed(2), // valor_parcela
             dadosInscricao.dia_vencimento || 10,
-            'PIX', // forma_pagamento
+            tipoPagamento, // forma_pagamento (PIX ou CARTAO baseado no request)
             0, // inscricao_confirmada (será 1 após primeiro pagamento)
             '', // data_confirmacao (vazio inicialmente)
             // Parcelas com: parcela_XX_paga, data_pagamento_XX (vencimento), data_paga_XX (pago em)
@@ -147,7 +154,7 @@ async function salvarInscricao(dadosInscricao) {
             dadosInscricao.grupo_pessoas || '', // grupo_pessoas
             dadosInscricao.interesse_transfer ? 1 : 0, // interesse_transfer
             // Campos de pagamento (54 a 57)
-            dadosInscricao.metodo_pagamento === 'cartao' ? 'CARTAO' : 'PIX', // tipo_pagamento
+            tipoPagamento, // tipo_pagamento (PIX ou CARTAO baseado no request)
             '', // parcelas_cartao (vazio inicialmente, preenchido pelo webhook)
             '', // transacao_id (vazio inicialmente, preenchido pelo webhook)
             'PENDENTE' // status_pagamento (PENDENTE, APROVADO, RECUSADO)
