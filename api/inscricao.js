@@ -168,7 +168,6 @@ async function salvarInscricao(dadosInscricao) {
 
         return {
             success: true,
-            id_inscricao: idGerado, // ← RETORNAR O ID GERADO
             updatedRange: response.data.updates.updatedRange,
             updatedRows: response.data.updates.updatedRows
         };
@@ -245,11 +244,10 @@ export default async function handler(req, res) {
 
         console.log('📝 Salvando inscrição na planilha...');
 
-        // Salvar inscrição na planilha e obter o ID gerado
-        const resultadoInscricao = await salvarInscricao(dados);
+        // Salvar inscrição na planilha
+        await salvarInscricao(dados);
 
         console.log('✅ Inscrição salva com sucesso!');
-        console.log('🆔 ID da inscrição:', resultadoInscricao.id_inscricao);
 
         // Calcular valor da parcela para retornar
         const valorParcela = (450.00 / dados.numero_parcelas).toFixed(2);
@@ -258,7 +256,6 @@ export default async function handler(req, res) {
             success: true,
             message: 'Inscrição realizada com sucesso!',
             inscricao: {
-                id_inscricao: resultadoInscricao.id_inscricao, // ← RETORNAR O ID GERADO
                 nome: dados.nome_completo,
                 email: dados.email,
                 numero_parcelas: dados.numero_parcelas,
