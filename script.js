@@ -351,10 +351,19 @@ document.addEventListener('DOMContentLoaded', function() {
     if (telefoneInput) {
         telefoneInput.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
+
+            // Limitar a 11 dígitos (DDD + 9 dígitos)
+            if (value.length > 11) {
+                value = value.substring(0, 11);
+            }
+
+            // Aplicar máscara (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
             if (value.length <= 11) {
+                // (11) 95132-9984
                 value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
                 value = value.replace(/(\d)(\d{4})$/, '$1-$2');
             }
+
             e.target.value = value;
         });
     }
