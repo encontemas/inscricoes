@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 
     try {
         const {
-            id_inscricao, // ← CORRIGIDO: usar id_inscricao (não inscricao_id)
+            inscricao_id,
             nome_completo,
             email,
             cpf,
@@ -20,10 +20,10 @@ export default async function handler(req, res) {
         } = req.body;
 
         // Validações
-        if (!id_inscricao || !nome_completo || !email || !cpf || !telefone || !valor_total || !cartao_encrypted) {
+        if (!inscricao_id || !nome_completo || !email || !cpf || !telefone || !valor_total || !cartao_encrypted) {
             return res.status(400).json({
                 error: 'Dados incompletos',
-                message: 'Todos os campos são obrigatórios (incluindo id_inscricao)'
+                message: 'Todos os campos são obrigatórios'
             });
         }
 
@@ -37,9 +37,9 @@ export default async function handler(req, res) {
         }
 
         console.log('💳 Processando pagamento com cartão de crédito...');
-        console.log('🆔 ID Inscrição:', id_inscricao);
-        console.log('📧 Email:', email);
-        console.log('💰 Valor Total:', valor_total);
+        console.log('Inscrição ID:', inscricao_id);
+        console.log('Email:', email);
+        console.log('Valor Total:', valor_total);
 
         // Preparar dados do pagamento PagBank
         const pagBankToken = process.env.PAGBANK_TOKEN;
@@ -87,13 +87,13 @@ export default async function handler(req, res) {
         console.log('  Valor (centavos):', valorCentavos);
         console.log('  Parcelas:', numero_parcelas_cartao);
 
-        // Reference ID = ID da inscrição (já tem limite de 64 caracteres garantido)
-        const referenceId = id_inscricao; // ← USAR ID DA INSCRIÇÃO
-        console.log('🔖 Reference ID (id_inscricao):', referenceId);
+        // Reference ID único com máximo de 64 caracteres
+        const timestamp = new Date().getTime();
+        const referenceId = `ACMP_${timestamp}`;
 
         // Preparar payload para PagBank - Pagamento com Cartão
         const pagBankPayload = {
-            reference_id: referenceId, // ← ID DA INSCRIÇÃO
+            reference_id: referenceId,
             customer: {
                 name: nome_completo,
                 email: email,
@@ -208,19 +208,12 @@ export default async function handler(req, res) {
 
         // Se pagamento APROVADO, atualizar planilha IMEDIATAMENTE
         if (paymentStatus === 'PAID') {
-            console.log('========================================');
-            console.log('💳 PAGAMENTO APROVADO! Atualizando planilha...');
-            console.log('========================================');
-            console.log('🆔 ID Inscrição:', id_inscricao);
-            console.log('📧 Email:', email);
-            console.log('🆔 Order ID:', responseData.id);
-            console.log('🔢 Parcelas:', parcelasCartao);
+            console.log('💳 Pagamento aprovado! Atualizando planilha...');
 
             try {
                 const { atualizarStatusPagamentoCartao } = await import('./webhook-pagbank.js');
 
                 await atualizarStatusPagamentoCartao({
-                    id_inscricao: id_inscricao, // ← PASSAR ID DA INSCRIÇÃO
                     orderId: responseData.id,
                     chargeId: charge.id,
                     amount: charge.amount.value,
@@ -229,19 +222,10 @@ export default async function handler(req, res) {
                     installments: parcelasCartao
                 });
 
-                console.log('========================================');
-                console.log('✅ PLANILHA ATUALIZADA COM SUCESSO!');
-                console.log('========================================');
+                console.log('✅ Planilha atualizada com sucesso!');
             } catch (updateError) {
-                console.error('========================================');
-                console.error('❌ ERRO CRÍTICO ao atualizar planilha após pagamento aprovado');
-                console.error('========================================');
-                console.error('Tipo:', updateError.name);
-                console.error('Mensagem:', updateError.message);
-                console.error('Stack:', updateError.stack);
-                console.error('========================================');
-                // IMPORTANTE: Ainda retornar sucesso para o usuário, mas logar o erro
-                console.error('⚠️ ATENÇÃO: Pagamento aprovado mas planilha não atualizada!');
+                console.error('⚠️ Erro ao atualizar planilha (não crítico):', updateError);
+                // Não falhar a requisição se a atualização falhar
             }
         }
 

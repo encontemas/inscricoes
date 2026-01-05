@@ -37,7 +37,6 @@ export default async function handler(req, res) {
 
             // Registrar pagamento no Google Sheets
             await registrarPagamento({
-                id_inscricao: referenceId, // ← reference_id É O ID DA INSCRIÇÃO!
                 orderId,
                 referenceId,
                 chargeId: paidCharge.id,
@@ -223,11 +222,8 @@ export async function atualizarStatusPagamentoCartao(dadosPagamento) {
 // Função para atualizar status de pagamento na aba Inscrições
 async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment = false) {
     try {
-        console.log('========================================');
-        console.log('📝 INICIANDO ATUALIZAÇÃO DE PAGAMENTO');
-        console.log('========================================');
+        console.log('📝 Atualizando status de pagamento na aba Inscrições...');
         console.log('💳 Tipo de pagamento:', isCardPayment ? 'CARTÃO (marcar todas)' : 'PIX (marcar primeira)');
-        console.log('📦 Dados recebidos:', JSON.stringify(dadosPagamento, null, 2));
 
         const auth = new google.auth.GoogleAuth({
             credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON),
@@ -237,16 +233,15 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
         const sheets = google.sheets({ version: 'v4', auth });
         const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
 
-        // Extrair id_inscricao dos dados do pagamento
-        const idInscricao = dadosPagamento.id_inscricao;
+        // Extrair email do reference_id ou dos dados do cliente
+        const email = dadosPagamento.customerEmail;
 
-        if (!idInscricao) {
-            console.error('❌ id_inscricao não encontrado no pagamento!');
-            console.error('❌ Dados disponíveis:', dadosPagamento);
-            throw new Error('id_inscricao não encontrado - não é possível atualizar inscrição');
+        if (!email) {
+            console.warn('⚠️ Email não encontrado no pagamento, não é possível atualizar inscrição');
+            return;
         }
 
-        console.log('🔍 Buscando inscrição com id_inscricao:', idInscricao);
+        console.log('🔍 Buscando inscrição com email:', email);
 
         // Buscar dados na planilha Inscrições
         const response = await sheets.spreadsheets.values.get({
@@ -263,36 +258,27 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
 
         // Cabeçalhos (primeira linha)
         const headers = rows[0];
-        const idInscricaoIndex = headers.indexOf('id_inscricao'); // ← BUSCAR POR ID_INSCRICAO
+        const emailIndex = headers.indexOf('email');
         const numeroParcelasIndex = headers.indexOf('numero_parcelas');
 
-        if (idInscricaoIndex === -1) {
-            console.error('❌ Coluna "id_inscricao" não encontrada na planilha');
-            console.error('❌ Cabeçalhos encontrados:', headers);
-            throw new Error('Coluna id_inscricao não encontrada na planilha');
+        if (emailIndex === -1) {
+            console.error('❌ Coluna "email" não encontrada na planilha');
+            return;
         }
 
-        // Buscar linha do inscrito pelo id_inscricao
+        // Buscar linha do inscrito pelo email
         let rowIndex = -1;
-        console.log(`🔎 Procurando id_inscricao: "${idInscricao}"`);
-        console.log(`📊 Total de linhas na planilha: ${rows.length - 1}`);
-
         for (let i = 1; i < rows.length; i++) {
-            const rowIdInscricao = (rows[i][idInscricaoIndex] || '').trim();
-            console.log(`  Linha ${i + 1}: id_inscricao = "${rowIdInscricao}"`);
-            if (rowIdInscricao === idInscricao) {
+            const rowEmail = (rows[i][emailIndex] || '').toLowerCase().trim();
+            if (rowEmail === email.toLowerCase().trim()) {
                 rowIndex = i;
-                console.log(`  ✅ MATCH! Linha ${i + 1}`);
                 break;
             }
         }
 
         if (rowIndex === -1) {
-            console.error('❌ ERRO: Inscrição não encontrada para id_inscricao:', idInscricao);
-            console.error('❌ IDs encontrados na planilha:',
-                rows.slice(1).map((row, i) => `Linha ${i+2}: ${row[idInscricaoIndex]}`).join('\n')
-            );
-            throw new Error(`Inscrição não encontrada para id_inscricao: ${idInscricao}`);
+            console.warn('⚠️ Inscrição não encontrada para email:', email);
+            return;
         }
 
         console.log('✅ Inscrição encontrada na linha:', rowIndex + 1);
@@ -406,10 +392,7 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
 
         // Executar todas as atualizações
         if (updates.length > 0) {
-            console.log('📤 Enviando atualizações para Google Sheets...');
-            console.log('📝 Updates a serem aplicados:', JSON.stringify(updates, null, 2));
-
-            const updateResponse = await sheets.spreadsheets.values.batchUpdate({
+            await sheets.spreadsheets.values.batchUpdate({
                 spreadsheetId,
                 resource: {
                     valueInputOption: 'RAW',
@@ -417,25 +400,14 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
                 }
             });
 
-            console.log('✅ Resposta do Google Sheets:', JSON.stringify(updateResponse.data, null, 2));
-            console.log(`✅ Status de pagamento atualizado com sucesso para id_inscricao: ${idInscricao}`);
+            console.log(`✅ Status de pagamento atualizado com sucesso para ${email}`);
             console.log(`📊 Total de campos atualizados: ${updates.length}`);
-            console.log('========================================');
         } else {
-            console.error('❌ ERRO: Nenhuma atualização foi preparada!');
-            throw new Error('Nenhuma atualização foi preparada');
+            console.warn('⚠️ Nenhuma atualização foi preparada');
         }
 
     } catch (error) {
-        console.error('========================================');
-        console.error('❌ ERRO CRÍTICO ao atualizar pagamento');
-        console.error('========================================');
-        console.error('Tipo do erro:', error.name);
-        console.error('Mensagem:', error.message);
-        console.error('Stack:', error.stack);
-        console.error('Dados do pagamento:', JSON.stringify(dadosPagamento, null, 2));
-        console.error('========================================');
-        // LANÇAR o erro para que fique visível nos logs
-        throw error;
+        console.error('❌ Erro ao atualizar status de pagamento na inscrição:', error);
+        // Não lançar erro para não quebrar o webhook
     }
 }
