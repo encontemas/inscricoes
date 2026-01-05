@@ -163,7 +163,7 @@ export default async function handler(req, res) {
         const envValue = (process.env.PAGBANK_ENV || '').trim().toLowerCase();
         const isProduction = envValue === 'production';
         const pagBankUrl = isProduction
-            ? 'https://api.pagbank.com/orders'
+            ? 'https://api.pagseguro.com/orders'  // URL CORRETA de produção
             : 'https://sandbox.api.pagseguro.com/orders';
 
         console.log('🔍 Ambiente detectado:', {

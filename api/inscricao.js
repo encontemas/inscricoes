@@ -100,9 +100,6 @@ async function salvarInscricao(dadosInscricao) {
             }
         }
 
-        // Garantir que CPF seja tratado como string com zeros à esquerda
-        const cpfFormatado = String(dadosInscricao.cpf || '').replace(/\D/g, '').padStart(11, '0');
-
         // Determinar método de pagamento (case-insensitive)
         const metodoPagamento = (dadosInscricao.metodo_pagamento || 'PIX').toUpperCase();
         const tipoPagamento = metodoPagamento === 'CARTAO' ? 'CARTAO' : 'PIX';
@@ -112,10 +109,10 @@ async function salvarInscricao(dadosInscricao) {
             agora, // data_inscricao
             agora, // data_atualizacao
             dadosInscricao.nome_completo,
-            cpfFormatado, // CPF formatado com zeros à esquerda
+            dadosInscricao.cpf || '', // CPF sem formatação (como estava antes)
             dadosInscricao.maior_idade ? 1 : 0,
             dadosInscricao.email,
-            dadosInscricao.telefone,
+            dadosInscricao.telefone || '', // Telefone sem formatação (como estava antes)
             dadosInscricao.cidade_pais,
             dadosInscricao.grupo_escolha || '',
             dadosInscricao.csa || '',
