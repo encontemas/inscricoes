@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Captura de Logs - Teste de Pagamento com Cartão</title>
+    <title>Teste PRODUÇÃO - Pagamento com Cartão (R$ 1,00)</title>
     <link rel="icon" type="image/jpeg" href="logo.jpg">
     <style>
         * {
@@ -29,6 +29,16 @@
             margin-bottom: 1rem;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             font-size: 2rem;
+        }
+
+        .warning-banner {
+            background: #d29922;
+            color: #0d1117;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 2rem;
+            font-weight: bold;
+            text-align: center;
         }
 
         .status {
@@ -215,11 +225,21 @@
         .clear-btn:hover {
             background: #30363d;
         }
+
+        .highlight-value {
+            color: #d29922;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔍 Captura de Logs - Teste de Pagamento com Cartão</h1>
+        <h1>🧪 Teste PRODUÇÃO - Pagamento com Cartão</h1>
+
+        <div class="warning-banner">
+            ⚠️ AMBIENTE DE PRODUÇÃO - Teste com R$ 1,00 - CARTÃO REAL SERÁ COBRADO
+        </div>
 
         <div class="status">
             <div class="status-item">
@@ -229,64 +249,82 @@
         </div>
 
         <div class="form-section">
-            <h2>Dados do Teste</h2>
+            <h2>📝 Dados da Inscrição</h2>
 
             <div class="form-group">
-                <label>Nome Completo</label>
-                <input type="text" id="nome" value="TESTE LOGS PAGBANK" />
+                <label>Nome Completo *</label>
+                <input type="text" id="nome" value="ALEX GUIMARAES DOS SANTOS" required />
             </div>
 
             <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="email" value="teste-logs@example.com" />
+                <label>Email *</label>
+                <input type="email" id="email" value="alexguimaraes@outlook.com" required />
             </div>
 
             <div class="form-group">
-                <label>CPF (use CPF de teste do sandbox)</label>
-                <input type="text" id="cpf" value="11895008689" />
+                <label>CPF * (use seu CPF real)</label>
+                <input type="text" id="cpf" value="07531603667" required />
             </div>
 
             <div class="form-group">
-                <label>Telefone (com DDD - use formato: 11123456789)</label>
-                <input type="text" id="telefone" value="11123456789" />
+                <label>Telefone (com DDD) *</label>
+                <input type="text" id="telefone" value="11951329984" required />
             </div>
 
             <div class="form-group">
-                <label>Número do Cartão</label>
-                <input type="text" id="cartao_numero" value="4539620659922097" placeholder="Cartão de teste VISA" />
+                <label>Data de Nascimento *</label>
+                <input type="date" id="data_nascimento" value="1990-01-01" required />
             </div>
 
             <div class="form-group">
-                <label>Nome do Titular</label>
-                <input type="text" id="cartao_titular" value="Jose da Silva" />
+                <label>Valor do Teste (R$) *</label>
+                <input type="number" id="valor_teste" value="1.00" step="0.01" min="1" required />
+                <small style="color: #8b949e; display: block; margin-top: 0.5rem;">
+                    ⚠️ Este valor será cobrado no seu cartão de crédito real!
+                </small>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>💳 Dados do Cartão (REAL - SERÁ COBRADO)</h2>
+
+            <div class="form-group">
+                <label>Número do Cartão *</label>
+                <input type="text" id="cartao_numero" value="" placeholder="0000 0000 0000 0000" maxlength="19" required />
             </div>
 
             <div class="form-group">
-                <label>Validade (MM/AA)</label>
-                <input type="text" id="cartao_validade" value="03/26" maxlength="5" />
+                <label>Nome do Titular *</label>
+                <input type="text" id="cartao_titular" value="" placeholder="Como está no cartão" required />
             </div>
 
             <div class="form-group">
-                <label>CVV</label>
-                <input type="text" id="cartao_cvv" value="123" maxlength="4" />
+                <label>Validade (MM/AA) *</label>
+                <input type="text" id="cartao_validade" value="" placeholder="12/30" maxlength="5" required />
+            </div>
+
+            <div class="form-group">
+                <label>CVV *</label>
+                <input type="text" id="cartao_cvv" value="" placeholder="123" maxlength="4" required />
             </div>
 
             <div class="form-group">
                 <label>Parcelas</label>
                 <select id="parcelas">
-                    <option value="1">À vista (1x)</option>
+                    <option value="1" selected>À vista (1x) - Valor: <span id="valor1x">R$ 1,00</span></option>
                     <option value="2">2x sem juros</option>
                     <option value="3">3x sem juros</option>
-                    <option value="11" selected>11x sem juros</option>
                 </select>
             </div>
 
-            <button class="btn" id="btnTestar" onclick="testarPagamento()">🧪 Testar Pagamento e Capturar Logs</button>
+            <button class="btn" id="btnTestar" onclick="testarFluxoCompleto()">
+                🧪 Testar Fluxo Completo (Inscrição + Pagamento)
+            </button>
         </div>
 
         <div class="logs-container">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h2>📋 Logs Capturados</h2>
+                <h2>📋 Logs do Teste Completo</h2>
                 <button class="clear-btn" onclick="limparLogs()">Limpar Logs</button>
             </div>
             <div id="logsDisplay"></div>
@@ -296,6 +334,7 @@
     <script src="https://assets.pagseguro.com.br/checkout-sdk-js/rc/dist/browser/pagseguro.min.js"></script>
     <script>
         let logs = [];
+        let idInscricaoGerado = null;
 
         function addLog(type, message, details = null) {
             const timestamp = new Date().toLocaleString('pt-BR');
@@ -316,14 +355,14 @@
                     <div class="log-message">${escapeHtml(log.message)}</div>
                     ${log.details ? `<div class="error-detail">${escapeHtml(JSON.stringify(log.details, null, 2))}</div>` : ''}
                 </div>
-            `).reverse().join('');
+            `).join('');
 
             // Auto scroll to bottom
             display.scrollTop = display.scrollHeight;
         }
 
         function escapeHtml(unsafe) {
-            return unsafe
+            return String(unsafe)
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;")
@@ -333,6 +372,7 @@
 
         function limparLogs() {
             logs = [];
+            idInscricaoGerado = null;
             renderLogs();
             updateStatus('default', 'Logs limpos. Aguardando novo teste...');
         }
@@ -349,34 +389,93 @@
             text.textContent = message;
         }
 
-        async function testarPagamento() {
+        async function testarFluxoCompleto() {
             const btn = document.getElementById('btnTestar');
             btn.disabled = true;
             btn.textContent = '⏳ Processando...';
 
             logs = []; // Limpar logs anteriores
-            updateStatus('processing', 'Processando pagamento...');
+            idInscricaoGerado = null;
+            updateStatus('processing', 'Iniciando teste...');
 
             try {
-                addLog('info', '🚀 Iniciando teste de pagamento com cartão');
+                addLog('info', '🚀 INICIANDO TESTE COMPLETO EM PRODUÇÃO');
+                addLog('warning', '⚠️ ATENÇÃO: Usando ambiente de PRODUÇÃO - cartão real será cobrado!');
 
-                // Coletar dados
+                // === ETAPA 1: CRIAR INSCRIÇÃO ===
+                addLog('info', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                addLog('info', '📝 ETAPA 1: Criando inscrição no sistema...');
+                addLog('info', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
                 const nome = document.getElementById('nome').value;
                 const email = document.getElementById('email').value;
                 const cpf = document.getElementById('cpf').value;
                 const telefone = document.getElementById('telefone').value;
+                const dataNascimento = document.getElementById('data_nascimento').value;
+                const valorTeste = parseFloat(document.getElementById('valor_teste').value);
+
+                // Criar objeto de inscrição completo
+                const dadosInscricao = {
+                    nome_completo: nome,
+                    email: email,
+                    cpf: cpf,
+                    telefone: telefone,
+                    data_nascimento: dataNascimento,
+                    tipo_participante: 'TESTE',
+                    valor_inscricao: valorTeste,
+                    metodo_pagamento: 'CARTAO',
+                    numero_parcelas_cartao: parseInt(document.getElementById('parcelas').value)
+                };
+
+                addLog('info', '📤 Enviando dados para /api/inscricao:', dadosInscricao);
+
+                const inscricaoResponse = await fetch('/api/inscricao', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dadosInscricao)
+                });
+
+                const inscricaoData = await inscricaoResponse.json();
+                addLog('info', `📥 Resposta /api/inscricao (status ${inscricaoResponse.status}):`, inscricaoData);
+
+                if (!inscricaoResponse.ok) {
+                    throw new Error('Erro ao criar inscrição: ' + (inscricaoData.message || inscricaoData.error));
+                }
+
+                // Capturar ID da inscrição
+                idInscricaoGerado = inscricaoData.inscricao?.id_inscricao;
+
+                if (!idInscricaoGerado) {
+                    throw new Error('ID da inscrição não foi retornado pela API!');
+                }
+
+                addLog('success', `✅ Inscrição criada com sucesso!`);
+                addLog('success', `🆔 ID DA INSCRIÇÃO GERADO: ${idInscricaoGerado}`);
+
+                // === ETAPA 2: PROCESSAR PAGAMENTO ===
+                addLog('info', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                addLog('info', '💳 ETAPA 2: Processando pagamento com cartão...');
+                addLog('info', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+                // Coletar dados do cartão
                 const cartaoNumero = document.getElementById('cartao_numero').value.replace(/\s/g, '');
                 const cartaoTitular = document.getElementById('cartao_titular').value;
                 const cartaoValidade = document.getElementById('cartao_validade').value;
                 const cartaoCvv = document.getElementById('cartao_cvv').value;
                 const parcelas = parseInt(document.getElementById('parcelas').value);
 
-                addLog('info', '📝 Dados coletados:', {
-                    nome, email, cpf, telefone,
-                    cartao: cartaoNumero.slice(-4),
+                // Validar dados do cartão
+                if (!cartaoNumero || !cartaoTitular || !cartaoValidade || !cartaoCvv) {
+                    throw new Error('Preencha todos os dados do cartão!');
+                }
+
+                addLog('info', '📝 Dados do cartão:', {
+                    numero_final: cartaoNumero.slice(-4),
                     titular: cartaoTitular,
                     validade: cartaoValidade,
-                    parcelas
+                    parcelas: parcelas
                 });
 
                 // Buscar chave pública
@@ -389,6 +488,7 @@
                 }
 
                 addLog('success', `✅ Chave pública obtida (ambiente: ${keyData.environment})`);
+                addLog('info', `📍 Ambiente PagBank: ${keyData.environment.toUpperCase()}`);
 
                 // Criptografar cartão
                 addLog('info', '🔐 Criptografando dados do cartão...');
@@ -406,18 +506,19 @@
 
                 const cartaoEncrypted = card.encryptedCard;
                 addLog('success', '✅ Cartão criptografado com sucesso');
-                addLog('info', 'Encrypted Card (primeiros 50 chars):', cartaoEncrypted.substring(0, 50) + '...');
+                addLog('info', `🔐 Encrypted Card length: ${cartaoEncrypted.length} chars`);
 
-                // Enviar pagamento
+                // Enviar pagamento COM ID_INSCRICAO
                 addLog('info', '💳 Enviando requisição de pagamento para /api/pagamento-cartao...');
+                addLog('info', `🆔 Usando ID da inscrição: ${idInscricaoGerado}`);
 
-                const payloadCompleto = {
-                    inscricao_id: email,
+                const payloadPagamento = {
+                    id_inscricao: idInscricaoGerado, // USAR ID_INSCRICAO (não inscricao_id)
                     nome_completo: nome,
                     email: email,
                     cpf: cpf,
                     telefone: telefone,
-                    valor_total: 450.00,
+                    valor_total: valorTeste,
                     cartao_encrypted: cartaoEncrypted,
                     cartao_titular: cartaoTitular,
                     cartao_numero_final: cartaoNumero.slice(-4),
@@ -425,45 +526,88 @@
                     numero_parcelas_cartao: parcelas
                 };
 
-                addLog('info', 'Payload enviado:', payloadCompleto);
+                addLog('info', '📤 Payload completo do pagamento:', payloadPagamento);
 
                 const pagamentoResponse = await fetch('/api/pagamento-cartao', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(payloadCompleto)
+                    body: JSON.stringify(payloadPagamento)
                 });
 
                 const pagamentoData = await pagamentoResponse.json();
 
-                addLog('info', `📥 Resposta recebida (status ${pagamentoResponse.status}):`, pagamentoData);
+                addLog('info', `📥 Resposta /api/pagamento-cartao (status ${pagamentoResponse.status}):`, pagamentoData);
 
                 if (!pagamentoResponse.ok) {
-                    addLog('error', '❌ ERRO: ' + (pagamentoData.message || pagamentoData.error), pagamentoData);
-                    updateStatus('error', 'Erro: ' + (pagamentoData.message || pagamentoData.error));
-                } else {
-                    if (pagamentoData.approved) {
-                        addLog('success', '✅ PAGAMENTO APROVADO!', pagamentoData);
-                        updateStatus('success', 'Pagamento aprovado com sucesso!');
-                    } else {
-                        addLog('warning', '⏳ Pagamento em processamento', pagamentoData);
-                        updateStatus('processing', 'Pagamento em processamento');
-                    }
+                    addLog('error', '❌ ERRO NO PAGAMENTO: ' + (pagamentoData.message || pagamentoData.error), pagamentoData);
+                    updateStatus('error', 'Erro no pagamento: ' + (pagamentoData.message || pagamentoData.error));
+                    throw new Error('Pagamento falhou: ' + (pagamentoData.message || pagamentoData.error));
                 }
 
+                // === RESULTADO FINAL ===
+                addLog('info', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                addLog('info', '📊 RESULTADO FINAL');
+                addLog('info', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+                if (pagamentoData.approved) {
+                    addLog('success', '✅ PAGAMENTO APROVADO COM SUCESSO!');
+                    addLog('success', `🆔 ID Inscrição: ${idInscricaoGerado}`);
+                    addLog('success', `📦 Order ID PagBank: ${pagamentoData.order_id}`);
+                    addLog('success', `💳 Charge ID: ${pagamentoData.charge_id}`);
+                    addLog('success', `💰 Valor cobrado: R$ ${valorTeste.toFixed(2)}`);
+                    addLog('success', `📋 Parcelas: ${parcelas}x`);
+                    updateStatus('success', `Pagamento aprovado! ID: ${idInscricaoGerado}`);
+                } else {
+                    addLog('warning', '⏳ Pagamento em processamento', pagamentoData);
+                    addLog('info', `Status: ${pagamentoData.status}`);
+                    updateStatus('processing', 'Pagamento em processamento');
+                }
+
+                addLog('info', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                addLog('success', '✅ TESTE COMPLETO FINALIZADO!');
+                addLog('info', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
             } catch (error) {
-                addLog('error', '❌ ERRO CRÍTICO: ' + error.message, {
+                addLog('error', '❌ ERRO CRÍTICO NO TESTE: ' + error.message, {
                     name: error.name,
                     stack: error.stack
                 });
-                updateStatus('error', 'Erro crítico: ' + error.message);
+                updateStatus('error', 'Erro: ' + error.message);
                 console.error('Erro completo:', error);
             } finally {
                 btn.disabled = false;
-                btn.textContent = '🧪 Testar Pagamento e Capturar Logs';
+                btn.textContent = '🧪 Testar Fluxo Completo (Inscrição + Pagamento)';
             }
         }
+
+        // Atualizar valor nas parcelas quando mudar o valor do teste
+        document.getElementById('valor_teste').addEventListener('input', function(e) {
+            const valor = parseFloat(e.target.value) || 1.00;
+            const select = document.getElementById('parcelas');
+            select.innerHTML = `
+                <option value="1" selected>À vista (1x) - R$ ${valor.toFixed(2)}</option>
+                <option value="2">2x de R$ ${(valor/2).toFixed(2)}</option>
+                <option value="3">3x de R$ ${(valor/3).toFixed(2)}</option>
+            `;
+        });
+
+        // Formatar número do cartão
+        document.getElementById('cartao_numero').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+
+        // Formatar validade
+        document.getElementById('cartao_validade').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.slice(0, 2) + '/' + value.slice(2, 4);
+            }
+            e.target.value = value;
+        });
 
         // Renderizar logs iniciais
         renderLogs();
