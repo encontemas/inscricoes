@@ -160,9 +160,9 @@ async function salvarInscricao(dadosInscricao) {
         // Mantenha o INSERT_ROWS que adicionamos antes, é importante
         const response = await sheets.spreadsheets.values.append({
             spreadsheetId,
-            range: 'Inscrições!A:A', 
-            valueInputOption: 'USER_ENTERED',
-            insertDataOption: 'INSERT_ROWS', 
+            range: 'Inscrições!A:A',
+            valueInputOption: 'RAW', // RAW para preservar formato exato (CPF com zero à esquerda)
+            insertDataOption: 'INSERT_ROWS',
             requestBody: {
                 values: [valores]
             }
