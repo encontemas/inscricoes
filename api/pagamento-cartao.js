@@ -117,7 +117,7 @@ export default async function handler(req, res) {
             ],
             charges: [
                 {
-                    reference_id: timestamp.toString(),
+                    reference_id: `CHARGE_${Date.now()}`, // ← ID único para a cobrança
                     description: "Inscricao Acampamento",
                     amount: {
                         value: valorCentavos,
