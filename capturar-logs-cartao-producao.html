@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capturar Logs Cartão - PRODUÇÃO (PagBank Homologação)</title>
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
+    <script src="https://assets.pagseguro.com.br/checkout-sdk-js/rc/dist/browser/pagseguro.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #4fc3f7;
+            margin-bottom: 1rem;
+            font-family: Arial, sans-serif;
+        }
+
+        .alert {
+            background: #2d2d2d;
+            border-left: 4px solid #ff5722;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 4px;
+        }
+
+        .alert h2 {
+            color: #ff5722;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            font-family: Arial, sans-serif;
+        }
+
+        .alert p {
+            color: #d4d4d4;
+            line-height: 1.6;
+            font-family: Arial, sans-serif;
+        }
+
+        .form-section {
+            background: #2d2d2d;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .form-section h2 {
+            color: #4fc3f7;
+            margin-bottom: 1rem;
+            font-family: Arial, sans-serif;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #4fc3f7;
+            margin-bottom: 0.5rem;
+            font-family: Arial, sans-serif;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            background: #1e1e1e;
+            border: 1px solid #404040;
+            color: #d4d4d4;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4fc3f7;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn {
+            background: #4fc3f7;
+            color: #1e1e1e;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-family: Arial, sans-serif;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #039be5;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .logs-container {
+            display: none;
+            background: #2d2d2d;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        .logs-container.show {
+            display: block;
+        }
+
+        .logs-container h2 {
+            color: #4fc3f7;
+            margin-bottom: 1rem;
+            font-family: Arial, sans-serif;
+        }
+
+        .log-content {
+            background: #1e1e1e;
+            padding: 1.5rem;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            max-height: 600px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .copy-btn {
+            background: #66bb6a;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+        }
+
+        .copy-btn:hover {
+            background: #4caf50;
+        }
+
+        .success {
+            color: #66bb6a;
+        }
+
+        .error {
+            color: #ef5350;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #1e1e1e;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #2d2d2d;
+            border-left: 4px solid #66bb6a;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            color: #66bb6a;
+            margin-bottom: 1rem;
+            font-family: Arial, sans-serif;
+        }
+
+        .info-box ol {
+            margin-left: 1.5rem;
+            line-height: 1.8;
+            font-family: Arial, sans-serif;
+        }
+
+        .info-box code {
+            background: #1e1e1e;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #4fc3f7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Captura de Logs CARTÃO - PRODUÇÃO (Homologação PagBank)</h1>
+
+        <div class="alert">
+            <h2>⚠️ AMBIENTE DE PRODUÇÃO - Cartão Real Será Cobrado!</h2>
+            <p>Esta página processa um pagamento <strong>REAL</strong> de R$ 1,00 no ambiente de PRODUÇÃO do PagBank.</p>
+            <p><strong>O valor de R$ 1,00 SERÁ COBRADO no cartão de crédito real.</strong></p>
+            <p>Os logs completos (REQUEST e RESPONSE) serão capturados no formato solicitado pelo PagBank para homologação.</p>
+        </div>
+
+        <div class="form-section">
+            <h2>📝 Dados Pessoais</h2>
+            <form id="formTeste">
+                <div class="form-group">
+                    <label>Nome Completo:</label>
+                    <input type="text" id="nome" required value="ALEX GUIMARAES DOS SANTOS">
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="email" required value="alexguimaraes@outlook.com">
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label>Telefone:</label>
+                        <input type="tel" id="telefone" required value="11951329984">
+                    </div>
+                    <div class="form-group">
+                        <label>CPF:</label>
+                        <input type="text" id="cpf" required value="07531603667" maxlength="11">
+                    </div>
+                </div>
+
+                <h2 style="margin-top: 2rem; margin-bottom: 1rem;">💳 Dados do Cartão (REAL - SERÁ COBRADO)</h2>
+
+                <div class="form-group">
+                    <label>Número do Cartão:</label>
+                    <input type="text" id="cartao_numero" required placeholder="0000 0000 0000 0000" value="2227 6316 5869 1071" maxlength="19">
+                </div>
+                <div class="form-group">
+                    <label>Nome do Titular (como está no cartão):</label>
+                    <input type="text" id="cartao_titular" required value="Alex G Santos">
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label>Validade (MM/AA):</label>
+                        <input type="text" id="cartao_validade" required placeholder="12/30" value="11/33" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <label>CVV:</label>
+                        <input type="text" id="cartao_cvv" required placeholder="123" value="411" maxlength="4">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Parcelas:</label>
+                    <select id="parcelas">
+                        <option value="1" selected>À vista (1x) - R$ 1,00</option>
+                        <option value="2">2x sem juros</option>
+                        <option value="3">3x sem juros</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn" id="btnTestar">
+                    🚀 Processar Pagamento R$ 1,00 e Capturar Logs
+                </button>
+            </form>
+        </div>
+
+        <div class="logs-container" id="logsContainer">
+            <h2>📋 LOGS CAPTURADOS - Copie e Envie para o PagBank</h2>
+            <div class="log-content" id="logContent"></div>
+            <button class="copy-btn" onclick="copiarLogs()">📋 Copiar Todos os Logs</button>
+        </div>
+
+        <div class="info-box">
+            <h3>📧 Como Enviar os Logs ao PagBank</h3>
+            <ol>
+                <li>Preencha o formulário acima com os dados reais</li>
+                <li>Use um cartão de crédito REAL (será cobrado R$ 1,00)</li>
+                <li>Clique em <code>Processar Pagamento R$ 1,00 e Capturar Logs</code></li>
+                <li>Aguarde o processamento do pagamento</li>
+                <li>Clique em <code>📋 Copiar Todos os Logs</code></li>
+                <li>Cole no email de resposta para Gabriel de Souza Santos do PagBank</li>
+                <li>Adicione uma mensagem: "Segue os logs solicitados da transação de CARTÃO em ambiente de PRODUÇÃO."</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('formTeste');
+        const btnTestar = document.getElementById('btnTestar');
+        const logsContainer = document.getElementById('logsContainer');
+        const logContent = document.getElementById('logContent');
+
+        let logsCompletos = '';
+        let requestPayload = null;
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            btnTestar.disabled = true;
+            btnTestar.innerHTML = '⏳ Processando pagamento e capturando logs... <span class="spinner"></span>';
+
+            try {
+                const dataHora = new Date().toLocaleString('pt-BR');
+
+                // 1. Buscar chave pública
+                const keyResponse = await fetch('/api/pagbank-public-key');
+                const keyData = await keyResponse.json();
+
+                if (!keyResponse.ok) {
+                    throw new Error('Erro ao obter chave pública');
+                }
+
+                // 2. Criptografar cartão
+                const cartaoNumero = document.getElementById('cartao_numero').value.replace(/\s/g, '');
+                const cartaoTitular = document.getElementById('cartao_titular').value;
+                const cartaoValidade = document.getElementById('cartao_validade').value;
+                const cartaoCvv = document.getElementById('cartao_cvv').value;
+                const parcelas = parseInt(document.getElementById('parcelas').value);
+
+                const [mes, ano] = cartaoValidade.split('/');
+                const anoCompleto = '20' + ano;
+
+                const card = window.PagSeguro.encryptCard({
+                    publicKey: keyData.publicKey,
+                    holder: cartaoTitular,
+                    number: cartaoNumero,
+                    expMonth: mes,
+                    expYear: anoCompleto,
+                    securityCode: cartaoCvv
+                });
+
+                const cartaoEncrypted = card.encryptedCard;
+
+                // 3. Preparar dados
+                const nome = document.getElementById('nome').value;
+                const email = document.getElementById('email').value;
+                const telefone = document.getElementById('telefone').value;
+                const cpf = document.getElementById('cpf').value;
+
+                // Gerar ID único para teste
+                const idInscricao = `TESTE_${Date.now()}`;
+
+                requestPayload = {
+                    id_inscricao: idInscricao,
+                    nome_completo: nome,
+                    email: email,
+                    cpf: cpf,
+                    telefone: telefone,
+                    valor_total: 1.00,
+                    cartao_encrypted: cartaoEncrypted,
+                    cartao_titular: cartaoTitular,
+                    cartao_numero_final: cartaoNumero.slice(-4),
+                    cartao_bandeira: 'DESCONHECIDA',
+                    numero_parcelas_cartao: parcelas
+                };
+
+                // 4. Chamar API de pagamento
+                const response = await fetch('/api/pagamento-cartao', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestPayload)
+                });
+
+                const responseData = await response.json();
+                const statusText = response.ok ? `${response.status} ${response.statusText}` : `${response.status} Error`;
+
+                // 5. Formatar logs
+                const urlUsada = 'https://api.pagseguro.com/orders'; // PRODUCTION
+
+                logsCompletos = `========================================
+LOGS DE PAGAMENTO CARTÃO - PAGBANK
+Data/Hora: ${dataHora}
+========================================
+
+=== REQUEST ENVIADO PARA PAGBANK ===
+
+URL: ${urlUsada}
+Method: POST
+Headers: {
+  "Content-Type": "application/json",
+  "Authorization": "Bearer [TOKEN_OCULTADO]"
+}
+
+Payload:
+${JSON.stringify(requestPayload, null, 2)}
+
+
+=== RESPONSE RECEBIDO DO PAGBANK ===
+
+Status: ${statusText}
+
+Body:
+${JSON.stringify(responseData, null, 2)}
+
+========================================
+FIM DOS LOGS
+========================================`;
+
+                // 6. Exibir logs
+                logContent.textContent = logsCompletos;
+                logsContainer.classList.add('show');
+                logsContainer.scrollIntoView({ behavior: 'smooth' });
+
+                // 7. Atualizar botão
+                btnTestar.disabled = false;
+                if (response.ok && responseData.approved) {
+                    btnTestar.innerHTML = '<span class="success">✅ Pagamento aprovado! Logs capturados abaixo</span>';
+                } else if (response.ok) {
+                    btnTestar.innerHTML = '<span class="error">⚠️ Pagamento processado (veja status). Logs capturados abaixo</span>';
+                } else {
+                    btnTestar.innerHTML = '<span class="error">⚠️ Erro no pagamento! Veja logs abaixo</span>';
+                }
+
+            } catch (error) {
+                alert('Erro ao processar pagamento: ' + error.message);
+                btnTestar.disabled = false;
+                btnTestar.innerHTML = '🚀 Processar Pagamento R$ 1,00 e Capturar Logs';
+            }
+        });
+
+        function copiarLogs() {
+            navigator.clipboard.writeText(logsCompletos).then(() => {
+                alert('✅ Logs copiados para a área de transferência!\n\nAgora cole no email para o PagBank.');
+            }).catch(err => {
+                alert('❌ Erro ao copiar. Selecione o texto e copie manualmente.');
+            });
+        }
+
+        // Máscaras
+        document.getElementById('cartao_numero').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\s/g, '');
+            value = value.replace(/(\d{4})/g, '$1 ').trim();
+            e.target.value = value;
+        });
+
+        document.getElementById('cartao_validade').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        document.getElementById('cartao_cvv').addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+    </script>
+</body>
+</html>
