@@ -19,64 +19,79 @@ export default async function handler(req, res) {
             console.log('📡 Gerando nova chave pública do PagBank...');
             console.log('🌐 Ambiente PagBank:', environmentLabel);
 
-            const response = await fetch(`${baseUrl}/public-keys`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${pagBankToken}`,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    type: "card"
-                })
-            });
+            let timeoutId;
+            try {
+                const controller = new AbortController();
+                timeoutId = setTimeout(() => controller.abort(), 10000);
 
-            const responseText = await response.text();
-            let data = {};
+                const response = await fetch(`${baseUrl}/public-keys`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${pagBankToken}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'User-Agent': 'inscricoes/1.0'
+                    },
+                    signal: controller.signal,
+                    body: JSON.stringify({
+                        type: "card"
+                    })
+                });
+                const responseBody = await response.text();
+                let data = {};
 
-            if (responseText) {
-                try {
-                    data = JSON.parse(responseText);
-                } catch (parseError) {
+                if (responseBody) {
+                    try {
+                        data = JSON.parse(responseBody);
+                    } catch (parseError) {
+                        data = {
+                            error: 'Resposta inválida do PagBank',
+                            details: responseBody
+                        };
+                    }
+                } else {
                     data = {
-                        error: 'Resposta inválida do PagBank',
-                        details: responseText
+                        error: 'Resposta vazia do PagBank'
                     };
                 }
-            } else {
-                data = {
-                    error: 'Resposta vazia do PagBank'
+
+                console.log('📥 Resposta:', JSON.stringify(data, null, 2));
+
+                return {
+                    ok: response.ok,
+                    status: response.status,
+                    statusText: response.statusText,
+                    contentType: response.headers?.get?.('content-type') || null,
+                    data,
+                    environment: environmentLabel
                 };
-            }
-        const responseText = await response.text();
-        let data = {};
-
-        if (responseText) {
-            try {
-                data = JSON.parse(responseText);
-            } catch (parseError) {
-                data = {
-                    error: 'Resposta inválida do PagBank',
-                    details: responseText
+            } catch (requestError) {
+                console.error('❌ Falha ao chamar PagBank:', requestError);
+                const isAbort = requestError?.name === 'AbortError';
+                return {
+                    ok: false,
+                    status: isAbort ? 504 : 502,
+                    statusText: isAbort ? 'FETCH_TIMEOUT' : 'FETCH_FAILED',
+                    contentType: null,
+                    data: {
+                        error: isAbort
+                            ? 'Tempo limite ao chamar o PagBank'
+                            : 'Falha ao chamar o PagBank',
+                        details: requestError?.message || 'Erro desconhecido'
+                    },
+                    environment: environmentLabel
                 };
+            } finally {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
             }
-        }
-
-            console.log('📥 Resposta:', JSON.stringify(data, null, 2));
-
-            return {
-                ok: response.ok,
-                status: response.status,
-                statusText: response.statusText,
-                contentType: response.headers.get('content-type'),
-                data,
-                environment: environmentLabel
-            };
         };
 
-        const baseUrl = isProduction
-            ? 'https://api.pagseguro.com'
-            : 'https://sandbox.api.pagseguro.com';
+        const baseUrl = process.env.PAGBANK_API_URL?.trim()
+            || (isProduction
+                ? 'https://api.pagseguro.com'
+                : 'https://sandbox.api.pagseguro.com');
         const environment = isProduction ? 'production' : 'sandbox';
         const attempt = await requestPublicKey(baseUrl, environment);
 
@@ -93,19 +108,6 @@ export default async function handler(req, res) {
         return res.status(attempt.status || 502).json({
             error: 'Erro ao gerar chave',
             details: attempt
-        if (!data.public_key) {
-            return res.status(502).json({
-                error: 'Resposta inesperada do PagBank',
-                details: data
-            });
-        }
-
-        // Retornar a chave pública gerada
-        return res.status(200).json({
-            success: true,
-            public_key: data.public_key,
-            created_at: data.created_at,
-            instrucoes: 'Copie esta chave e atualize a variável PAGBANK_PUBLIC_KEY no Vercel'
         });
     } catch (error) {
         console.error('❌ Erro:', error);
