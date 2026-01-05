@@ -28,10 +28,15 @@ export default async function handler(req, res) {
             });
         }
 
-        // Endpoint SANDBOX (ambiente de testes)
-        const PAGBANK_API = 'https://sandbox.api.pagseguro.com/orders';
+        // Determinar ambiente (sandbox ou produção)
+        const envValue = (process.env.PAGBANK_ENV || '').trim().toLowerCase();
+        const isProduction = envValue === 'production';
+        const PAGBANK_API = isProduction
+            ? 'https://api.pagseguro.com/orders'
+            : 'https://sandbox.api.pagseguro.com/orders';
 
-        console.log('🧪 [SANDBOX] Criando cobrança PIX de R$ 1,00...');
+        console.log('🔍 Ambiente PIX:', isProduction ? 'PRODUCTION' : 'SANDBOX');
+        console.log(`💳 Criando cobrança PIX de R$ 1,00 [${isProduction ? 'PRODUCTION' : 'SANDBOX'}]...`);
 
         // Limpar telefone (apenas números)
         const telefoneLimpo = telefone.replace(/\D/g, '');

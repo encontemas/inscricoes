@@ -168,9 +168,8 @@
     <div class="container">
         <h1>🧪 Teste PIX R$ 1,00</h1>
 
-        <div class="info">
-            <strong>🧪 Ambiente SANDBOX (Teste)</strong><br>
-            Este é um pagamento de teste. Não será cobrado valor real.
+        <div class="info" id="infoAmbiente">
+            <strong>🔍 Detectando ambiente...</strong>
         </div>
 
         <form id="formTeste">
@@ -235,6 +234,35 @@
         const pixResult = document.getElementById('pixResult');
         const errorDiv = document.getElementById('error');
         const btnGerar = document.getElementById('btnGerar');
+        const infoAmbiente = document.getElementById('infoAmbiente');
+
+        // Detectar ambiente ao carregar a página
+        (async () => {
+            try {
+                const response = await fetch('/api/pagbank-public-key');
+                const data = await response.json();
+
+                if (data.environment === 'production') {
+                    infoAmbiente.innerHTML = `
+                        <strong>⚠️ AMBIENTE DE PRODUÇÃO</strong><br>
+                        Este PIX será gerado no ambiente REAL. O valor de R$ 1,00 será cobrado.
+                    `;
+                    infoAmbiente.style.background = '#fee2e2';
+                    infoAmbiente.style.border = '2px solid #dc2626';
+                    infoAmbiente.style.color = '#dc2626';
+                } else {
+                    infoAmbiente.innerHTML = `
+                        <strong>🧪 AMBIENTE SANDBOX (Teste)</strong><br>
+                        Este é um pagamento de teste. Não será cobrado valor real.
+                    `;
+                }
+            } catch (error) {
+                console.error('Erro ao detectar ambiente:', error);
+                infoAmbiente.innerHTML = `
+                    <strong>⚠️ Não foi possível detectar o ambiente</strong>
+                `;
+            }
+        })();
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();

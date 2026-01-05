@@ -625,6 +625,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 } else {
                     // Pagamento PIX - redirecionar para página de pagamento
+                    localStorage.setItem('inscricao_id_inscricao', idInscricao); // IMPORTANTE: Salvar id_inscricao
                     localStorage.setItem('inscricao_nome', data.inscricao.nome);
                     localStorage.setItem('inscricao_email', data.inscricao.email);
                     localStorage.setItem('inscricao_parcelas', data.inscricao.numero_parcelas);
@@ -633,8 +634,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     localStorage.setItem('inscricao_telefone', formData.telefone);
                     localStorage.setItem('inscricao_cpf', formData.cpf || '');
 
-                    // Redirecionar para página de pagamento PIX
-                    window.location.href = `/pagamento.html?nome=${encodeURIComponent(data.inscricao.nome)}&email=${encodeURIComponent(data.inscricao.email)}&parcelas=${data.inscricao.numero_parcelas}&valor_parcela=${encodeURIComponent(data.inscricao.valor_parcela)}&valor_total=${encodeURIComponent(data.inscricao.valor_total)}`;
+                    // Redirecionar para página de pagamento PIX (incluir id_inscricao)
+                    window.location.href = `/pagamento.html?id_inscricao=${encodeURIComponent(idInscricao)}&nome=${encodeURIComponent(data.inscricao.nome)}&email=${encodeURIComponent(data.inscricao.email)}&parcelas=${data.inscricao.numero_parcelas}&valor_parcela=${encodeURIComponent(data.inscricao.valor_parcela)}&valor_total=${encodeURIComponent(data.inscricao.valor_total)}`;
                 }
 
             } catch (error) {

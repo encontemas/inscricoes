@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { email, numero_parcelas, nome_completo, telefone, cpf } = req.body;
+        const { email, numero_parcelas, nome_completo, telefone, cpf, id_inscricao } = req.body;
 
         // Validações
         if (!email) {
@@ -24,7 +24,15 @@ export default async function handler(req, res) {
             });
         }
 
-        console.log('🧪 [SANDBOX] Gerando PIX da primeira parcela para:', email);
+        // Determinar ambiente (sandbox ou produção)
+        const envValue = (process.env.PAGBANK_ENV || '').trim().toLowerCase();
+        const isProduction = envValue === 'production';
+        const pagBankUrl = isProduction
+            ? 'https://api.pagseguro.com/orders'
+            : 'https://sandbox.api.pagseguro.com/orders';
+
+        console.log('🔍 Ambiente PIX:', isProduction ? 'PRODUCTION' : 'SANDBOX');
+        console.log(`💳 Gerando PIX da primeira parcela para: ${email} [${isProduction ? 'PRODUCTION' : 'SANDBOX'}]`);
 
         const PAGBANK_TOKEN = process.env.PAGBANK_TOKEN;
 
@@ -40,8 +48,12 @@ export default async function handler(req, res) {
         const numero = telefoneLimpo.substring(2);
         const cpfLimpo = cpf ? cpf.replace(/\D/g, '') : '00000000000';
 
+        // Usar id_inscricao se fornecido, caso contrário gerar um ID temporário
+        const referenceId = id_inscricao || `inscricao_${Date.now()}_${email.split('@')[0]}`;
+        console.log('🆔 Reference ID:', referenceId);
+
         const payload = {
-            reference_id: `inscricao_${Date.now()}_${email.split('@')[0]}`,
+            reference_id: referenceId,
             customer: {
                 name: nome_completo || 'Inscrito Encontemas',
                 email: email,
@@ -70,9 +82,9 @@ export default async function handler(req, res) {
             ]
         };
 
-        console.log('📤 Enviando requisição para PagBank Sandbox...');
+        console.log('📤 Enviando requisição para PagBank:', pagBankUrl);
 
-        const response = await fetch('https://sandbox.api.pagseguro.com/orders', {
+        const response = await fetch(pagBankUrl, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${PAGBANK_TOKEN}`,
