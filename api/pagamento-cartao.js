@@ -171,10 +171,31 @@ export default async function handler(req, res) {
             body: JSON.stringify(pagBankPayload)
         });
 
-        const responseData = await response.json();
+        // Capturar resposta como texto primeiro
+        const responseText = await response.text();
+        console.log('📥 Resposta PagBank RAW:', responseText);
+        console.log('📊 Status HTTP:', response.status);
 
-        console.log('📥 Resposta PagBank (Status:', response.status, ')');
-        console.log('Response completo:', JSON.stringify(responseData, null, 2));
+        // Tentar fazer parse do JSON
+        let responseData;
+        try {
+            responseData = JSON.parse(responseText);
+            console.log('✅ JSON parseado com sucesso');
+            console.log('Response completo:', JSON.stringify(responseData, null, 2));
+        } catch (parseError) {
+            console.error('❌ Erro ao fazer parse do JSON da resposta PagBank');
+            console.error('Parse Error:', parseError.message);
+            console.error('Resposta recebida (primeiros 500 chars):', responseText.substring(0, 500));
+
+            return res.status(500).json({
+                error: 'Resposta inválida do PagBank',
+                message: 'O PagBank retornou uma resposta mal formatada',
+                details: {
+                    status: response.status,
+                    responsePreview: responseText.substring(0, 200)
+                }
+            });
+        }
 
         if (!response.ok) {
             console.error('❌ Erro na API PagBank');
