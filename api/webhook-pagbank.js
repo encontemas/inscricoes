@@ -1,9 +1,34 @@
 // Webhook para receber notificações de pagamento do PagBank
 import { google } from 'googleapis';
 
+/**
+ * Converte índice numérico para letra de coluna do Excel
+ * 0 => A, 1 => B, 25 => Z, 26 => AA, 27 => AB, etc.
+ */
+function indexToColumnLetter(index) {
+    let column = '';
+    let num = index;
+
+    while (num >= 0) {
+        column = String.fromCharCode((num % 26) + 65) + column;
+        num = Math.floor(num / 26) - 1;
+    }
+
+    return column;
+}
+
 export default async function handler(req, res) {
+    // LOG CRÍTICO: registrar TODA chamada ao webhook (qualquer método HTTP)
+    console.log('🌐 ===== WEBHOOK CHAMADO =====');
+    console.log('🌐 Método:', req.method);
+    console.log('🌐 URL:', req.url);
+    console.log('🌐 Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('🌐 Body:', JSON.stringify(req.body, null, 2));
+    console.log('🌐 ============================');
+
     // Apenas aceita POST
     if (req.method !== 'POST') {
+        console.warn('⚠️ Webhook chamado com método diferente de POST:', req.method);
         return res.status(405).json({ error: 'Método não permitido' });
     }
 
@@ -319,7 +344,7 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
                 const dataPagaIndex = headers.indexOf(dataPagaKey);
 
                 if (parcelaIndex !== -1) {
-                    const parcelaCol = String.fromCharCode(65 + parcelaIndex);
+                    const parcelaCol = indexToColumnLetter(parcelaIndex);
                     updates.push({
                         range: `Inscrições!${parcelaCol}${rowIndex + 1}`,
                         values: [[1]]
@@ -328,7 +353,7 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
                 }
 
                 if (dataPagaIndex !== -1) {
-                    const dataPagaCol = String.fromCharCode(65 + dataPagaIndex);
+                    const dataPagaCol = indexToColumnLetter(dataPagaIndex);
                     updates.push({
                         range: `Inscrições!${dataPagaCol}${rowIndex + 1}`,
                         values: [[dataPaga]]
@@ -376,7 +401,7 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
             }
 
             // Marcar parcela como paga (valor = 1)
-            const parcelaCol = String.fromCharCode(65 + parcelaIndex);
+            const parcelaCol = indexToColumnLetter(parcelaIndex);
             updates.push({
                 range: `Inscrições!${parcelaCol}${rowIndex + 1}`,
                 values: [[1]]
@@ -385,7 +410,7 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
 
             // Atualizar data efetiva do pagamento se a coluna existir
             if (dataPagaIndex !== -1) {
-                const dataPagaCol = String.fromCharCode(65 + dataPagaIndex);
+                const dataPagaCol = indexToColumnLetter(dataPagaIndex);
                 updates.push({
                     range: `Inscrições!${dataPagaCol}${rowIndex + 1}`,
                     values: [[dataPaga]]
@@ -402,7 +427,7 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
         const statusPagamentoIndex = headers.indexOf('status_pagamento');
 
         if (isCardPayment && parcelasCartaoIndex !== -1) {
-            const parcelasCartaoCol = String.fromCharCode(65 + parcelasCartaoIndex);
+            const parcelasCartaoCol = indexToColumnLetter(parcelasCartaoIndex);
             const parcelasCartao = dadosPagamento.installments || 1;
             updates.push({
                 range: `Inscrições!${parcelasCartaoCol}${rowIndex + 1}`,
@@ -412,7 +437,7 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
         }
 
         if (transacaoIdIndex !== -1) {
-            const transacaoIdCol = String.fromCharCode(65 + transacaoIdIndex);
+            const transacaoIdCol = indexToColumnLetter(transacaoIdIndex);
             const transacaoId = dadosPagamento.orderId || dadosPagamento.chargeId || '';
             updates.push({
                 range: `Inscrições!${transacaoIdCol}${rowIndex + 1}`,
@@ -422,7 +447,7 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
         }
 
         if (statusPagamentoIndex !== -1) {
-            const statusPagamentoCol = String.fromCharCode(65 + statusPagamentoIndex);
+            const statusPagamentoCol = indexToColumnLetter(statusPagamentoIndex);
             updates.push({
                 range: `Inscrições!${statusPagamentoCol}${rowIndex + 1}`,
                 values: [['APROVADO']]

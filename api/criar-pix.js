@@ -75,6 +75,10 @@ export default async function handler(req, res) {
         // Gerar ID único para a transação
         const referenceId = `teste_${Date.now()}`;
 
+        // Definir URL do webhook (IMPORTANTE: sempre usar HTTPS)
+        const webhookUrl = 'https://inscricoes-sigma.vercel.app/api/webhook-pagbank';
+        console.log('🔔 URL do Webhook configurada:', webhookUrl);
+
         // Criar payload para PagBank
         const payload = {
             reference_id: referenceId,
@@ -102,7 +106,7 @@ export default async function handler(req, res) {
                 expiration_date: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutos
             }],
             notification_urls: [
-                `${req.headers.origin || 'https://inscricoes-sigma.vercel.app'}/api/webhook-pagbank`
+                webhookUrl
             ]
         };
 

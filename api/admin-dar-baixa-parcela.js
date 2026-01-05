@@ -1,6 +1,22 @@
 // API para dar baixa manual em parcelas (uso administrativo)
 import { google } from 'googleapis';
 
+/**
+ * Converte índice numérico para letra de coluna do Excel
+ * 0 => A, 1 => B, 25 => Z, 26 => AA, 27 => AB, etc.
+ */
+function indexToColumnLetter(index) {
+    let column = '';
+    let num = index;
+
+    while (num >= 0) {
+        column = String.fromCharCode((num % 26) + 65) + column;
+        num = Math.floor(num / 26) - 1;
+    }
+
+    return column;
+}
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Método não permitido' });
@@ -95,7 +111,7 @@ export default async function handler(req, res) {
         const dataPaga = new Date().toLocaleDateString('pt-BR');
 
         // Marcar parcela como paga
-        const parcelaCol = String.fromCharCode(65 + parcelaIndex);
+        const parcelaCol = indexToColumnLetter(parcelaIndex);
         updates.push({
             range: `Inscrições!${parcelaCol}${rowIndex + 1}`,
             values: [[1]]
@@ -103,7 +119,7 @@ export default async function handler(req, res) {
 
         // Atualizar data de pagamento
         if (dataPagaIndex !== -1) {
-            const dataPagaCol = String.fromCharCode(65 + dataPagaIndex);
+            const dataPagaCol = indexToColumnLetter(dataPagaIndex);
             updates.push({
                 range: `Inscrições!${dataPagaCol}${rowIndex + 1}`,
                 values: [[dataPaga]]
