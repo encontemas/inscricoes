@@ -40,8 +40,27 @@ export default async function handler(req, res) {
 
         // Limpar telefone (apenas números)
         const telefoneLimpo = telefone.replace(/\D/g, '');
+
+        // Validar telefone
+        if (telefoneLimpo.length < 10 || telefoneLimpo.length > 11) {
+            console.error('❌ Telefone inválido:', telefoneLimpo, '(length:', telefoneLimpo.length, ')');
+            return res.status(400).json({
+                error: 'Telefone inválido',
+                message: `O telefone deve ter 10 ou 11 dígitos (DDD + número). Telefone informado tem ${telefoneLimpo.length} dígitos.`
+            });
+        }
+
         const ddd = telefoneLimpo.substring(0, 2);
         const numero = telefoneLimpo.substring(2);
+
+        // Validar que o número (sem DDD) tem 8 ou 9 dígitos
+        if (numero.length < 8 || numero.length > 9) {
+            console.error('❌ Número de telefone inválido:', numero, '(length:', numero.length, ')');
+            return res.status(400).json({
+                error: 'Telefone inválido',
+                message: `O número de telefone (sem DDD) deve ter 8 ou 9 dígitos. Número informado: ${numero} (${numero.length} dígitos)`
+            });
+        }
 
         // Limpar CPF (apenas números)
         const cpfLimpo = cpf.replace(/\D/g, '');
