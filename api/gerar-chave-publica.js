@@ -48,6 +48,19 @@ export default async function handler(req, res) {
                     error: 'Resposta vazia do PagBank'
                 };
             }
+        const responseText = await response.text();
+        let data = {};
+
+        if (responseText) {
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                data = {
+                    error: 'Resposta inválida do PagBank',
+                    details: responseText
+                };
+            }
+        }
 
             console.log('📥 Resposta:', JSON.stringify(data, null, 2));
 
@@ -80,6 +93,19 @@ export default async function handler(req, res) {
         return res.status(attempt.status || 502).json({
             error: 'Erro ao gerar chave',
             details: attempt
+        if (!data.public_key) {
+            return res.status(502).json({
+                error: 'Resposta inesperada do PagBank',
+                details: data
+            });
+        }
+
+        // Retornar a chave pública gerada
+        return res.status(200).json({
+            success: true,
+            public_key: data.public_key,
+            created_at: data.created_at,
+            instrucoes: 'Copie esta chave e atualize a variável PAGBANK_PUBLIC_KEY no Vercel'
         });
     } catch (error) {
         console.error('❌ Erro:', error);
