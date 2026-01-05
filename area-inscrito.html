@@ -816,6 +816,163 @@
                 </div>
             `;
         }
+
+        // ===== POLLING AUTOMÁTICO PARA DETECTAR PAGAMENTOS =====
+        let pollingInterval = null;
+        let ultimoStatusParcelas = new Map(); // Guardar último status de cada parcela
+
+        // Iniciar polling automático
+        function iniciarPolling() {
+            console.log('🔄 Polling automático iniciado - verificando atualizações a cada 10 segundos');
+
+            // Salvar estado inicial das parcelas
+            parcelas.forEach(p => {
+                ultimoStatusParcelas.set(p.numero, p.status);
+            });
+
+            // Verificar atualizações a cada 10 segundos
+            pollingInterval = setInterval(async () => {
+                await verificarAtualizacoes();
+            }, 10000); // 10 segundos
+        }
+
+        // Parar polling
+        function pararPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+                console.log('⏸️ Polling automático pausado');
+            }
+        }
+
+        // Verificar se houve atualizações nas parcelas
+        async function verificarAtualizacoes() {
+            try {
+                console.log('🔍 Verificando atualizações de parcelas...');
+
+                const cpf = localStorage.getItem('inscrito_cpf');
+                if (!cpf) return;
+
+                // Buscar dados atualizados
+                const response = await fetch('/api/inscrito', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cpf: cpf })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    console.error('Erro ao verificar atualizações:', data.error);
+                    return;
+                }
+
+                // Verificar se houve mudanças nas parcelas
+                let houveAlteracao = false;
+
+                for (let i = 1; i <= inscritoData.numero_parcelas; i++) {
+                    const parcelaKey = `parcela_${String(i).padStart(2, '0')}_paga`;
+                    const valorPaga = data[parcelaKey];
+                    const isPaga = valorPaga === 1 || valorPaga === '1' || valorPaga === true || valorPaga === 'TRUE' || valorPaga === 'true';
+                    const novoStatus = isPaga ? 'paid' : (parcelas[i-1]?.status || 'pending');
+                    const statusAnterior = ultimoStatusParcelas.get(i);
+
+                    if (statusAnterior !== novoStatus) {
+                        houveAlteracao = true;
+                        ultimoStatusParcelas.set(i, novoStatus);
+
+                        // Mostrar notificação visual
+                        if (novoStatus === 'paid') {
+                            console.log(`✅ PARCELA ${i} FOI PAGA!`);
+                            mostrarNotificacaoPagamento(i);
+                        }
+                    }
+                }
+
+                // Se houve alteração, recarregar parcelas
+                if (houveAlteracao) {
+                    console.log('🔄 Atualizações detectadas! Recarregando parcelas...');
+                    await carregarParcelas();
+                }
+
+            } catch (error) {
+                console.error('Erro ao verificar atualizações:', error);
+            }
+        }
+
+        // Mostrar notificação quando parcela for paga
+        function mostrarNotificacaoPagamento(numeroParcela) {
+            // Criar elemento de notificação
+            const notificacao = document.createElement('div');
+            notificacao.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #10b981, #059669);
+                color: white;
+                padding: 20px 30px;
+                border-radius: 12px;
+                box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+                font-size: 16px;
+                font-weight: 600;
+                z-index: 9999;
+                animation: slideInRight 0.5s ease;
+            `;
+            notificacao.innerHTML = `
+                ✅ Pagamento Confirmado!<br>
+                <span style="font-size: 14px; font-weight: normal;">Parcela ${numeroParcela} foi marcada como paga</span>
+            `;
+
+            document.body.appendChild(notificacao);
+
+            // Adicionar animação
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        transform: translateX(400px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Remover após 5 segundos
+            setTimeout(() => {
+                notificacao.style.animation = 'slideInRight 0.5s ease reverse';
+                setTimeout(() => {
+                    notificacao.remove();
+                }, 500);
+            }, 5000);
+
+            // Tocar som (opcional)
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuAzPLaizsKGF+y7OihUhENUKXh8bllHgU2jdXzzn0vBSh+zPDckz0KE16x6OyrWRQJQJre8L5xJAUogM/z2ZBAChhfsOnmolURDEyn4/O6aB4FNIzU8tGATAQnfczx3ZU+ChN= ');
+                audio.volume = 0.3;
+                audio.play().catch(() => {});
+            } catch (e) {}
+        }
+
+        // Modificar a função de carregar inicial para iniciar polling
+        const carregarDadosInscritoOriginal = carregarDadosInscrito;
+        carregarDadosInscrito = async function() {
+            await carregarDadosInscritoOriginal();
+            // Iniciar polling após carregar dados iniciais
+            setTimeout(() => {
+                iniciarPolling();
+            }, 2000); // Aguardar 2 segundos antes de iniciar polling
+        };
+
+        // Parar polling quando sair da página
+        window.addEventListener('beforeunload', () => {
+            pararPolling();
+        });
     </script>
 </body>
 </html>

@@ -85,7 +85,7 @@ export default async function handler(req, res) {
             inscrito[header] = inscritoRow[index] || '';
         });
 
-        // Gerar informações das parcelas
+        // Gerar informações das parcelas com STATUS REAL
         const numeroParcelas = parseInt(inscrito.numero_parcelas) || 1;
         const valorTotal = 450.00;
         const valorParcela = (valorTotal / numeroParcelas).toFixed(2);
@@ -102,26 +102,36 @@ export default async function handler(req, res) {
             const vencimento = new Date(dataBase);
             vencimento.setMonth(vencimento.getMonth() + (i - 1));
 
+            // Buscar status real da parcela na planilha
+            const parcelaKey = `parcela_${String(i).padStart(2, '0')}_paga`;
+            const dataPagaKey = `data_paga_${String(i).padStart(2, '0')}`;
+
+            const parcelaPaga = inscrito[parcelaKey];
+            const dataPagamento = inscrito[dataPagaKey];
+
+            // Status: 'pago' se parcela_XX_paga == 1, senão 'pendente'
+            const isPaga = parcelaPaga === '1' || parcelaPaga === 1 || parcelaPaga === true;
+
             parcelas.push({
                 numero: i,
                 valor: parseFloat(valorParcela),
                 vencimento: vencimento.toISOString().split('T')[0],
-                status: 'pending', // TODO: Buscar status real de pagamentos
-                pix_id: null,
-                data_pagamento: null
+                status: isPaga ? 'pago' : 'pendente',
+                data_pagamento: isPaga ? dataPagamento : null
             });
         }
 
         console.log('✅ Inscrito encontrado:', inscrito.nome_completo);
 
-        // Retornar todos os dados do inscrito diretamente
+        // Retornar todos os dados do inscrito diretamente + array de parcelas
         return res.status(200).json({
             ...inscrito,
             nome_completo: inscrito.nome_completo,
             numero_parcelas: numeroParcelas,
             valor_parcela: parseFloat(valorParcela),
             valor_total: valorTotal,
-            dia_vencimento: inscrito.dia_vencimento || '15'
+            dia_vencimento: inscrito.dia_vencimento || '15',
+            parcelas: parcelas // Array com status real de cada parcela
         });
 
     } catch (error) {
