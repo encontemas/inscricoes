@@ -113,7 +113,19 @@
                     }
                 });
 
-                const data = await response.json();
+                const responseText = await response.text();
+                let data = {};
+
+                if (responseText) {
+                    try {
+                        data = JSON.parse(responseText);
+                    } catch (parseError) {
+                        data = {
+                            error: 'Resposta inválida do servidor',
+                            details: responseText
+                        };
+                    }
+                }
 
                 loading.style.display = 'none';
                 result.style.display = 'block';

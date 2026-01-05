@@ -27,13 +27,32 @@ export default async function handler(req, res) {
             })
         });
 
-        const data = await response.json();
+        const responseText = await response.text();
+        let data = {};
+
+        if (responseText) {
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                data = {
+                    error: 'Resposta inválida do PagBank',
+                    details: responseText
+                };
+            }
+        }
 
         console.log('📥 Resposta:', JSON.stringify(data, null, 2));
 
         if (!response.ok) {
             return res.status(response.status).json({
                 error: 'Erro ao gerar chave',
+                details: data
+            });
+        }
+
+        if (!data.public_key) {
+            return res.status(502).json({
+                error: 'Resposta inesperada do PagBank',
                 details: data
             });
         }
