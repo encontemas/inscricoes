@@ -208,7 +208,12 @@ export default async function handler(req, res) {
 
         // Se pagamento APROVADO, atualizar planilha IMEDIATAMENTE
         if (paymentStatus === 'PAID') {
-            console.log('💳 Pagamento aprovado! Atualizando planilha...');
+            console.log('========================================');
+            console.log('💳 PAGAMENTO APROVADO! Atualizando planilha...');
+            console.log('========================================');
+            console.log('📧 Customer Email:', email);
+            console.log('🆔 Order ID:', responseData.id);
+            console.log('🔢 Parcelas:', parcelasCartao);
 
             try {
                 const { atualizarStatusPagamentoCartao } = await import('./webhook-pagbank.js');
@@ -222,10 +227,19 @@ export default async function handler(req, res) {
                     installments: parcelasCartao
                 });
 
-                console.log('✅ Planilha atualizada com sucesso!');
+                console.log('========================================');
+                console.log('✅ PLANILHA ATUALIZADA COM SUCESSO!');
+                console.log('========================================');
             } catch (updateError) {
-                console.error('⚠️ Erro ao atualizar planilha (não crítico):', updateError);
-                // Não falhar a requisição se a atualização falhar
+                console.error('========================================');
+                console.error('❌ ERRO CRÍTICO ao atualizar planilha após pagamento aprovado');
+                console.error('========================================');
+                console.error('Tipo:', updateError.name);
+                console.error('Mensagem:', updateError.message);
+                console.error('Stack:', updateError.stack);
+                console.error('========================================');
+                // IMPORTANTE: Ainda retornar sucesso para o usuário, mas logar o erro
+                console.error('⚠️ ATENÇÃO: Pagamento aprovado mas planilha não atualizada!');
             }
         }
 
