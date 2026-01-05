@@ -233,15 +233,20 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
         const sheets = google.sheets({ version: 'v4', auth });
         const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
 
-        // Extrair email do reference_id ou dos dados do cliente
+        // Tentar usar id_inscricao primeiro, senão usar email (fallback)
+        const idInscricao = dadosPagamento.id_inscricao;
         const email = dadosPagamento.customerEmail;
 
-        if (!email) {
-            console.warn('⚠️ Email não encontrado no pagamento, não é possível atualizar inscrição');
+        if (!idInscricao && !email) {
+            console.warn('⚠️ Nem id_inscricao nem email encontrados - não é possível atualizar');
             return;
         }
 
-        console.log('🔍 Buscando inscrição com email:', email);
+        if (idInscricao) {
+            console.log('🔍 Buscando inscrição com id_inscricao:', idInscricao);
+        } else {
+            console.log('🔍 Fallback: Buscando inscrição com email:', email);
+        }
 
         // Buscar dados na planilha Inscrições
         const response = await sheets.spreadsheets.values.get({
@@ -258,30 +263,41 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
 
         // Cabeçalhos (primeira linha)
         const headers = rows[0];
+        const idInscricaoIndex = headers.indexOf('id_inscricao');
         const emailIndex = headers.indexOf('email');
         const numeroParcelasIndex = headers.indexOf('numero_parcelas');
 
-        if (emailIndex === -1) {
-            console.error('❌ Coluna "email" não encontrada na planilha');
-            return;
+        // Buscar linha do inscrito (por ID ou email)
+        let rowIndex = -1;
+
+        if (idInscricao && idInscricaoIndex !== -1) {
+            // Tentar buscar por ID primeiro
+            for (let i = 1; i < rows.length; i++) {
+                const rowId = (rows[i][idInscricaoIndex] || '').trim();
+                if (rowId === idInscricao) {
+                    rowIndex = i;
+                    console.log('✅ Encontrado por ID na linha:', rowIndex + 1);
+                    break;
+                }
+            }
         }
 
-        // Buscar linha do inscrito pelo email
-        let rowIndex = -1;
-        for (let i = 1; i < rows.length; i++) {
-            const rowEmail = (rows[i][emailIndex] || '').toLowerCase().trim();
-            if (rowEmail === email.toLowerCase().trim()) {
-                rowIndex = i;
-                break;
+        if (rowIndex === -1 && email && emailIndex !== -1) {
+            // Fallback: buscar por email
+            for (let i = 1; i < rows.length; i++) {
+                const rowEmail = (rows[i][emailIndex] || '').toLowerCase().trim();
+                if (rowEmail === email.toLowerCase().trim()) {
+                    rowIndex = i;
+                    console.log('✅ Encontrado por email na linha:', rowIndex + 1);
+                    break;
+                }
             }
         }
 
         if (rowIndex === -1) {
-            console.warn('⚠️ Inscrição não encontrada para email:', email);
+            console.warn('⚠️ Inscrição não encontrada (tentou ID e email)');
             return;
         }
-
-        console.log('✅ Inscrição encontrada na linha:', rowIndex + 1);
 
         // Buscar número de parcelas da inscrição
         const totalParcelas = parseInt(rows[rowIndex][numeroParcelasIndex]) || 1;
