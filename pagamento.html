@@ -289,6 +289,7 @@
         // Recuperar dados da inscrição da URL ou localStorage
         const urlParams = new URLSearchParams(window.location.search);
         const inscricaoData = {
+            id_inscricao: urlParams.get('id_inscricao') || localStorage.getItem('inscricao_id_inscricao'), // IMPORTANTE: Capturar id_inscricao
             nome: urlParams.get('nome') || localStorage.getItem('inscricao_nome'),
             email: urlParams.get('email') || localStorage.getItem('inscricao_email'),
             numero_parcelas: urlParams.get('parcelas') || localStorage.getItem('inscricao_parcelas'),
@@ -297,6 +298,13 @@
             telefone: localStorage.getItem('inscricao_telefone'),
             cpf: localStorage.getItem('inscricao_cpf')
         };
+
+        // Log para debug
+        console.log('📋 Dados da inscrição carregados:', {
+            id_inscricao: inscricaoData.id_inscricao,
+            email: inscricaoData.email,
+            parcelas: inscricaoData.numero_parcelas
+        });
 
         // Verificar se tem dados
         if (!inscricaoData.email) {
@@ -326,12 +334,15 @@
             qrCodeSection.classList.remove('show');
 
             try {
+                console.log('🆔 Gerando PIX com ID da inscrição:', inscricaoData.id_inscricao);
+
                 const response = await fetch('/api/gerar-pix', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
+                        id_inscricao: inscricaoData.id_inscricao, // IMPORTANTE: Enviar id_inscricao para usar como reference_id
                         email: inscricaoData.email,
                         numero_parcelas: parseInt(inscricaoData.numero_parcelas),
                         nome_completo: inscricaoData.nome,
