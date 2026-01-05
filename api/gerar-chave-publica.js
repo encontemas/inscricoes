@@ -60,44 +60,25 @@ export default async function handler(req, res) {
             };
         };
 
-        const primaryBaseUrl = isProduction
+        const baseUrl = isProduction
             ? 'https://api.pagseguro.com'
             : 'https://sandbox.api.pagseguro.com';
-        const primaryEnvironment = isProduction ? 'production' : 'sandbox';
-        const primaryAttempt = await requestPublicKey(primaryBaseUrl, primaryEnvironment);
+        const environment = isProduction ? 'production' : 'sandbox';
+        const attempt = await requestPublicKey(baseUrl, environment);
 
-        if (primaryAttempt.ok && primaryAttempt.data?.public_key) {
+        if (attempt.ok && attempt.data?.public_key) {
             return res.status(200).json({
                 success: true,
-                public_key: primaryAttempt.data.public_key,
-                created_at: primaryAttempt.data.created_at,
-                environment: primaryAttempt.environment,
+                public_key: attempt.data.public_key,
+                created_at: attempt.data.created_at,
+                environment: attempt.environment,
                 instrucoes: 'Copie esta chave e atualize a variável PAGBANK_PUBLIC_KEY no Vercel'
             });
         }
 
-        const fallbackBaseUrl = isProduction
-            ? 'https://sandbox.api.pagseguro.com'
-            : 'https://api.pagseguro.com';
-        const fallbackEnvironment = isProduction ? 'sandbox' : 'production';
-        const fallbackAttempt = await requestPublicKey(fallbackBaseUrl, fallbackEnvironment);
-
-        if (fallbackAttempt.ok && fallbackAttempt.data?.public_key) {
-            return res.status(200).json({
-                success: true,
-                public_key: fallbackAttempt.data.public_key,
-                created_at: fallbackAttempt.data.created_at,
-                environment: fallbackAttempt.environment,
-                instrucoes: 'Copie esta chave e atualize a variável PAGBANK_PUBLIC_KEY no Vercel'
-            });
-        }
-
-        return res.status(primaryAttempt.status || 502).json({
+        return res.status(attempt.status || 502).json({
             error: 'Erro ao gerar chave',
-            details: {
-                primary: primaryAttempt,
-                fallback: fallbackAttempt
-            }
+            details: attempt
         });
     } catch (error) {
         console.error('❌ Erro:', error);
