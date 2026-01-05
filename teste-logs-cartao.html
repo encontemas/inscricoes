@@ -277,11 +277,37 @@
             </div>
 
             <div class="form-group">
+                <label>Cidade/País *</label>
+                <input type="text" id="cidade_pais" value="São Paulo, Brasil" required />
+            </div>
+
+            <div class="form-group">
                 <label>Valor do Teste (R$) *</label>
                 <input type="number" id="valor_teste" value="1.00" step="0.01" min="1" required />
                 <small style="color: #8b949e; display: block; margin-top: 0.5rem;">
                     ⚠️ Este valor será cobrado no seu cartão de crédito real!
                 </small>
+            </div>
+
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="maior_idade" checked style="width: auto;" />
+                    <span>Confirmo que sou maior de 18 anos *</span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="aceite_lgpd" checked style="width: auto;" />
+                    <span>Aceito o termo LGPD *</span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="aceite_desistencia" checked style="width: auto;" />
+                    <span>Estou ciente das condições de desistência *</span>
+                </label>
             </div>
         </div>
 
@@ -412,7 +438,17 @@
                 const cpf = document.getElementById('cpf').value;
                 const telefone = document.getElementById('telefone').value;
                 const dataNascimento = document.getElementById('data_nascimento').value;
+                const cidadePais = document.getElementById('cidade_pais').value;
                 const valorTeste = parseFloat(document.getElementById('valor_teste').value);
+                const maiorIdade = document.getElementById('maior_idade').checked;
+                const aceiteLgpd = document.getElementById('aceite_lgpd').checked;
+                const aceiteDesistencia = document.getElementById('aceite_desistencia').checked;
+                const numeroParcelas = parseInt(document.getElementById('parcelas').value);
+
+                // Validar checkboxes obrigatórios
+                if (!maiorIdade || !aceiteLgpd || !aceiteDesistencia) {
+                    throw new Error('Você deve aceitar todos os termos obrigatórios!');
+                }
 
                 // Criar objeto de inscrição completo
                 const dadosInscricao = {
@@ -421,10 +457,16 @@
                     cpf: cpf,
                     telefone: telefone,
                     data_nascimento: dataNascimento,
+                    cidade_pais: cidadePais,
                     tipo_participante: 'TESTE',
                     valor_inscricao: valorTeste,
                     metodo_pagamento: 'CARTAO',
-                    numero_parcelas_cartao: parseInt(document.getElementById('parcelas').value)
+                    numero_parcelas: numeroParcelas,
+                    numero_parcelas_cartao: numeroParcelas,
+                    dia_vencimento: 10,
+                    maior_idade: maiorIdade,
+                    aceite_termo_lgpd: aceiteLgpd,
+                    aceite_termo_desistencia: aceiteDesistencia
                 };
 
                 addLog('info', '📤 Enviando dados para /api/inscricao:', dadosInscricao);
