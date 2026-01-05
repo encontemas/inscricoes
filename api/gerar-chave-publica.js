@@ -6,6 +6,8 @@ export default async function handler(req, res) {
 
     try {
         const pagBankToken = process.env.PAGBANK_TOKEN;
+        const envValue = (process.env.PAGBANK_ENV || '').trim().toLowerCase();
+        const isProduction = envValue === 'production';
 
         if (!pagBankToken) {
             return res.status(500).json({
@@ -14,26 +16,57 @@ export default async function handler(req, res) {
         }
 
         console.log('📡 Gerando nova chave pública do PagBank...');
+        console.log('🌐 Ambiente PagBank:', isProduction ? 'production' : 'sandbox');
+
+        const baseUrl = isProduction
+            ? 'https://api.pagseguro.com'
+            : 'https://sandbox.api.pagseguro.com';
 
         // Endpoint para CRIAR/GERAR chave pública
-        const response = await fetch('https://sandbox.api.pagseguro.com/public-keys', {
+        const response = await fetch(`${baseUrl}/public-keys`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${pagBankToken}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({
                 type: "card"
             })
         });
 
-        const data = await response.json();
+        const responseText = await response.text();
+        let data = {};
+
+        if (responseText) {
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                data = {
+                    error: 'Resposta inválida do PagBank',
+                    details: responseText
+                };
+            }
+        } else {
+            data = {
+                error: 'Resposta vazia do PagBank'
+            };
+        }
 
         console.log('📥 Resposta:', JSON.stringify(data, null, 2));
 
         if (!response.ok) {
             return res.status(response.status).json({
                 error: 'Erro ao gerar chave',
+                details: data,
+                status: response.status,
+                statusText: response.statusText
+            });
+        }
+
+        if (!data.public_key) {
+            return res.status(502).json({
+                error: 'Resposta inesperada do PagBank',
                 details: data
             });
         }
