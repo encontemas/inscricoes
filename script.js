@@ -465,6 +465,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = {
                 nome_completo: document.getElementById('nome_completo').value,
                 email: document.getElementById('email').value,
+                cod_pais: document.getElementById('cod_pais').value, // Código do país
                 telefone: document.getElementById('telefone').value,
                 cpf: document.getElementById('cpf').value || null,
                 cidade_pais: document.getElementById('cidade_pais').value,
