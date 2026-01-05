@@ -277,9 +277,18 @@
                     <li>Escolha pagar com PIX</li>
                     <li>Escaneie o QR Code acima OU cole o código PIX</li>
                     <li>Confirme o pagamento</li>
+                    <li><strong>Após pagar, acesse a Área do Inscrito</strong></li>
                 </ol>
                 <p style="margin-top: 15px; font-weight: 600;">
                     ⏰ Este PIX expira em: <span id="pixExpiracao">24 horas</span>
+                </p>
+
+                <button class="btn-gerar-pix" onclick="acessarAreaInscrito()" style="margin-top: 20px; background: #2E7D32;">
+                    ✅ Acessar Área do Inscrito
+                </button>
+
+                <p style="margin-top: 15px; text-align: center; color: #666; font-size: 14px;">
+                    💡 <strong>Dica:</strong> Após pagar o PIX, clique no botão acima para ver suas parcelas atualizadas.
                 </p>
             </div>
         </div>
@@ -395,6 +404,18 @@
             }).catch(err => {
                 alert('Erro ao copiar. Selecione e copie manualmente.');
             });
+        }
+
+        function acessarAreaInscrito() {
+            // Redirecionar para área do inscrito
+            const cpf = inscricaoData.cpf;
+            if (cpf) {
+                localStorage.setItem('inscrito_cpf', cpf);
+                window.location.href = '/area-inscrito.html';
+            } else {
+                alert('CPF não encontrado. Por favor, acesse a área do inscrito pela página inicial digitando seu CPF.');
+                window.location.href = '/';
+            }
         }
     </script>
 </body>
