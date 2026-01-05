@@ -104,6 +104,12 @@ async function salvarInscricao(dadosInscricao) {
         const metodoPagamento = (dadosInscricao.metodo_pagamento || 'PIX').toUpperCase();
         const tipoPagamento = metodoPagamento === 'CARTAO' ? 'CARTAO' : 'PIX';
 
+        // Limpar telefone: remover apenas formatação (manter dígitos)
+        const telefoneLimpo = (dadosInscricao.telefone || '').replace(/\D/g, '');
+
+        // Limpar código do país: remover apenas formatação (manter dígitos/sinal)
+        const codPaisLimpo = (dadosInscricao.cod_pais || '+55').replace(/[^\d+]/g, '');
+
         const valores = [
             idGerado, // id_inscricao preenchido pelo sistema
             agora, // data_inscricao
@@ -112,7 +118,7 @@ async function salvarInscricao(dadosInscricao) {
             dadosInscricao.cpf || '', // CPF sem formatação (como estava antes)
             dadosInscricao.maior_idade ? 1 : 0,
             dadosInscricao.email,
-            dadosInscricao.telefone || '', // Telefone sem formatação (como estava antes)
+            telefoneLimpo, // Telefone (apenas DDD + número)
             dadosInscricao.cidade_pais,
             dadosInscricao.grupo_escolha || '',
             dadosInscricao.csa || '',
@@ -150,11 +156,11 @@ async function salvarInscricao(dadosInscricao) {
             '', // nome_social (não usado mais, sempre vazio)
             dadosInscricao.grupo_pessoas || '', // grupo_pessoas
             dadosInscricao.interesse_transfer ? 1 : 0, // interesse_transfer
-            // Campos de pagamento (54 a 57)
+            // Campos de pagamento (54 a 58)
             tipoPagamento, // tipo_pagamento (PIX ou CARTAO baseado no request)
             '', // parcelas_cartao (vazio inicialmente, preenchido pelo webhook)
             '', // transacao_id (vazio inicialmente, preenchido pelo webhook)
-            'PENDENTE' // status_pagamento (PENDENTE, APROVADO, RECUSADO)
+            codPaisLimpo // cod_pais (código do país, ex: +55, +1, +351)
         ];
 
         // Mantenha o INSERT_ROWS que adicionamos antes, é importante
