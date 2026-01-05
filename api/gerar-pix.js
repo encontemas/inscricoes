@@ -1,6 +1,39 @@
 // API para gerar PIX da primeira parcela após inscrição
 // A API Orders usa autenticação simples com Bearer token (NÃO usa Connect Challenge)
 
+function calcularMaximoParcelas() {
+    const hoje = new Date();
+    const mesAtual = hoje.getMonth() + 1; // Janeiro = 1, Fevereiro = 2, etc.
+    const anoAtual = hoje.getFullYear();
+
+    // Evento em novembro/2026
+    const mesEvento = 11; // Novembro
+    const anoEvento = 2026;
+
+    // Calcular meses restantes até o evento
+    const mesesRestantes = (anoEvento - anoAtual) * 12 + (mesEvento - mesAtual);
+
+    let maximoParcelas;
+
+    if (anoAtual < 2026) {
+        // Antes de 2026: permite 11 parcelas
+        maximoParcelas = 11;
+    } else if (anoAtual === 2026) {
+        if (mesAtual <= 2) {
+            // Janeiro ou Fevereiro de 2026: máximo 10 parcelas
+            maximoParcelas = 10;
+        } else {
+            // A partir de Março: meses restantes até novembro
+            maximoParcelas = Math.max(1, mesesRestantes);
+        }
+    } else {
+        // Depois de 2026: não permite mais inscrições
+        maximoParcelas = 1;
+    }
+
+    return maximoParcelas;
+}
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Método não permitido' });
@@ -8,6 +41,7 @@ export default async function handler(req, res) {
 
     try {
         const { email, numero_parcelas, nome_completo, telefone, cpf, id_inscricao } = req.body;
+        const maximoParcelasPermitido = calcularMaximoParcelas();
 
         // Validações
         if (!email) {
@@ -17,10 +51,10 @@ export default async function handler(req, res) {
             });
         }
 
-        if (!numero_parcelas || numero_parcelas < 1 || numero_parcelas > 11) {
+        if (!numero_parcelas || numero_parcelas < 1 || numero_parcelas > maximoParcelasPermitido) {
             return res.status(400).json({
                 error: 'Número de parcelas inválido',
-                message: 'Escolha entre 1 e 11 parcelas'
+                message: `Escolha entre 1 e ${maximoParcelasPermitido} parcelas`
             });
         }
 

@@ -197,7 +197,14 @@ function calcularMaxParcelas() {
     // Em janeiro/2026: 11 meses (jan/2026 até nov/2026 = 11 meses)
     // Em novembro/2026: 1 mês (nov/2026 = 1 mês)
     // Em dezembro/2026: 0 meses (evento já passou)
-    return Math.min(12, Math.max(0, mesesAteEvento));
+    const maxParcelasPorMeses = Math.min(12, Math.max(0, mesesAteEvento));
+
+    // Durante Janeiro e Fevereiro de 2026: limitar a 10 parcelas no PIX
+    if (anoAtual === 2026 && mesAtual <= 1) {
+        return Math.min(10, maxParcelasPorMeses);
+    }
+
+    return maxParcelasPorMeses;
 }
 
 // Adicionar evento de máscara no campo telefone
