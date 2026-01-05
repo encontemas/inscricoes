@@ -44,6 +44,12 @@ export default async function handler(req, res) {
         // Preparar dados do pagamento PagBank
         const pagBankToken = process.env.PAGBANK_TOKEN;
 
+        // DIAGNÓSTICO: Ver variáveis de ambiente
+        console.log('🔍 DIAGNÓSTICO PAGAMENTO-CARTAO:');
+        console.log('PAGBANK_ENV (raw):', JSON.stringify(process.env.PAGBANK_ENV));
+        console.log('PAGBANK_ENV (value):', process.env.PAGBANK_ENV);
+        console.log('PAGBANK_TOKEN (primeiros 20 chars):', pagBankToken?.substring(0, 20));
+
         if (!pagBankToken) {
             console.error('❌ PAGBANK_TOKEN não configurado');
             return res.status(500).json({
@@ -154,11 +160,18 @@ export default async function handler(req, res) {
 
         // Fazer requisição para PagBank
         // Determinar ambiente (sandbox ou produção)
-        const isProduction = process.env.PAGBANK_ENV === 'production';
+        const envValue = (process.env.PAGBANK_ENV || '').trim().toLowerCase();
+        const isProduction = envValue === 'production';
         const pagBankUrl = isProduction
             ? 'https://api.pagbank.com/orders'
             : 'https://sandbox.api.pagseguro.com/orders';
 
+        console.log('🔍 Ambiente detectado:', {
+            rawEnv: process.env.PAGBANK_ENV,
+            envValueTrimmed: envValue,
+            isProduction: isProduction,
+            urlEscolhida: pagBankUrl
+        });
         console.log('🌐 URL PagBank:', pagBankUrl);
         console.log('🔑 Token (primeiros 10 chars):', pagBankToken.substring(0, 10) + '...');
 
@@ -185,15 +198,33 @@ export default async function handler(req, res) {
         } catch (parseError) {
             console.error('❌ Erro ao fazer parse do JSON da resposta PagBank');
             console.error('Parse Error:', parseError.message);
+            console.error('Status HTTP:', response.status);
             console.error('Resposta recebida (primeiros 500 chars):', responseText.substring(0, 500));
 
+            // Diagnosticar o problema
+            let errorMessage = 'Erro ao processar resposta do PagBank';
+            let errorDetails = {
+                status: response.status,
+                responsePreview: responseText.substring(0, 200),
+                parseError: parseError.message
+            };
+
+            if (response.status === 500 && responseText.trim() === '') {
+                errorMessage = 'PagBank retornou erro 500 sem resposta. Possíveis causas: ' +
+                    '(1) Token/credenciais inválidas ou desabilitadas, ' +
+                    '(2) Ambiente incorreto (sandbox vs produção), ' +
+                    '(3) Conta migrada para produção mas usando credenciais de sandbox';
+                errorDetails.suggestedFix = 'Verifique se PAGBANK_ENV, PAGBANK_TOKEN e PAGBANK_PUBLIC_KEY ' +
+                    'estão configurados corretamente para o ambiente de ' + (isProduction ? 'PRODUÇÃO' : 'SANDBOX');
+            } else if (response.status === 401 || response.status === 403) {
+                errorMessage = 'Autenticação falhou. Token inválido ou sem permissão para acessar este ambiente.';
+                errorDetails.suggestedFix = 'Verifique se o token corresponde ao ambiente configurado (produção vs sandbox)';
+            }
+
             return res.status(500).json({
-                error: 'Resposta inválida do PagBank',
-                message: 'O PagBank retornou uma resposta mal formatada',
-                details: {
-                    status: response.status,
-                    responsePreview: responseText.substring(0, 200)
-                }
+                error: 'Erro ao processar pagamento',
+                message: errorMessage,
+                details: errorDetails
             });
         }
 
