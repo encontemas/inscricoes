@@ -233,8 +233,8 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
         const sheets = google.sheets({ version: 'v4', auth });
         const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
 
-        // Tentar usar id_inscricao primeiro, senão usar email (fallback)
-        const idInscricao = dadosPagamento.id_inscricao;
+        // Tentar usar reference_id (que é o id_inscricao) primeiro, senão usar email (fallback)
+        const idInscricao = dadosPagamento.referenceId || dadosPagamento.id_inscricao;
         const email = dadosPagamento.customerEmail;
 
         if (!idInscricao && !email) {
@@ -243,7 +243,7 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
         }
 
         if (idInscricao) {
-            console.log('🔍 Buscando inscrição com id_inscricao:', idInscricao);
+            console.log('🔍 Buscando inscrição com id_inscricao/reference_id:', idInscricao);
         } else {
             console.log('🔍 Fallback: Buscando inscrição com email:', email);
         }
@@ -337,10 +337,33 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
                 }
             }
         } else {
-            // PIX: Marcar apenas a primeira parcela como paga
-            console.log('💰 PIX confirmado - Marcando primeira parcela como paga');
+            // PIX: Marcar a PRÓXIMA parcela não paga
+            console.log('💰 PIX confirmado - Buscando próxima parcela não paga...');
 
-            const numeroParcela = 1;
+            // Buscar qual parcela ainda não foi paga
+            let numeroParcela = null;
+
+            for (let i = 1; i <= totalParcelas; i++) {
+                const parcelaKey = `parcela_${String(i).padStart(2, '0')}_paga`;
+                const parcelaIndex = headers.indexOf(parcelaKey);
+
+                if (parcelaIndex !== -1) {
+                    const parcelaPaga = rows[rowIndex][parcelaIndex];
+
+                    // Se a parcela não está paga (vazio, 0, ou false)
+                    if (!parcelaPaga || parcelaPaga === '0' || parcelaPaga === 0) {
+                        numeroParcela = i;
+                        console.log(`✅ Encontrada parcela não paga: parcela ${i}`);
+                        break;
+                    }
+                }
+            }
+
+            if (!numeroParcela) {
+                console.warn('⚠️ Todas as parcelas já estão pagas!');
+                return;
+            }
+
             const parcelaKey = `parcela_${String(numeroParcela).padStart(2, '0')}_paga`;
             const dataPagaKey = `data_paga_${String(numeroParcela).padStart(2, '0')}`;
 
@@ -358,6 +381,7 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
                 range: `Inscrições!${parcelaCol}${rowIndex + 1}`,
                 values: [[1]]
             });
+            console.log(`✓ Marcando ${parcelaKey} = 1`);
 
             // Atualizar data efetiva do pagamento se a coluna existir
             if (dataPagaIndex !== -1) {
@@ -366,7 +390,7 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
                     range: `Inscrições!${dataPagaCol}${rowIndex + 1}`,
                     values: [[dataPaga]]
                 });
-                console.log(`📅 Atualizando ${dataPagaKey} = ${dataPaga}`);
+                console.log(`✓ Marcando ${dataPagaKey} = ${dataPaga}`);
             } else {
                 console.warn(`⚠️ Coluna "${dataPagaKey}" não encontrada.`);
             }
