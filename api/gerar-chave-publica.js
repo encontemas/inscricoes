@@ -15,70 +15,90 @@ export default async function handler(req, res) {
             });
         }
 
-        console.log('📡 Gerando nova chave pública do PagBank...');
-        console.log('🌐 Ambiente PagBank:', isProduction ? 'production' : 'sandbox');
+        const requestPublicKey = async (baseUrl, environmentLabel) => {
+            console.log('📡 Gerando nova chave pública do PagBank...');
+            console.log('🌐 Ambiente PagBank:', environmentLabel);
 
-        const baseUrl = isProduction
-            ? 'https://api.pagseguro.com'
-            : 'https://sandbox.api.pagseguro.com';
+            const response = await fetch(`${baseUrl}/public-keys`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${pagBankToken}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    type: "card"
+                })
+            });
 
-        // Endpoint para CRIAR/GERAR chave pública
-        const response = await fetch(`${baseUrl}/public-keys`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${pagBankToken}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                type: "card"
-            })
-        });
+            const responseText = await response.text();
+            let data = {};
 
-        const responseText = await response.text();
-        let data = {};
-
-        if (responseText) {
-            try {
-                data = JSON.parse(responseText);
-            } catch (parseError) {
+            if (responseText) {
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    data = {
+                        error: 'Resposta inválida do PagBank',
+                        details: responseText
+                    };
+                }
+            } else {
                 data = {
-                    error: 'Resposta inválida do PagBank',
-                    details: responseText
+                    error: 'Resposta vazia do PagBank'
                 };
             }
-        } else {
-            data = {
-                error: 'Resposta vazia do PagBank'
-            };
-        }
 
-        console.log('📥 Resposta:', JSON.stringify(data, null, 2));
+            console.log('📥 Resposta:', JSON.stringify(data, null, 2));
 
-        if (!response.ok) {
-            return res.status(response.status).json({
-                error: 'Erro ao gerar chave',
-                details: data,
+            return {
+                ok: response.ok,
                 status: response.status,
-                statusText: response.statusText
+                statusText: response.statusText,
+                data,
+                environment: environmentLabel
+            };
+        };
+
+        const primaryBaseUrl = isProduction
+            ? 'https://api.pagseguro.com'
+            : 'https://sandbox.api.pagseguro.com';
+        const primaryEnvironment = isProduction ? 'production' : 'sandbox';
+        const primaryAttempt = await requestPublicKey(primaryBaseUrl, primaryEnvironment);
+
+        if (primaryAttempt.ok && primaryAttempt.data?.public_key) {
+            return res.status(200).json({
+                success: true,
+                public_key: primaryAttempt.data.public_key,
+                created_at: primaryAttempt.data.created_at,
+                environment: primaryAttempt.environment,
+                instrucoes: 'Copie esta chave e atualize a variável PAGBANK_PUBLIC_KEY no Vercel'
             });
         }
 
-        if (!data.public_key) {
-            return res.status(502).json({
-                error: 'Resposta inesperada do PagBank',
-                details: data
+        const fallbackBaseUrl = isProduction
+            ? 'https://sandbox.api.pagseguro.com'
+            : 'https://api.pagseguro.com';
+        const fallbackEnvironment = isProduction ? 'sandbox' : 'production';
+        const fallbackAttempt = await requestPublicKey(fallbackBaseUrl, fallbackEnvironment);
+
+        if (fallbackAttempt.ok && fallbackAttempt.data?.public_key) {
+            return res.status(200).json({
+                success: true,
+                public_key: fallbackAttempt.data.public_key,
+                created_at: fallbackAttempt.data.created_at,
+                environment: fallbackAttempt.environment,
+                instrucoes: 'Copie esta chave e atualize a variável PAGBANK_PUBLIC_KEY no Vercel'
             });
         }
 
-        // Retornar a chave pública gerada
-        return res.status(200).json({
-            success: true,
-            public_key: data.public_key,
-            created_at: data.created_at,
-            instrucoes: 'Copie esta chave e atualize a variável PAGBANK_PUBLIC_KEY no Vercel'
+        return res.status(primaryAttempt.status || 502).json({
+            error: 'Erro ao gerar chave',
+            details: {
+                primary: primaryAttempt,
+                fallback: fallbackAttempt
+            }
         });
-
     } catch (error) {
         console.error('❌ Erro:', error);
         return res.status(500).json({

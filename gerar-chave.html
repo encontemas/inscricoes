@@ -135,6 +135,7 @@
                     result.innerHTML = `
                         <h2>✅ Chave Pública Gerada com Sucesso!</h2>
                         <p><strong>Criada em:</strong> ${data.created_at}</p>
+                        <p><strong>Ambiente:</strong> ${data.environment || 'não informado'}</p>
 
                         <div class="key-box" id="publicKey">${data.public_key}</div>
 
