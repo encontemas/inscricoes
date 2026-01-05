@@ -39,7 +39,14 @@ export default async function handler(req, res) {
         console.log(`💳 Criando cobrança PIX de R$ 1,00 [${isProduction ? 'PRODUCTION' : 'SANDBOX'}]...`);
 
         // Limpar telefone (apenas números)
-        const telefoneLimpo = telefone.replace(/\D/g, '');
+        let telefoneLimpo = telefone.replace(/\D/g, '');
+
+        // Remover código do país (55) se presente
+        if (telefoneLimpo.startsWith('55') && (telefoneLimpo.length === 12 || telefoneLimpo.length === 13)) {
+            console.log('🔧 Removendo código do país do telefone:', telefoneLimpo);
+            telefoneLimpo = telefoneLimpo.substring(2);
+            console.log('🔧 Telefone após remoção:', telefoneLimpo);
+        }
 
         // Validar telefone
         if (telefoneLimpo.length < 10 || telefoneLimpo.length > 11) {

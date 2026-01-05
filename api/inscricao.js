@@ -104,6 +104,21 @@ async function salvarInscricao(dadosInscricao) {
         const metodoPagamento = (dadosInscricao.metodo_pagamento || 'PIX').toUpperCase();
         const tipoPagamento = metodoPagamento === 'CARTAO' ? 'CARTAO' : 'PIX';
 
+        // Limpar telefone: remover formatação e código do país (55) se presente
+        let telefoneLimpo = (dadosInscricao.telefone || '').replace(/\D/g, '');
+
+        // Se começar com 55 e tiver 13 dígitos, remover o 55
+        if (telefoneLimpo.startsWith('55') && telefoneLimpo.length === 13) {
+            telefoneLimpo = telefoneLimpo.substring(2); // Remove os 2 primeiros dígitos (55)
+            console.log('🔧 Telefone tinha código do país, removido:', dadosInscricao.telefone, '→', telefoneLimpo);
+        }
+
+        // Se começar com 55 e tiver 12 dígitos (55 + DDD + 8 dígitos), também remover
+        if (telefoneLimpo.startsWith('55') && telefoneLimpo.length === 12) {
+            telefoneLimpo = telefoneLimpo.substring(2);
+            console.log('🔧 Telefone tinha código do país, removido:', dadosInscricao.telefone, '→', telefoneLimpo);
+        }
+
         const valores = [
             idGerado, // id_inscricao preenchido pelo sistema
             agora, // data_inscricao
@@ -112,7 +127,7 @@ async function salvarInscricao(dadosInscricao) {
             dadosInscricao.cpf || '', // CPF sem formatação (como estava antes)
             dadosInscricao.maior_idade ? 1 : 0,
             dadosInscricao.email,
-            dadosInscricao.telefone || '', // Telefone sem formatação (como estava antes)
+            telefoneLimpo, // Telefone limpo (sem código do país)
             dadosInscricao.cidade_pais,
             dadosInscricao.grupo_escolha || '',
             dadosInscricao.csa || '',
