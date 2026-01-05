@@ -498,6 +498,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(data.message || data.error || 'Erro ao processar inscrição');
                 }
 
+                // Capturar ID da inscrição retornado pela API
+                const idInscricao = data.inscricao.id_inscricao;
+                console.log('🆔 ID da inscrição recebido:', idInscricao);
+
                 // Se escolheu cartão, processar pagamento com cartão agora
                 if (metodoPagamento === 'cartao') {
                     // Coletar dados do cartão
@@ -582,7 +586,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({
-                                inscricao_id: data.inscricao.email, // Usar email como ID temporário
+                                id_inscricao: idInscricao, // Usar ID da inscrição
                                 nome_completo: formData.nome_completo,
                                 email: formData.email,
                                 cpf: formData.cpf,

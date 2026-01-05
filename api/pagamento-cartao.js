@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 
     try {
         const {
-            inscricao_id,
+            id_inscricao, // Aceitar id_inscricao
             nome_completo,
             email,
             cpf,
@@ -20,10 +20,10 @@ export default async function handler(req, res) {
         } = req.body;
 
         // Validações
-        if (!inscricao_id || !nome_completo || !email || !cpf || !telefone || !valor_total || !cartao_encrypted) {
+        if (!id_inscricao || !nome_completo || !email || !cpf || !telefone || !valor_total || !cartao_encrypted) {
             return res.status(400).json({
                 error: 'Dados incompletos',
-                message: 'Todos os campos são obrigatórios'
+                message: 'Todos os campos são obrigatórios (incluindo id_inscricao)'
             });
         }
 
@@ -37,9 +37,9 @@ export default async function handler(req, res) {
         }
 
         console.log('💳 Processando pagamento com cartão de crédito...');
-        console.log('Inscrição ID:', inscricao_id);
-        console.log('Email:', email);
-        console.log('Valor Total:', valor_total);
+        console.log('🆔 ID Inscrição:', id_inscricao);
+        console.log('📧 Email:', email);
+        console.log('💰 Valor Total:', valor_total);
 
         // Preparar dados do pagamento PagBank
         const pagBankToken = process.env.PAGBANK_TOKEN;
@@ -87,13 +87,14 @@ export default async function handler(req, res) {
         console.log('  Valor (centavos):', valorCentavos);
         console.log('  Parcelas:', numero_parcelas_cartao);
 
-        // Reference ID único com máximo de 64 caracteres
-        const timestamp = new Date().getTime();
-        const referenceId = `ACMP_${timestamp}`;
+        // Reference ID = ID da inscrição (para rastreamento)
+        const referenceId = id_inscricao;
+        const timestamp = Date.now(); // Para reference_id da charge
+        console.log('🔖 Reference ID (order):', referenceId);
 
         // Preparar payload para PagBank - Pagamento com Cartão
         const pagBankPayload = {
-            reference_id: referenceId,
+            reference_id: referenceId, // ID da inscrição
             customer: {
                 name: nome_completo,
                 email: email,
@@ -209,11 +210,13 @@ export default async function handler(req, res) {
         // Se pagamento APROVADO, atualizar planilha IMEDIATAMENTE
         if (paymentStatus === 'PAID') {
             console.log('💳 Pagamento aprovado! Atualizando planilha...');
+            console.log('🆔 ID Inscrição a atualizar:', id_inscricao);
 
             try {
                 const { atualizarStatusPagamentoCartao } = await import('./webhook-pagbank.js');
 
                 await atualizarStatusPagamentoCartao({
+                    id_inscricao: id_inscricao, // Passar ID da inscrição
                     orderId: responseData.id,
                     chargeId: charge.id,
                     amount: charge.amount.value,
