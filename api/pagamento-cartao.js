@@ -44,6 +44,12 @@ export default async function handler(req, res) {
         // Preparar dados do pagamento PagBank
         const pagBankToken = process.env.PAGBANK_TOKEN;
 
+        // DIAGNÓSTICO: Ver variáveis de ambiente
+        console.log('🔍 DIAGNÓSTICO PAGAMENTO-CARTAO:');
+        console.log('PAGBANK_ENV (raw):', JSON.stringify(process.env.PAGBANK_ENV));
+        console.log('PAGBANK_ENV (value):', process.env.PAGBANK_ENV);
+        console.log('PAGBANK_TOKEN (primeiros 20 chars):', pagBankToken?.substring(0, 20));
+
         if (!pagBankToken) {
             console.error('❌ PAGBANK_TOKEN não configurado');
             return res.status(500).json({
@@ -154,11 +160,18 @@ export default async function handler(req, res) {
 
         // Fazer requisição para PagBank
         // Determinar ambiente (sandbox ou produção)
-        const isProduction = process.env.PAGBANK_ENV === 'production';
+        const envValue = (process.env.PAGBANK_ENV || '').trim().toLowerCase();
+        const isProduction = envValue === 'production';
         const pagBankUrl = isProduction
             ? 'https://api.pagbank.com/orders'
             : 'https://sandbox.api.pagseguro.com/orders';
 
+        console.log('🔍 Ambiente detectado:', {
+            rawEnv: process.env.PAGBANK_ENV,
+            envValueTrimmed: envValue,
+            isProduction: isProduction,
+            urlEscolhida: pagBankUrl
+        });
         console.log('🌐 URL PagBank:', pagBankUrl);
         console.log('🔑 Token (primeiros 10 chars):', pagBankToken.substring(0, 10) + '...');
 
