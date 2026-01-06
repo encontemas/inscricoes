@@ -1249,6 +1249,7 @@ body {
 }
 
 /* ===== MOBILE ACTIONS (Minimalista) ===== */
+.mobile-container,
 .mobile-actions,
 .cpf-area-mobile {
     display: none;
@@ -1258,6 +1259,13 @@ body {
     /* Esconder ações desktop */
     .header-actions {
         display: none !important;
+    }
+
+    /* Container mobile - empilha botões e CPF verticalmente */
+    .mobile-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
     }
 
     /* Botões Mobile - Compactos lado a lado */
