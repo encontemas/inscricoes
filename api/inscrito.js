@@ -90,24 +90,16 @@ export default async function handler(req, res) {
         const valorTotal = 450.00;
         const valorParcela = (valorTotal / numeroParcelas).toFixed(2);
 
-        // Data base: 15 de cada mês a partir de hoje
-        const dataBase = new Date();
-        dataBase.setDate(15);
-        if (dataBase < new Date()) {
-            dataBase.setMonth(dataBase.getMonth() + 1);
-        }
-
         const parcelas = [];
         for (let i = 1; i <= numeroParcelas; i++) {
-            const vencimento = new Date(dataBase);
-            vencimento.setMonth(vencimento.getMonth() + (i - 1));
-
-            // Buscar status real da parcela na planilha
+            // Buscar dados reais da parcela na planilha
             const parcelaKey = `parcela_${String(i).padStart(2, '0')}_paga`;
-            const dataPagaKey = `data_paga_${String(i).padStart(2, '0')}`;
+            const dataVencimentoKey = `data_pagamento_${String(i).padStart(2, '0')}`; // Data de vencimento
+            const dataPagaKey = `data_paga_${String(i).padStart(2, '0')}`; // Data que efetivamente pagou
 
             const parcelaPaga = inscrito[parcelaKey];
-            const dataPagamento = inscrito[dataPagaKey];
+            const dataVencimento = inscrito[dataVencimentoKey]; // Vencimento previsto
+            const dataPaga = inscrito[dataPagaKey]; // Data real do pagamento
 
             // Status: 'pago' se parcela_XX_paga == 1, senão 'pendente'
             const isPaga = parcelaPaga === '1' || parcelaPaga === 1 || parcelaPaga === true;
@@ -115,9 +107,9 @@ export default async function handler(req, res) {
             parcelas.push({
                 numero: i,
                 valor: parseFloat(valorParcela),
-                vencimento: vencimento.toISOString().split('T')[0],
+                vencimento: dataVencimento || 'Não definido', // Data de vencimento da parcela
                 status: isPaga ? 'pago' : 'pendente',
-                data_pagamento: isPaga ? dataPagamento : null
+                data_pagamento: isPaga ? dataPaga : null // Data que efetivamente pagou
             });
         }
 
