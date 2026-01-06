@@ -1,4 +1,89 @@
-// Função para acesso rápido à área do inscrito
+// ===== TOGGLE MOBILE (Nova Inscrição vs Já Inscrito) =====
+function toggleMobileView(view) {
+    // Alternar aba ativa
+    const tabs = document.querySelectorAll('.mobile-tab');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // Alternar painel ativo
+    const panels = document.querySelectorAll('.mobile-panel');
+    panels.forEach(panel => panel.classList.remove('active'));
+
+    if (view === 'nova') {
+        document.getElementById('mobile-nova').classList.add('active');
+    } else if (view === 'inscrito') {
+        document.getElementById('mobile-inscrito').classList.add('active');
+    }
+}
+
+// Função para acesso à área do inscrito via mobile
+async function acessarAreaInscritoMobile() {
+    const cpfInput = document.getElementById('cpf-mobile');
+    const cpf = cpfInput.value.replace(/\D/g, '');
+
+    if (cpf.length !== 11) {
+        alert('Por favor, digite um CPF válido');
+        cpfInput.focus();
+        return;
+    }
+
+    // Desabilitar botão e mostrar loading
+    const btn = cpfInput.nextElementSibling;
+    const textoOriginal = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '...';
+
+    try {
+        // Verificar se CPF existe via API
+        const response = await fetch('/api/inscrito', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ cpf: cpf })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'CPF não encontrado');
+        }
+
+        // Salvar CPF e redirecionar
+        localStorage.setItem('inscrito_cpf', cpf);
+        window.location.href = '/area-inscrito.html';
+
+    } catch (error) {
+        console.error('Erro ao acessar área do inscrito:', error);
+        alert(error.message || 'CPF não encontrado. Verifique se você já realizou sua inscrição.');
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+    }
+}
+
+// Adicionar máscara CPF no input mobile
+document.addEventListener('DOMContentLoaded', function() {
+    const cpfMobile = document.getElementById('cpf-mobile');
+    if (cpfMobile) {
+        cpfMobile.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.substring(0, 11);
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            e.target.value = value;
+        });
+
+        // Permitir envio com Enter
+        cpfMobile.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                acessarAreaInscritoMobile();
+            }
+        });
+    }
+});
+
+// Função para acesso rápido à área do inscrito (desktop)
 async function acessarAreaInscrito() {
     const cpfInput = document.getElementById('cpf-quick');
     const cpf = cpfInput.value.replace(/\D/g, '');
@@ -189,22 +274,18 @@ function calcularMaxParcelas() {
     const mesLimite = 10; // Novembro (0-indexed)
     const anoLimite = 2026;
 
-    // Calcular quantos meses faltam desde o mês ATUAL até novembro/2026 (INCLUSIVE)
+    // Calcular quantos meses faltam desde o MÊS ATUAL até novembro/2026 (INCLUSIVE)
+    // Primeira parcela vence no mês corrente
     const mesesAteEvento = (anoLimite - anoAtual) * 12 + (mesLimite - mesAtual) + 1;
 
-    // Máximo de 12 parcelas
-    // Em dezembro/2025: 12 meses (dez/2025 até nov/2026 = 12 meses)
-    // Em janeiro/2026: 11 meses (jan/2026 até nov/2026 = 11 meses)
-    // Em novembro/2026: 1 mês (nov/2026 = 1 mês)
+    // Máximo de 10 parcelas (limitado pelo sistema)
+    // Em janeiro/2026: jan até nov = 11 meses, mas limite 10 parcelas
+    // Em fevereiro/2026: fev até nov = 10 meses = 10 parcelas ✓
+    // Em março/2026: mar até nov = 9 meses = 9 parcelas ✓
+    // Em abril/2026: abr até nov = 8 meses = 8 parcelas ✓
+    // Em novembro/2026: nov até nov = 1 mês = 1 parcela
     // Em dezembro/2026: 0 meses (evento já passou)
-    const maxParcelasPorMeses = Math.min(12, Math.max(0, mesesAteEvento));
-
-    // Durante Janeiro e Fevereiro de 2026: limitar a 10 parcelas no PIX
-    if (anoAtual === 2026 && mesAtual <= 1) {
-        return Math.min(10, maxParcelasPorMeses);
-    }
-
-    return maxParcelasPorMeses;
+    return Math.min(10, Math.max(0, mesesAteEvento));
 }
 
 // Adicionar evento de máscara no campo telefone

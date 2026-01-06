@@ -14,6 +14,26 @@
         <div class="container">
             <nav class="nav">
                 <div class="logo">Encontemas 2026</div>
+
+                <!-- Toggle Mobile: Nova Inscrição vs Já Inscrito -->
+                <div class="mobile-toggle-container">
+                    <div class="mobile-tabs">
+                        <button class="mobile-tab active" onclick="toggleMobileView('nova')">Nova Inscrição</button>
+                        <button class="mobile-tab" onclick="toggleMobileView('inscrito')">Já sou inscrito</button>
+                    </div>
+                    <div class="mobile-content">
+                        <div id="mobile-nova" class="mobile-panel active">
+                            <button class="btn-inscricao-mobile" onclick="scrollToInscricao()">Inscrever-se</button>
+                        </div>
+                        <div id="mobile-inscrito" class="mobile-panel">
+                            <div class="cpf-input-mobile">
+                                <input type="text" id="cpf-mobile" placeholder="Digite seu CPF" maxlength="14">
+                                <button onclick="acessarAreaInscritoMobile()">→</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <ul class="nav-menu">
                     <li><a href="#sobre">Sobre</a></li>
                     <li><a href="#detalhes">Detalhes</a></li>
@@ -68,7 +88,7 @@
                 </button>
             </div>
             <div class="hero-image">
-                <img src="ultimo_cartaz.jpg" alt="Cartaz 3º Encontemas da Diversidade" class="cartaz">
+                <img src="novo_cartaz.jpg" alt="Cartaz 3º Encontemas da Diversidade" class="cartaz">
             </div>
         </div>
     </section>
@@ -543,7 +563,7 @@
                     <!-- Seção PIX -->
                     <div id="secao_pix" style="display: none;">
                         <div class="info-box">
-                            💡 Com PIX, você escolhe em quantas parcelas quer pagar (até 11x). Você receberá os dados do PIX para cada parcela no vencimento.
+                            💡 Com PIX, você escolhe em quantas parcelas quer pagar (até 10x). Você receberá os dados do PIX para cada parcela no vencimento.
                         </div>
 
                         <div class="form-row">
