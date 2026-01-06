@@ -671,6 +671,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         return;
                     }
 
+                    // Buscar valor total baseado nas parcelas selecionadas
+                    const parcelasSelect = document.getElementById('parcelas_cartao');
+                    const selectedOption = parcelasSelect.options[parcelasSelect.selectedIndex];
+                    const valorTotal = parseFloat(selectedOption.getAttribute('data-valor-total')) || 450.00;
+
+                    console.log(`💰 Valor total para ${parcelasCartao}x: R$ ${valorTotal.toFixed(2)}`);
+
                     // Processar pagamento com cartão
                     try {
                         const pagamentoResponse = await fetch('/api/pagamento-cartao', {
@@ -684,7 +691,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 email: formData.email,
                                 cpf: formData.cpf,
                                 telefone: formData.telefone,
-                                valor_total: 450.00,
+                                valor_total: valorTotal,
                                 cartao_encrypted: cartaoEncrypted,
                                 cartao_titular: cartaoTitular,
                                 cartao_numero_final: cartaoNumero.slice(-4),

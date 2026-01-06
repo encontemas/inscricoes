@@ -29,10 +29,10 @@ export default async function handler(req, res) {
 
         // Validar número de parcelas no cartão
         const parcelasCartao = parseInt(numero_parcelas_cartao);
-        if (parcelasCartao < 1 || parcelasCartao > 11) {
+        if (parcelasCartao < 1 || parcelasCartao > 18) {
             return res.status(400).json({
                 error: 'Número de parcelas inválido',
-                message: 'Escolha entre 1 e 11 parcelas no cartão'
+                message: 'Escolha entre 1 e 18 parcelas no cartão'
             });
         }
 
