@@ -579,17 +579,21 @@
 
                     // Obter data de vencimento da planilha (campo chamado data_pagamento mas é o vencimento)
                     let dataVencimentoStr = data[dataVencimentoKey] || '';
+                    let vencimentoFormatado;
                     let vencimento;
 
                     if (dataVencimentoStr) {
-                        // Converter data brasileira (dd/mm/aaaa) para objeto Date
+                        // Manter formato brasileiro (dd/mm/aaaa) sem conversão
+                        vencimentoFormatado = dataVencimentoStr;
+
+                        // Criar Date apenas para comparação de status (vencido ou não)
                         const [dia, mes, ano] = dataVencimentoStr.split('/');
-                        vencimento = new Date(ano, parseInt(mes) - 1, dia);
-                        vencimento.setHours(0, 0, 0, 0);
+                        vencimento = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), 12, 0, 0);
                     } else {
                         // Fallback: usar data atual se não tiver na planilha
-                        vencimento = new Date();
-                        vencimento.setHours(0, 0, 0, 0);
+                        const hoje = new Date();
+                        vencimentoFormatado = hoje.toLocaleDateString('pt-BR');
+                        vencimento = hoje;
                     }
 
                     // Verificar se está paga: aceita 1, "1", true, "TRUE", "true"
@@ -607,7 +611,7 @@
                     parcelas.push({
                         numero: i,
                         valor: parseFloat(inscritoData.valor_parcela),
-                        vencimento: vencimento.toISOString().split('T')[0],
+                        vencimento: vencimentoFormatado, // Usar formato brasileiro direto
                         status: status,
                         pix_id: isPaga ? `PIX_${i}` : null,
                         data_paga: dataPaga || null // Data efetiva do pagamento
