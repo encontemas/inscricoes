@@ -189,15 +189,18 @@ function calcularMaxParcelas() {
     const mesLimite = 10; // Novembro (0-indexed)
     const anoLimite = 2026;
 
-    // Calcular quantos meses faltam desde o mês ATUAL até novembro/2026 (INCLUSIVE)
-    const mesesAteEvento = (anoLimite - anoAtual) * 12 + (mesLimite - mesAtual) + 1;
+    // Calcular quantos meses faltam desde o PRÓXIMO MÊS até novembro/2026 (INCLUSIVE)
+    // Primeira parcela sempre vence no mês seguinte
+    const mesesAteEvento = (anoLimite - anoAtual) * 12 + (mesLimite - mesAtual);
 
-    // Máximo de 12 parcelas
-    // Em dezembro/2025: 12 meses (dez/2025 até nov/2026 = 12 meses)
-    // Em janeiro/2026: 11 meses (jan/2026 até nov/2026 = 11 meses)
-    // Em novembro/2026: 1 mês (nov/2026 = 1 mês)
+    // Máximo de 10 parcelas (limitado pelo sistema)
+    // Em janeiro/2026: fev até nov = 10 meses = 10 parcelas ✓
+    // Em fevereiro/2026: fev até nov = 10 meses = 10 parcelas ✓
+    // Em março/2026: mar até nov = 9 meses = 9 parcelas ✓
+    // Em abril/2026: abr até nov = 8 meses = 8 parcelas ✓
+    // Em novembro/2026: nov até nov = 1 mês = 1 parcela
     // Em dezembro/2026: 0 meses (evento já passou)
-    return Math.min(12, Math.max(0, mesesAteEvento));
+    return Math.min(10, Math.max(0, mesesAteEvento));
 }
 
 // Adicionar evento de máscara no campo telefone
