@@ -1,18 +1,13 @@
-// ===== TOGGLE MOBILE (Nova Inscrição vs Já Inscrito) =====
-function toggleMobileView(view) {
-    // Alternar aba ativa
-    const tabs = document.querySelectorAll('.mobile-tab');
-    tabs.forEach(tab => tab.classList.remove('active'));
-    event.target.classList.add('active');
-
-    // Alternar painel ativo
-    const panels = document.querySelectorAll('.mobile-panel');
-    panels.forEach(panel => panel.classList.remove('active'));
-
-    if (view === 'nova') {
-        document.getElementById('mobile-nova').classList.add('active');
-    } else if (view === 'inscrito') {
-        document.getElementById('mobile-inscrito').classList.add('active');
+// ===== MOBILE ACTIONS (Minimalista) =====
+function toggleCpfMobile() {
+    const cpfArea = document.getElementById('cpf-area-mobile');
+    if (cpfArea.style.display === 'none' || cpfArea.style.display === '') {
+        cpfArea.style.display = 'flex';
+        setTimeout(() => {
+            document.getElementById('cpf-mobile').focus();
+        }, 300);
+    } else {
+        cpfArea.style.display = 'none';
     }
 }
 

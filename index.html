@@ -15,23 +15,18 @@
             <nav class="nav">
                 <div class="logo">Encontemas 2026</div>
 
-                <!-- Toggle Mobile: Nova Inscrição vs Já Inscrito -->
-                <div class="mobile-toggle-container">
-                    <div class="mobile-tabs">
-                        <button class="mobile-tab active" onclick="toggleMobileView('nova')">Nova Inscrição</button>
-                        <button class="mobile-tab" onclick="toggleMobileView('inscrito')">Já sou inscrito</button>
-                    </div>
-                    <div class="mobile-content">
-                        <div id="mobile-nova" class="mobile-panel active">
-                            <button class="btn-inscricao-mobile" onclick="scrollToInscricao()">Inscrever-se</button>
-                        </div>
-                        <div id="mobile-inscrito" class="mobile-panel">
-                            <div class="cpf-input-mobile">
-                                <input type="text" id="cpf-mobile" placeholder="Digite seu CPF" maxlength="14">
-                                <button onclick="acessarAreaInscritoMobile()">→</button>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Toggle Mobile: Minimalista -->
+                <div class="mobile-actions">
+                    <button class="mobile-btn mobile-btn-inscricao" onclick="scrollToInscricao()">
+                        📝 Fazer Inscrição
+                    </button>
+                    <button class="mobile-btn mobile-btn-area" onclick="toggleCpfMobile()">
+                        💳 Pagar Parcelas
+                    </button>
+                </div>
+                <div id="cpf-area-mobile" class="cpf-area-mobile" style="display: none;">
+                    <input type="text" id="cpf-mobile" placeholder="Digite seu CPF" maxlength="14">
+                    <button onclick="acessarAreaInscritoMobile()">→</button>
                 </div>
 
                 <ul class="nav-menu">
