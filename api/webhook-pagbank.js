@@ -299,6 +299,7 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
         const headers = rows[0];
         const idInscricaoIndex = headers.indexOf('id_inscricao');
         const emailIndex = headers.indexOf('email');
+        const cpfIndex = headers.indexOf('cpf');
         const numeroParcelasIndex = headers.indexOf('numero_parcelas');
 
         // Buscar linha do inscrito (por ID ou email)
@@ -455,13 +456,45 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
             console.log(`🔑 Atualizando transacao_id = ${transacaoId}`);
         }
 
+        // Calcular status_pagamento baseado nas parcelas
         if (statusPagamentoIndex !== -1) {
+            let parcelasPagas = 0;
+
+            // Contar quantas parcelas estão pagas
+            for (let i = 1; i <= totalParcelas; i++) {
+                const parcelaKey = `parcela_${String(i).padStart(2, '0')}_paga`;
+                const parcelaIndex = headers.indexOf(parcelaKey);
+
+                if (parcelaIndex !== -1) {
+                    const valorParcela = rows[rowIndex][parcelaIndex];
+                    if (valorParcela === '1' || valorParcela === 1 || valorParcela === true) {
+                        parcelasPagas++;
+                    }
+                }
+            }
+
+            // Se for cartão, adicionar 1 porque estamos marcando todas agora
+            if (isCardPayment) {
+                parcelasPagas = totalParcelas;
+            } else {
+                // Se for PIX, adicionar 1 para incluir a parcela que acabamos de marcar
+                parcelasPagas++;
+            }
+
+            // Determinar status
+            let status = 'PENDENTE';
+            if (parcelasPagas >= totalParcelas) {
+                status = 'PAGO';
+            } else if (parcelasPagas > 0) {
+                status = 'PARCIAL';
+            }
+
             const statusPagamentoCol = indexToColumnLetter(statusPagamentoIndex);
             updates.push({
                 range: `Inscrições!${statusPagamentoCol}${rowIndex + 1}`,
-                values: [['APROVADO']]
+                values: [[status]]
             });
-            console.log(`✅ Atualizando status_pagamento = APROVADO`);
+            console.log(`✅ Atualizando status_pagamento = ${status} (${parcelasPagas}/${totalParcelas} parcelas pagas)`);
         }
 
         // Executar todas as atualizações
