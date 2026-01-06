@@ -113,6 +113,12 @@ body {
     border: 2px solid var(--primary-color);
 }
 
+.area-inscrito-hint {
+    display: none;
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
 .area-inscrito-quick label {
     font-size: 0.9rem;
     font-weight: 600;
@@ -1188,16 +1194,45 @@ body {
 
     /* Header responsivo */
     .area-inscrito-quick {
-        display: none;
+        display: flex;
+        width: 100%;
+        padding: 0.4rem 0;
+        gap: 0.5rem;
+        background: transparent;
+        border: none;
     }
 
     .header-actions {
-        gap: 0.5rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
     }
 
     .btn-inscricao-header {
+        width: 100%;
         padding: 0.6rem 1rem;
         font-size: 0.9rem;
+    }
+
+    .area-inscrito-quick label {
+        display: none;
+    }
+
+    .area-inscrito-quick input {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: 0.6rem 0.8rem;
+        border-radius: 999px;
+        border: 1px solid #d6d9ef;
+        background: #ffffff;
+        box-shadow: 0 4px 10px rgba(20, 33, 94, 0.08);
+    }
+
+    .area-inscrito-quick button {
+        width: 44px;
+        height: 44px;
+        font-size: 1.1rem;
+        border-radius: 999px;
     }
 }
 
