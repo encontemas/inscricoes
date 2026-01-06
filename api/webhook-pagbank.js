@@ -1,5 +1,6 @@
 // Webhook para receber notificações de pagamento do PagBank
 import { google } from 'googleapis';
+import { logWebhook, logPagamento, logErro } from './logger.js';
 
 /**
  * Converte índice numérico para letra de coluna do Excel
@@ -36,6 +37,14 @@ export default async function handler(req, res) {
         const notification = req.body;
 
         console.log('🔔 Notificação PagBank recebida:', JSON.stringify(notification, null, 2));
+
+        // LOG: Salvar notificação recebida
+        await logWebhook('Notificação recebida', {
+            orderId: notification.id,
+            referenceId: notification.reference_id,
+            status: notification.charges?.[0]?.status,
+            metodo: notification.charges?.[0]?.payment_method?.type
+        });
 
         // Extrair informações importantes
         const orderId = notification.id;
@@ -467,12 +476,39 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
 
             console.log(`✅ Status de pagamento atualizado com sucesso para ${email}`);
             console.log(`📊 Total de campos atualizados: ${updates.length}`);
+
+            // LOG: Registrar pagamento confirmado
+            try {
+                const cpfInscrito = rows[rowIndex][cpfIndex];
+                const metodo = isCardPayment ? 'CARTÃO' : 'PIX';
+                const valorCentavos = dadosPagamento.amount || 0;
+                const valorReais = (valorCentavos / 100).toFixed(2);
+
+                if (isCardPayment) {
+                    await logPagamento(cpfInscrito, `TODAS (${totalParcelas}x)`, valorReais, metodo);
+                } else if (numeroParcela) {
+                    await logPagamento(cpfInscrito, numeroParcela, valorReais, metodo);
+                }
+            } catch (logError) {
+                console.warn('⚠️ Erro ao salvar log de pagamento (não crítico):', logError.message);
+            }
         } else {
             console.warn('⚠️ Nenhuma atualização foi preparada');
         }
 
     } catch (error) {
         console.error('❌ Erro ao atualizar status de pagamento na inscrição:', error);
+
+        // LOG: Registrar erro
+        try {
+            await logErro('webhook-atualizar-status', error, {
+                referenceId: dadosPagamento.referenceId,
+                orderId: dadosPagamento.orderId
+            });
+        } catch (logError) {
+            console.warn('⚠️ Erro ao salvar log de erro (não crítico):', logError.message);
+        }
+
         // Não lançar erro para não quebrar o webhook
     }
 }

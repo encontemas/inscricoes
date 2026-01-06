@@ -82,19 +82,33 @@ async function salvarInscricao(dadosInscricao) {
         const datasVencimento = [];
         for (let i = 1; i <= 11; i++) { // Sempre preparar 11 espaços
             if (i <= numeroParcelas) {
-                let vencimento;
+                let ano, mes, dia;
+
                 if (i === 1) {
-                    vencimento = new Date(primeiraParcelaData);
+                    ano = primeiraParcelaData.getFullYear();
+                    mes = primeiraParcelaData.getMonth();
+                    dia = diaVencimento;
                 } else {
-                    // Demais parcelas: a partir da primeira parcela, adicionar meses
-                    vencimento = new Date(primeiraParcelaData);
-                    // IMPORTANTE: Ajustar dia para 1 antes de mudar mês (evita overflow)
-                    vencimento.setDate(1);
-                    vencimento.setMonth(primeiraParcelaData.getMonth() + (i - 1));
-                    // Depois ajustar para o dia de vencimento
-                    vencimento.setDate(diaVencimento);
+                    // Demais parcelas: incrementar meses a partir da primeira parcela
+                    ano = primeiraParcelaData.getFullYear();
+                    mes = primeiraParcelaData.getMonth() + (i - 1);
+                    dia = diaVencimento;
+
+                    // Ajustar ano se necessário
+                    while (mes > 11) {
+                        mes -= 12;
+                        ano += 1;
+                    }
                 }
-                datasVencimento.push(vencimento.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }));
+
+                // Criar data sem problemas de timezone (usando meio-dia para evitar shifts)
+                const vencimento = new Date(ano, mes, dia, 12, 0, 0);
+
+                // Formatar manualmente para evitar problemas de timezone
+                const diaStr = String(vencimento.getDate()).padStart(2, '0');
+                const mesStr = String(vencimento.getMonth() + 1).padStart(2, '0');
+                const anoStr = vencimento.getFullYear();
+                datasVencimento.push(`${diaStr}/${mesStr}/${anoStr}`);
             } else {
                 datasVencimento.push(''); // Parcelas não usadas ficam vazias
             }
