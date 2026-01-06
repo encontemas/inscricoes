@@ -1195,10 +1195,11 @@ body {
     /* Header responsivo */
     .area-inscrito-quick {
         display: flex;
-        flex-wrap: wrap;
         width: 100%;
-        padding: 0.75rem 1rem;
+        padding: 0.4rem 0;
         gap: 0.5rem;
+        background: transparent;
+        border: none;
     }
 
     .header-actions {
@@ -1214,23 +1215,24 @@ body {
     }
 
     .area-inscrito-quick label {
-        width: 100%;
+        display: none;
     }
 
     .area-inscrito-quick input {
         flex: 1 1 auto;
-        min-width: 180px;
+        min-width: 0;
+        padding: 0.6rem 0.8rem;
+        border-radius: 999px;
+        border: 1px solid #d6d9ef;
+        background: #ffffff;
+        box-shadow: 0 4px 10px rgba(20, 33, 94, 0.08);
     }
 
     .area-inscrito-quick button {
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
         font-size: 1.1rem;
-    }
-
-    .area-inscrito-hint {
-        display: block;
-        width: 100%;
+        border-radius: 999px;
     }
 }
 
