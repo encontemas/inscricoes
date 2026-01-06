@@ -189,12 +189,12 @@ function calcularMaxParcelas() {
     const mesLimite = 10; // Novembro (0-indexed)
     const anoLimite = 2026;
 
-    // Calcular quantos meses faltam desde o PRÓXIMO MÊS até novembro/2026 (INCLUSIVE)
-    // Primeira parcela sempre vence no mês seguinte
-    const mesesAteEvento = (anoLimite - anoAtual) * 12 + (mesLimite - mesAtual);
+    // Calcular quantos meses faltam desde o MÊS ATUAL até novembro/2026 (INCLUSIVE)
+    // Primeira parcela vence no mês corrente
+    const mesesAteEvento = (anoLimite - anoAtual) * 12 + (mesLimite - mesAtual) + 1;
 
     // Máximo de 10 parcelas (limitado pelo sistema)
-    // Em janeiro/2026: fev até nov = 10 meses = 10 parcelas ✓
+    // Em janeiro/2026: jan até nov = 11 meses, mas limite 10 parcelas
     // Em fevereiro/2026: fev até nov = 10 meses = 10 parcelas ✓
     // Em março/2026: mar até nov = 9 meses = 9 parcelas ✓
     // Em abril/2026: abr até nov = 8 meses = 8 parcelas ✓
