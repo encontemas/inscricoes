@@ -1247,3 +1247,137 @@ body {
         font-size: 2rem;
     }
 }
+
+/* ===== TOGGLE MOBILE (Nova Inscrição vs Já Inscrito) ===== */
+.mobile-toggle-container {
+    display: none; /* Escondido por padrão (desktop) */
+}
+
+@media (max-width: 768px) {
+    /* Mostrar toggle apenas no mobile */
+    .mobile-toggle-container {
+        display: block;
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    /* Esconder ações desktop no mobile */
+    .header-actions {
+        display: none !important;
+    }
+
+    /* Abas */
+    .mobile-tabs {
+        display: flex;
+        gap: 0;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 4px;
+        margin-bottom: 1rem;
+    }
+
+    .mobile-tab {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: none;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        font-weight: 600;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .mobile-tab.active {
+        background: white;
+        color: var(--primary-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Painéis */
+    .mobile-content {
+        position: relative;
+    }
+
+    .mobile-panel {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .mobile-panel.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Botão Inscrever-se Mobile */
+    .btn-inscricao-mobile {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .btn-inscricao-mobile:active {
+        transform: scale(0.98);
+    }
+
+    /* Input CPF Mobile */
+    .cpf-input-mobile {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .cpf-input-mobile input {
+        flex: 1;
+        padding: 1rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.95);
+        font-size: 1rem;
+        color: var(--gray-800);
+    }
+
+    .cpf-input-mobile input::placeholder {
+        color: var(--gray-600);
+    }
+
+    .cpf-input-mobile button {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .cpf-input-mobile button:active {
+        transform: scale(0.95);
+    }
+}

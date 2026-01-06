@@ -1,4 +1,89 @@
-// Função para acesso rápido à área do inscrito
+// ===== TOGGLE MOBILE (Nova Inscrição vs Já Inscrito) =====
+function toggleMobileView(view) {
+    // Alternar aba ativa
+    const tabs = document.querySelectorAll('.mobile-tab');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // Alternar painel ativo
+    const panels = document.querySelectorAll('.mobile-panel');
+    panels.forEach(panel => panel.classList.remove('active'));
+
+    if (view === 'nova') {
+        document.getElementById('mobile-nova').classList.add('active');
+    } else if (view === 'inscrito') {
+        document.getElementById('mobile-inscrito').classList.add('active');
+    }
+}
+
+// Função para acesso à área do inscrito via mobile
+async function acessarAreaInscritoMobile() {
+    const cpfInput = document.getElementById('cpf-mobile');
+    const cpf = cpfInput.value.replace(/\D/g, '');
+
+    if (cpf.length !== 11) {
+        alert('Por favor, digite um CPF válido');
+        cpfInput.focus();
+        return;
+    }
+
+    // Desabilitar botão e mostrar loading
+    const btn = cpfInput.nextElementSibling;
+    const textoOriginal = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '...';
+
+    try {
+        // Verificar se CPF existe via API
+        const response = await fetch('/api/inscrito', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ cpf: cpf })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'CPF não encontrado');
+        }
+
+        // Salvar CPF e redirecionar
+        localStorage.setItem('inscrito_cpf', cpf);
+        window.location.href = '/area-inscrito.html';
+
+    } catch (error) {
+        console.error('Erro ao acessar área do inscrito:', error);
+        alert(error.message || 'CPF não encontrado. Verifique se você já realizou sua inscrição.');
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+    }
+}
+
+// Adicionar máscara CPF no input mobile
+document.addEventListener('DOMContentLoaded', function() {
+    const cpfMobile = document.getElementById('cpf-mobile');
+    if (cpfMobile) {
+        cpfMobile.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.substring(0, 11);
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            e.target.value = value;
+        });
+
+        // Permitir envio com Enter
+        cpfMobile.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                acessarAreaInscritoMobile();
+            }
+        });
+    }
+});
+
+// Função para acesso rápido à área do inscrito (desktop)
 async function acessarAreaInscrito() {
     const cpfInput = document.getElementById('cpf-quick');
     const cpf = cpfInput.value.replace(/\D/g, '');
