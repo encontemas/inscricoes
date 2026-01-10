@@ -34,7 +34,7 @@ export default async function handler(req, res) {
         // Buscar dados da planilha
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId,
-            range: 'Inscrições!A:AZ',
+            range: 'Inscrições!A:ZZ',
         });
 
         const rows = response.data.values;

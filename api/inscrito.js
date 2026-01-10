@@ -35,10 +35,10 @@ export default async function handler(req, res) {
         const sheets = google.sheets({ version: 'v4', auth });
         const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
 
-        // Buscar dados na planilha
+        // Buscar dados na planilha (até coluna BQ para pegar todas as 69 colunas)
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId,
-            range: 'Inscrições!A:AZ',
+            range: 'Inscrições!A:ZZ',
         });
 
         const rows = response.data.values;
