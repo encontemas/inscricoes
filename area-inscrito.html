@@ -577,6 +577,16 @@
                     const dataVencimentoKey = `data_pagamento_${String(i).padStart(2, '0')}`; // Este campo é na verdade o vencimento
                     const dataPagaKey = `data_paga_${String(i).padStart(2, '0')}`; // Data efetiva do pagamento
 
+                    // DEBUG: Mostrar quais campos estão sendo buscados
+                    if (i === 10 || i === 1) {
+                        console.log(`=== Parcela ${i} ===`);
+                        console.log('parcelaKey:', parcelaKey);
+                        console.log('dataVencimentoKey:', dataVencimentoKey);
+                        console.log('dataPagaKey:', dataPagaKey);
+                        console.log('Valor em data[dataVencimentoKey]:', data[dataVencimentoKey]);
+                        console.log('Valor em data[dataPagaKey]:', data[dataPagaKey]);
+                    }
+
                     // Obter data de vencimento da planilha (campo chamado data_pagamento mas é o vencimento)
                     let dataVencimentoStr = data[dataVencimentoKey] || '';
                     let vencimentoFormatado;

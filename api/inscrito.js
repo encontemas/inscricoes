@@ -85,6 +85,13 @@ export default async function handler(req, res) {
             inscrito[header] = inscritoRow[index] || '';
         });
 
+        // DEBUG: Verificar campos de data_pagamento
+        console.log('🔍 DEBUG - Campos de vencimento:');
+        console.log('data_pagamento_01:', inscrito.data_pagamento_01);
+        console.log('data_pagamento_10:', inscrito.data_pagamento_10);
+        console.log('Total de headers:', headers.length);
+        console.log('Total de colunas na linha:', inscritoRow.length);
+
         // Gerar informações das parcelas com STATUS REAL
         const numeroParcelas = parseInt(inscrito.numero_parcelas) || 1;
         const valorTotal = 450.00;
