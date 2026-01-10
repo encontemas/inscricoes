@@ -38,7 +38,7 @@ export default async function handler(req, res) {
         // Buscar dados na planilha (até coluna BQ para pegar todas as 69 colunas)
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId,
-            range: 'Inscrições!A:BQ',
+            range: 'Inscrições!A:ZZ',
         });
 
         const rows = response.data.values;
