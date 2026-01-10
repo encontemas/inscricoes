@@ -285,7 +285,7 @@ async function atualizarStatusPagamentoInscricao(dadosPagamento, isCardPayment =
         // Buscar dados na planilha Inscrições
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId,
-            range: 'Inscrições!A:AZ',
+            range: 'Inscrições!A:BQ',
         });
 
         const rows = response.data.values;

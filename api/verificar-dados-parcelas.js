@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId,
-            range: 'Inscrições!A:AZ',
+            range: 'Inscrições!A:BQ',
         });
 
         const rows = response.data.values;
