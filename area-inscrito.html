@@ -712,7 +712,9 @@
                         nome_completo: inscritoData.nome,
                         telefone: inscritoData.telefone || '',
                         cpf: inscritoData.cpf || '',
-                        numero_parcelas: inscritoData.numero_parcelas
+                        numero_parcelas: inscritoData.numero_parcelas,
+                        numero_parcela: numeroParcela, // Adicionar número da parcela específica
+                        id_inscricao: inscritoData.id_inscricao // Adicionar ID da inscrição
                     })
                 });
 

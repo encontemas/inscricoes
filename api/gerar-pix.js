@@ -40,8 +40,11 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { email, numero_parcelas, nome_completo, telefone, cpf, id_inscricao } = req.body;
+        const { email, numero_parcelas, nome_completo, telefone, cpf, id_inscricao, numero_parcela } = req.body;
         const maximoParcelasPermitido = calcularMaximoParcelas();
+
+        // Determinar qual parcela está sendo gerada (padrão: 1 para primeira inscrição)
+        const parcelaAtual = numero_parcela || 1;
 
         // Validações
         if (!email) {
@@ -66,7 +69,7 @@ export default async function handler(req, res) {
             : 'https://sandbox.api.pagseguro.com/orders';
 
         console.log('🔍 Ambiente PIX:', isProduction ? 'PRODUCTION' : 'SANDBOX');
-        console.log(`💳 Gerando PIX da primeira parcela para: ${email} [${isProduction ? 'PRODUCTION' : 'SANDBOX'}]`);
+        console.log(`💳 Gerando PIX da parcela ${parcelaAtual}/${numero_parcelas} para: ${email} [${isProduction ? 'PRODUCTION' : 'SANDBOX'}]`);
 
         const PAGBANK_TOKEN = process.env.PAGBANK_TOKEN;
 
@@ -131,8 +134,8 @@ export default async function handler(req, res) {
                 }]
             },
             items: [{
-                reference_id: "parcela_01_encontemas",
-                name: `Parcela 1/${numero_parcelas} - Encontemas Diversidade`,
+                reference_id: `parcela_${String(parcelaAtual).padStart(2, '0')}_encontemas`,
+                name: `Parcela ${parcelaAtual}/${numero_parcelas} - Encontemas Diversidade`,
                 quantity: 1,
                 unit_amount: Math.round(parseFloat(valorParcela) * 100) // em centavos
             }],
