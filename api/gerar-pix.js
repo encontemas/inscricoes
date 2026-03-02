@@ -6,32 +6,19 @@ function calcularMaximoParcelas() {
     const mesAtual = hoje.getMonth() + 1; // Janeiro = 1, Fevereiro = 2, etc.
     const anoAtual = hoje.getFullYear();
 
-    // Evento em novembro/2026
     const mesEvento = 11; // Novembro
     const anoEvento = 2026;
 
-    // Calcular meses restantes até o evento
-    const mesesRestantes = (anoEvento - anoAtual) * 12 + (mesEvento - mesAtual);
-
-    let maximoParcelas;
-
-    if (anoAtual < 2026) {
-        // Antes de 2026: permite 11 parcelas
-        maximoParcelas = 11;
-    } else if (anoAtual === 2026) {
-        if (mesAtual <= 2) {
-            // Janeiro ou Fevereiro de 2026: máximo 10 parcelas
-            maximoParcelas = 10;
-        } else {
-            // A partir de Março: meses restantes até novembro
-            maximoParcelas = Math.max(1, mesesRestantes);
-        }
-    } else {
-        // Depois de 2026: não permite mais inscrições
-        maximoParcelas = 1;
+    // Evento já passou
+    if (anoAtual > anoEvento || (anoAtual === anoEvento && mesAtual > mesEvento)) {
+        return 0;
     }
 
-    return maximoParcelas;
+    // Meses disponíveis incluindo o mês atual
+    // Março 2026: (11-3)+1 = 9 ✓  Abril: 8 ✓  Maio: 7 ✓
+    const meses = (anoEvento - anoAtual) * 12 + (mesEvento - mesAtual) + 1;
+
+    return Math.min(10, Math.max(1, meses));
 }
 
 export default async function handler(req, res) {
@@ -40,8 +27,11 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { email, numero_parcelas, nome_completo, telefone, cpf, id_inscricao } = req.body;
+        const { email, numero_parcelas, nome_completo, telefone, cpf, id_inscricao, numero_parcela } = req.body;
         const maximoParcelasPermitido = calcularMaximoParcelas();
+
+        // Determinar qual parcela está sendo gerada (padrão: 1 para primeira inscrição)
+        const parcelaAtual = numero_parcela || 1;
 
         // Validações
         if (!email) {
@@ -51,10 +41,12 @@ export default async function handler(req, res) {
             });
         }
 
-        if (!numero_parcelas || numero_parcelas < 1 || numero_parcelas > maximoParcelasPermitido) {
+        // Validar apenas que tem pelo menos 1 parcela
+        // Inscritos existentes podem ter mais parcelas que o limite atual - isso é permitido
+        if (!numero_parcelas || numero_parcelas < 1) {
             return res.status(400).json({
                 error: 'Número de parcelas inválido',
-                message: `Escolha entre 1 e ${maximoParcelasPermitido} parcelas`
+                message: 'Informe o número de parcelas da inscrição'
             });
         }
 
@@ -66,7 +58,7 @@ export default async function handler(req, res) {
             : 'https://sandbox.api.pagseguro.com/orders';
 
         console.log('🔍 Ambiente PIX:', isProduction ? 'PRODUCTION' : 'SANDBOX');
-        console.log(`💳 Gerando PIX da primeira parcela para: ${email} [${isProduction ? 'PRODUCTION' : 'SANDBOX'}]`);
+        console.log(`💳 Gerando PIX da parcela ${parcelaAtual}/${numero_parcelas} para: ${email} [${isProduction ? 'PRODUCTION' : 'SANDBOX'}]`);
 
         const PAGBANK_TOKEN = process.env.PAGBANK_TOKEN;
 
@@ -131,8 +123,8 @@ export default async function handler(req, res) {
                 }]
             },
             items: [{
-                reference_id: "parcela_01_encontemas",
-                name: `Parcela 1/${numero_parcelas} - Encontemas Diversidade`,
+                reference_id: `parcela_${String(parcelaAtual).padStart(2, '0')}_encontemas`,
+                name: `Parcela ${parcelaAtual}/${numero_parcelas} - Encontemas Diversidade`,
                 quantity: 1,
                 unit_amount: Math.round(parseFloat(valorParcela) * 100) // em centavos
             }],
